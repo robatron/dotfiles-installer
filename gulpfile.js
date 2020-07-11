@@ -1,8 +1,8 @@
-import { sync as commandExistsSync } from 'command-exists';
-import { series } from 'gulp';
-import { assureInstalled } from './src/assureInstalled';
-import { createGlobalLogger } from './src/logger';
-import { IS_LINUX, IS_MAC } from './src/platform';
+const commandExistsSync = require('command-exists').sync;
+const { series } = require('gulp');
+const { assureInstalled } = require('./src/assureInstalled');
+const { createGlobalLogger } = require('./src/logger');
+const { IS_LINUX, IS_MAC } = require('./src/platform');
 
 // Init
 createGlobalLogger();
