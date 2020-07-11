@@ -6,17 +6,17 @@
     "scripts": {
         "build": "docker build --tag dotfiles .",
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",
-        "start": "docker run --volume $(pwd):/tmp/dotfiles-installer --interactive --tty dotfiles /bin/bash",
+        "start": "docker run --volume $(pwd):/mnt/dotfiles-installer --interactive --tty dotfiles /bin/bash",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {},
     "dependencies": {
-        "command-exists": "^1.2.8",
-        "winston": "^3.2.1",
-        "eslint": "^5.16.0",
-        "gulp": "^4.0.0",
-        "shelljs": "^0.8.3"
+        "command-exists": "^1.2.9",
+        "eslint": "^7.4.0",
+        "gulp": "^4.0.2",
+        "shelljs": "^0.8.4",
+        "winston": "^3.3.3"
     }
 }

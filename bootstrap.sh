@@ -1,10 +1,15 @@
 #! /usr/bin/env bash
 
+# This script installs programs and dependencies required to run the
+# dotfiles-installer
+
 set -e # Exit on any error
 
 system_type=$(uname -s)
 
-# Helpers ----------------------------------------------------------------------
+# ---------------------------------------------------------------------------- #
+#                               Helper functions                               #
+# ---------------------------------------------------------------------------- #
 
 function log() {
     echo ">>> $1"
@@ -30,9 +35,9 @@ function assure_installed_linux() {
     fi
 }
 
-# Bootstrap --------------------------------------------------------------------
-
-log "Bootstrapping dotfiles installer..."
+# ---------------------------------------------------------------------------- #
+#                                Bootstrap system                              #
+# ---------------------------------------------------------------------------- #
 
 log "Looking for system package managers and base programs..."
 
@@ -60,6 +65,10 @@ elif [ "$system_type" = "Linux" ]; then
     assure_installed_linux curl
 fi
 
+# ---------------------------------------------------------------------------- #
+#                               Bootstrap Node.js                              #
+# ---------------------------------------------------------------------------- #
+
 log "Assuring nvm installed..."
 export NVM_DIR="$HOME/.nvm"
 if [ ! -d $NVM_DIR ]; then
@@ -68,6 +77,7 @@ if [ ! -d $NVM_DIR ]; then
     git clone https://github.com/creationix/nvm.git "$NVM_DIR"
     cd "$NVM_DIR"
     git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)`
+    cd -
 fi
 
 log "Assuring nvm loaded..."
@@ -82,6 +92,10 @@ if ! [ -x "$(command -v node)" ]; then
     nvm install --lts
 fi
 
+# ---------------------------------------------------------------------------- #
+#                              Bootstrap installer                             #
+# ---------------------------------------------------------------------------- #
+
 log "Assuring gulp installed globally..."
 if ! [ -x "$(command -v gulp)" ]; then
     log "Gulp not installed. Installing..."
@@ -91,6 +105,4 @@ fi
 log "Downloading installer dependencies..."
 npm i
 
-log "Starting installer..."
-gulp
-
+log "Dotfiles-installer is ready to rock!"
