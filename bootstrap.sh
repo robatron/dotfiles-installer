@@ -50,7 +50,6 @@ if [ "$system_type" = "Darwin" ]; then
             "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
 
-    assure_installed_mac git
     assure_installed_mac curl
 
 elif [ "$system_type" = "Linux" ]; then
@@ -61,7 +60,6 @@ elif [ "$system_type" = "Linux" ]; then
         exit 1
     fi
 
-    assure_installed_linux git
     assure_installed_linux curl
 fi
 
@@ -73,11 +71,7 @@ log "Assuring nvm installed..."
 export NVM_DIR="$HOME/.nvm"
 if [ ! -d $NVM_DIR ]; then
     log "Nvm not installed. Installing..."
-    # See https://github.com/creationix/nvm#manual-install
-    git clone https://github.com/creationix/nvm.git "$NVM_DIR"
-    cd "$NVM_DIR"
-    git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" $(git rev-list --tags --max-count=1)`
-    cd -
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 fi
 
 log "Assuring nvm loaded..."

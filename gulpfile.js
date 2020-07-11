@@ -1,66 +1,14 @@
-const commandExistsSync = require('command-exists').sync;
-const { series } = require('gulp');
-const { exec, exit } = require('shelljs');
-const { createLogger, format, transports } = require('winston');
+import { sync as commandExistsSync } from 'command-exists';
+import { series } from 'gulp';
+import { assureInstalled } from './src/assureInstalled';
+import { createGlobalLogger } from './src/logger';
+import { IS_LINUX, IS_MAC } from './src/platform';
 
-const IS_MAC = process.platform === 'darwin';
-const IS_LINUX = process.platform === 'linux';
+// Init
+createGlobalLogger();
 
-const log = createLogger({
-    transports: [
-        new transports.Console({
-            format: format.combine(format.colorize(), format.simple()),
-        }),
-    ],
-});
-
-// Helpers --------------------------------------------------------------------
-
-// Execute a command, exiting on error
-const execCmd = command => {
-    log.info(`Executing "${command}..."`);
-    if (exec(command).code !== 0) {
-        log.error(`Execution of "${command} failed!"`);
-        exit(1);
-    }
-};
-
-// Verify a package is installed, install a package if it is not installed
-const assureInstalled = (
-    packageName,
-    // Optional
-    {
-        commandName, // Command name, if different from package name
-        installCommands, // Commands to exec, otherwise use system package manager
-        shouldInstall, // Condition that must evaluate `true` to continue
-    } = {},
-) => {
-    log.info(`Verifying package "${packageName}" is installed...`);
-    if (
-        typeof shouldInstall !== 'undefined'
-            ? shouldInstall
-            : !commandExistsSync(commandName || packageName)
-    ) {
-        log.info(`Package "${packageName}" not installed. Installing...`);
-
-        if (installCommands) {
-            installCommands.forEach(command => execCmd(command));
-        } else if (IS_MAC) {
-            execCmd(`brew install ${packageName}`);
-        } else if (IS_LINUX) {
-            execCmd(`sudo apt install -y ${packageName}`);
-        } else {
-            log.error('Unsupported system. Aborting.');
-            exit(1);
-        }
-
-        log.info(`Package "${packageName}" successfully installed!`);
-    }
-};
-
-// Tasks ----------------------------------------------------------------------
-
-const assureSystemPackageManager = cb => {
+// Tasks
+const assureSystemPackageManager = (cb) => {
     log.info('Assuring system package manager is available...');
 
     // Mac OS X
@@ -95,10 +43,9 @@ function installBasePrograms(cb) {
     log.info('Installing base programs...');
 
     assureInstalled('git');
-
     assureInstalled('python3');
 
-    IS_LINUX && assureInstalled('python3-distutils', { shouldInstall: true });
+    IS_LINUX && assureInstalled('python3-distutils');
 
     assureInstalled('pip', {
         installCommands: [

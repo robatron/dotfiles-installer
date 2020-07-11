@@ -13,13 +13,9 @@ RUN \
     echo "abc123\nabc123" | passwd robmc && \
     echo "Set disable_coredump false" >> /etc/sudo.conf
 
-# Clean install dotfiles-installer
-WORKDIR /home/robmc/
-COPY . ./opt/dotfiles-installer
-RUN cd ./opt/dotfiles-installer && \
-    git clean -xdf
-RUN chown -R robmc:robmc .
-
 # Set interactive entrypoint conditions
 USER robmc
+WORKDIR /home/robmc/
+RUN ln -sf /mnt/dotfiles-installer ./df
+RUN ln -sf ./.nvm/nvm.sh nvm-init
 ENTRYPOINT /bin/bash
