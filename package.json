@@ -1,0 +1,22 @@
+{
+    "name": "dotfiles-installer",
+    "version": "1.0.0",
+    "description": "Install deez dotfiles",
+    "main": "gulpfile.js",
+    "scripts": {
+        "build": "docker build --tag dotfiles .",
+        "start:base": "docker run -it ubuntu:20.04 /bin/bash",
+        "start": "docker run --volume $(pwd):/tmp/dotfiles-installer --interactive --tty dotfiles /bin/bash",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {},
+    "dependencies": {
+        "command-exists": "^1.2.8",
+        "winston": "^3.2.1",
+        "eslint": "^5.16.0",
+        "gulp": "^4.0.0",
+        "shelljs": "^0.8.3"
+    }
+}
