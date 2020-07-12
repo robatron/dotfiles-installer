@@ -1,8 +1,5 @@
 const { series } = require('gulp');
-const {
-    assureInstalled,
-    isPackageInstalled,
-} = require('./src/assureInstalled');
+const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
 const { IS_LINUX, IS_MAC } = require('./src/platform');
@@ -114,17 +111,30 @@ const verifyPrereqPackages = (cb) => {
 function assurePythonPackages(cb) {
     log.info('Assuring Python packages...');
 
+    const installErrorCount = 0;
+
     PYTHON_PACKAGES.forEach((pkg) => {
-        log.info(`Assuring package "${pkg.name}" is installed...`);
+        log.info(`Verifying package '${pkg.name}' is installed...`);
 
-        const assureInstalledArgs = PYTHON_PACKAGES[package];
-        const status = assureInstalled(package, assureInstalledArgs);
+        if (!isPackageInstalled(pkg)) {
+            log.info(`Package '${pkg.name}' is not installed. Installing...`);
+            const installError = installPackage(pkg);
 
-        if (status.skipped) {
-            log.warn(`Skipping package "${packageName}"`);
+            if (installError) {
+                log.warn(installError);
+                ++installErrorCount;
+            }
         }
     });
+
+    if (installErrorCount) {
+        throw new Error(`There were error(s) installing Python packages.`);
+    }
+
+    cb();
 }
 
 exports.verifyPrereqPackages = verifyPrereqPackages;
-exports.default = series(verifyPrereqPackages);
+exports.assurePythonPackages = assurePythonPackages;
+
+exports.default = series(verifyPrereqPackages, assurePythonPackages);
