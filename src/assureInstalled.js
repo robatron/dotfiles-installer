@@ -1,4 +1,5 @@
 const commandExistsSync = require('command-exists').sync;
+const { exec } = require('shelljs');
 
 // Execute a command, exiting on error
 const execCmd = (command) => {
@@ -9,39 +10,45 @@ const execCmd = (command) => {
     }
 };
 
-// Verify a package is installed, install a package if it is not installed
-const assureInstalled = (
+// Install the specified package
+const installPackage = (
     packageName,
-    // Optional
     {
-        commandName, // Command name, if different from package name
-        installCommands, // Commands to exec, otherwise use system package manager
-        shouldInstall, // Condition that must evaluate `true` to continue
+        // Commands to exec, otherwise use system package manager
+        installCommands,
     } = {},
 ) => {
-    log.info(`Verifying package "${packageName}" is installed...`);
-    if (
-        typeof shouldInstall !== 'undefined'
-            ? shouldInstall
-            : !commandExistsSync(commandName || packageName)
-    ) {
-        log.info(`Package "${packageName}" not installed. Installing...`);
+    let targetCommands;
 
-        if (installCommands) {
-            installCommands.forEach((command) => execCmd(command));
-        } else if (IS_MAC) {
-            execCmd(`brew install ${packageName}`);
-        } else if (IS_LINUX) {
-            execCmd(`sudo apt install -y ${packageName}`);
-        } else {
-            log.error('Unsupported system. Aborting.');
-            exit(1);
-        }
-
-        log.info(`Package "${packageName}" successfully installed!`);
+    if (installCommands) {
+        targetCommands = installCommands;
+    } else if (IS_MAC) {
+        targetCommands = [`brew install ${packageName}`];
+    } else if (IS_LINUX) {
+        targetCommands = [`sudo apt install -y ${packageName}`];
+    } else {
+        throw new Error('Unknown install command(s)');
     }
+
+    installCommands.forEach((cmd) => {
+        const returnCode = exec(cmd).code;
+        return code === 0
+            ? {
+                  success: true,
+                  command: cmd,
+              }
+            : {
+                  success: false,
+                  command: cmd,
+                  returnCode: code,
+              };
+    });
 };
 
-const verifyInstalled = (packageName) => commandExistsSync(packageName);
+// Return if a package is installed
+const isPackageInstalled = (pkg, testFn, testFnArgs = []) =>
+    testFn
+        ? testFn.apply(testFnArgs)
+        : commandExistsSync(pkg.meta.command || pkg.name);
 
-module.exports = { assureInstalled, verifyInstalled };
+module.exports = { installPackage, isPackageInstalled };

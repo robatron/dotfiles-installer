@@ -1,24 +1,20 @@
 const { series } = require('gulp');
-const { assureInstalled, verifyInstalled } = require('./src/assureInstalled');
+const {
+    assureInstalled,
+    isPackageInstalled,
+} = require('./src/assureInstalled');
 const { createGlobalLogger } = require('./src/logger');
+const Package = require('./src/Package');
 const { IS_LINUX, IS_MAC } = require('./src/platform');
 
+// Init
+createGlobalLogger();
+
+/* -------------------------------------------------------------------------- */
+/*                             Package definitions                            */
+/* -------------------------------------------------------------------------- */
+
 /*
-Bootstrap:
-    System package manager
-    curl
-    Node.js
-        - Nvm
-        - Node
-        - NPM
-
-Python:
-    - python3
-    - python3-distutils (Linux only)
-    - pip
-    - envtpl
-    - pyenv (mac / linux different)
-
 Dotfiles:
     - yadm
     - dotfiles themselves
@@ -41,6 +37,11 @@ Base utils (mac):
     - tmux
     - zplug
 
+Common:
+    oh-my-zsh
+    spaceship-prompt
+    powerline fonts
+
 GUI utils (mac):
     - deluge \
     - google-chrome \
@@ -50,46 +51,59 @@ GUI utils (mac):
     - vagrant \
     - virtualbox \
     - visual-studio-code
-
-Common utils:
-    oh-my-zsh
-    spaceship-prompt
-    powerline fonts
 */
 
-const TARGET_PROGRAMS = {
-    curl: { category: 'prereq' },
-    git: { category: 'prereq' },
-    node: { category: 'prereq' },
-    npm: { category: 'prereq' },
-    nvm: { category: 'prereq' },
-};
+// Prereq commands to verify before starting
+const PREREQ_PACKAGES = [
+    new Package('curl'),
+    new Package('git'),
+    new Package('node'),
+    new Package('npm'),
+    new Package('nvm'),
+];
 
-// Init
-createGlobalLogger();
+// Python packages to assure are installed
+const PYTHON_PACKAGES = [
+    new Package('python3'),
+    new Package('pip', {
+        installCommands: [
+            'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
+            'sudo -H python3 /tmp/get-pip.py',
+        ],
+    }),
+    new Package('envtpl', {
+        installCommands: ['sudo -H pip install envtpl'],
+    }),
+    new Package('pyenv', {
+        installCommands: ['curl https://pyenv.run | bash'],
+    }),
+];
 
-// Verify prereq programs are available
-const verifyPrereqs = (cb) => {
-    let missingPackageCount = 0;
+/* -------------------------------------------------------------------------- */
+/*                                    Tasks                                   */
+/* -------------------------------------------------------------------------- */
 
-    log.info('Verifying prereqs...');
+// Verify prereq packages are available
+const verifyPrereqPackages = (cb) => {
+    log.info('Verifying prereq packages...');
 
-    Object.keys(TARGET_PROGRAMS)
-        .filter((prog) => TARGET_PROGRAMS[prog].category === 'prereq')
-        .forEach((packageName) => {
-            log.info(`Verifying package "${packageName}" is installed...`);
+    const missingPackages = [];
 
-            if (!verifyInstalled(packageName)) {
-                log.error(`❌ Package "${packageName}" is not installed.`);
-                ++missingPackageCount;
-            }
-        });
+    PREREQ_PACKAGES.forEach((pkg) => {
+        log.info(`Verifying package "${pkg.name}" is installed...`);
 
-    if (missingPackageCount) {
+        if (!isPackageInstalled(pkg)) {
+            log.warn(`❌ Package "${pkg.name}" is not installed.`);
+            missingPackages.push(pkg.name);
+        }
+    });
+
+    const missingPkgCount = missingPackages.length;
+    if (missingPkgCount) {
         throw new Error(
-            `Missing ${missingPackageCount} prereq${
-                missingPackageCount !== 1 ? 's' : ''
-            }. (See log for details.) Verify you ran the bootstrap script and try again.`,
+            `Missing ${missingPkgCount} prereq${
+                missingPkgCount !== 1 ? 's' : ''
+            }: ${JSON.stringify(missingPackages)} Have you run bootstrap.sh?`,
         );
     }
 
@@ -97,27 +111,20 @@ const verifyPrereqs = (cb) => {
 };
 
 // Install Python stuff
-function installPython(cb) {
-    log.info('Installing base programs...');
+function assurePythonPackages(cb) {
+    log.info('Assuring Python packages...');
 
-    assureInstalled('python3');
+    PYTHON_PACKAGES.forEach((pkg) => {
+        log.info(`Assuring package "${pkg.name}" is installed...`);
 
-    IS_LINUX && assureInstalled('python3-distutils', { shouldInstall: true });
+        const assureInstalledArgs = PYTHON_PACKAGES[package];
+        const status = assureInstalled(package, assureInstalledArgs);
 
-    assureInstalled('pip', {
-        installCommands: [
-            'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
-            'sudo -H python3 /tmp/get-pip.py',
-        ],
+        if (status.skipped) {
+            log.warn(`Skipping package "${packageName}"`);
+        }
     });
-
-    // Required by yadm
-    assureInstalled('envtpl', {
-        installCommands: ['sudo -H pip install envtpl'],
-    });
-
-    cb();
 }
 
-exports.verifyPrereqs = verifyPrereqs;
-exports.default = series(verifyPrereqs);
+exports.verifyPrereqPackages = verifyPrereqPackages;
+exports.default = series(verifyPrereqPackages);
