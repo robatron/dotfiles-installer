@@ -120,4 +120,4 @@ function installPython(cb) {
 }
 
 exports.verifyPrereqs = verifyPrereqs;
-exports.default = verifyPrereqs;
+exports.default = series(verifyPrereqs);
