@@ -1,4 +1,4 @@
-import { sync as commandExistsSync } from 'command-exists';
+const commandExistsSync = require('command-exists').sync;
 
 // Execute a command, exiting on error
 const execCmd = (command) => {
@@ -42,4 +42,6 @@ const assureInstalled = (
     }
 };
 
-export { assureInstalled, IS_LINUX, IS_MAC };
+const verifyInstalled = (packageName) => commandExistsSync(packageName);
+
+module.exports = { assureInstalled, verifyInstalled };

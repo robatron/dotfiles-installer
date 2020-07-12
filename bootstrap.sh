@@ -82,8 +82,8 @@ fi
 
 log "Assuring node installed..."
 if ! [ -x "$(command -v node)" ]; then
-    log "Node not installed. Installing latest LTS version..."
-    nvm install --lts
+    log "Node not installed. Installing latest LTS version and latest npm..."
+    nvm install --lts --latest-npm
 fi
 
 # ---------------------------------------------------------------------------- #

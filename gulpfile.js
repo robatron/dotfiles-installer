@@ -1,51 +1,108 @@
-const commandExistsSync = require('command-exists').sync;
 const { series } = require('gulp');
-const { assureInstalled } = require('./src/assureInstalled');
+const { assureInstalled, verifyInstalled } = require('./src/assureInstalled');
 const { createGlobalLogger } = require('./src/logger');
 const { IS_LINUX, IS_MAC } = require('./src/platform');
+
+/*
+Bootstrap:
+    System package manager
+    curl
+    Node.js
+        - Nvm
+        - Node
+        - NPM
+
+Python:
+    - python3
+    - python3-distutils (Linux only)
+    - pip
+    - envtpl
+    - pyenv (mac / linux different)
+
+Dotfiles:
+    - yadm
+    - dotfiles themselves
+
+Base utils (linux):
+    - cowsay
+    - fortune-mod
+    - gpg
+    - zsh
+    - gshuf (symlink shuf)
+
+Base utils (mac):
+    - caskroom/homebrew-cask (tap)
+    - coreutils
+    - cowsay
+    - fortune
+    - gpg
+    - pyenv
+    - reattach-to-user-namespace
+    - tmux
+    - zplug
+
+GUI utils (mac):
+    - deluge \
+    - google-chrome \
+    - iterm2 \
+    - keepingyouawake \
+    - spectacle \
+    - vagrant \
+    - virtualbox \
+    - visual-studio-code
+
+Common utils:
+    oh-my-zsh
+    spaceship-prompt
+    powerline fonts
+*/
+
+const TARGET_PROGRAMS = {
+    curl: { category: 'prereq' },
+    git: { category: 'prereq' },
+    node: { category: 'prereq' },
+    npm: { category: 'prereq' },
+    nvm: { category: 'prereq' },
+};
 
 // Init
 createGlobalLogger();
 
-// Tasks
-const assureSystemPackageManager = (cb) => {
-    log.info('Assuring system package manager is available...');
+// Verify prereq programs are available
+const verifyPrereqs = (cb) => {
+    let missingPackageCount = 0;
 
-    // Mac OS X
-    if (IS_MAC) {
-        log.info('Mac OS X detected.');
+    log.info('Verifying prereqs...');
 
-        const brewInstallScriptUrl =
-            'https://raw.githubusercontent.com/Homebrew/install/master/install';
-        assureInstalled('brew', {
-            installCommands: [
-                `/usr/bin/ruby -e "$(curl -fsSL ${brewInstallScriptUrl})"`,
-            ],
+    Object.keys(TARGET_PROGRAMS)
+        .filter((prog) => TARGET_PROGRAMS[prog].category === 'prereq')
+        .forEach((packageName) => {
+            log.info(`Verifying package "${packageName}" is installed...`);
+
+            if (!verifyInstalled(packageName)) {
+                log.error(`❌ Package "${packageName}" is not installed.`);
+                ++missingPackageCount;
+            }
         });
-    } else if (IS_LINUX) {
-        log.info('Linux detected.');
 
-        if (!commandExistsSync('apt')) {
-            log.error(
-                'No supported system package managers available. Aborting.',
-            );
-            exit(1);
-        }
-    } else {
-        log.error('Unsupported system. Aborting.');
-        exit(1);
+    if (missingPackageCount) {
+        throw new Error(
+            `Missing ${missingPackageCount} prereq${
+                missingPackageCount !== 1 ? 's' : ''
+            }. (See log for details.) Verify you ran the bootstrap script and try again.`,
+        );
     }
 
     cb();
 };
 
-function installBasePrograms(cb) {
+// Install Python stuff
+function installPython(cb) {
     log.info('Installing base programs...');
 
-    assureInstalled('git');
     assureInstalled('python3');
 
-    IS_LINUX && assureInstalled('python3-distutils');
+    IS_LINUX && assureInstalled('python3-distutils', { shouldInstall: true });
 
     assureInstalled('pip', {
         installCommands: [
@@ -62,9 +119,5 @@ function installBasePrograms(cb) {
     cb();
 }
 
-exports.installRequiredPrograms = series(
-    assureSystemPackageManager,
-    installBasePrograms,
-);
-
-exports.default = exports.installRequiredPrograms;
+exports.verifyPrereqs = verifyPrereqs;
+exports.default = verifyPrereqs;

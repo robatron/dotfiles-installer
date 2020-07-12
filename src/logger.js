@@ -1,4 +1,4 @@
-import { createLogger, format, transports } from 'winston';
+const { createLogger, format, transports } = require('winston');
 
 // Create a global logger for all to use if one doesn't exist
 const createGlobalLogger = () => {
@@ -13,4 +13,4 @@ const createGlobalLogger = () => {
         });
 };
 
-export { createGlobalLogger };
+module.exports = { createGlobalLogger };
