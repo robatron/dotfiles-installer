@@ -1,15 +1,6 @@
 const commandExistsSync = require('command-exists').sync;
 const { exec } = require('shelljs');
 
-// Execute a command, exiting on error
-const execCmd = (command) => {
-    log.info(`Executing "${command}..."`);
-    if (exec(command).code !== 0) {
-        log.error(`Execution of "${command} failed!"`);
-        exit(1);
-    }
-};
-
 // Install the specified package. Returns any encountered errors.
 const installPackage = (pkg) => {
     const installCommands = [];
@@ -42,9 +33,10 @@ const installPackage = (pkg) => {
 };
 
 // Return if a package is installed
-const isPackageInstalled = (pkg, testFn, testFnArgs = []) =>
-    testFn
-        ? testFn.apply(testFnArgs)
+const isPackageInstalled = (pkg, testFn) => {
+    return testFn
+        ? testFn(pkg)
         : commandExistsSync(pkg.meta.command || pkg.name);
+};
 
 module.exports = { installPackage, isPackageInstalled };

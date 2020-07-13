@@ -1,4 +1,7 @@
+const { accessSync } = require('fs');
 const { series } = require('gulp');
+const path = require('path');
+const { exec } = require('shelljs');
 const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
@@ -56,7 +59,27 @@ const PREREQ_PACKAGES = [
     new Package('git'),
     new Package('node'),
     new Package('npm'),
-    new Package('nvm'),
+    new Package('nvm', {
+        testFn: (pkg) => {
+            const nvmBinPath = path.join(
+                process.env['NVM_DIR'] || `${process.env['HOME']}/.${pkg.name}`,
+                `${pkg.name}.sh`,
+            );
+
+            log.info(
+                `Custom test for '${pkg.name}': Looking for '${nvmBinPath}'`,
+            );
+
+            try {
+                accessSync(nvmBinPath);
+                console.log('>>> exists');
+                return true;
+            } catch (err) {
+                console.log('>>> does not exist');
+                return false;
+            }
+        },
+    }),
 ];
 
 // Python packages to assure are installed
@@ -87,9 +110,9 @@ const verifyPrereqPackages = (cb) => {
     const missingPackages = [];
 
     PREREQ_PACKAGES.forEach((pkg) => {
-        log.info(`Verifying package "${pkg.name}" is installed...`);
+        log.info(`Verifying "${pkg.name}" is installed...`);
 
-        if (!isPackageInstalled(pkg)) {
+        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
             log.warn(`❌ Package "${pkg.name}" is not installed.`);
             missingPackages.push(pkg.name);
         }
@@ -114,7 +137,7 @@ function assurePythonPackages(cb) {
     const installErrorCount = 0;
 
     PYTHON_PACKAGES.forEach((pkg) => {
-        log.info(`Verifying package '${pkg.name}' is installed...`);
+        log.info(`Verifying '${pkg.name}' is installed...`);
 
         if (!isPackageInstalled(pkg)) {
             log.info(`Package '${pkg.name}' is not installed. Installing...`);

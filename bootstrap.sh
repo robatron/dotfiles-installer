@@ -5,7 +5,8 @@
 
 set -e # Exit on any error
 
-system_type=$(uname -s)
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+PLATFORM=$(uname -s)
 
 # ---------------------------------------------------------------------------- #
 #                               Helper functions                               #
@@ -41,9 +42,9 @@ function assure_installed_linux() {
 
 log "Looking for system package managers and base programs..."
 
-if [ "$system_type" = "Darwin" ]; then
-
+if [ "$PLATFORM" = "Darwin" ]; then
     log "Mac OS X detected. Looking for brew..."
+
     if ! [ -x "$(command -v brew)" ]; then
         log "Homebrew missing. Installing homebrew..."
         /usr/bin/ruby -e \
@@ -52,9 +53,9 @@ if [ "$system_type" = "Darwin" ]; then
 
     assure_installed_mac curl
 
-elif [ "$system_type" = "Linux" ]; then
-
+elif [ "$PLATFORM" = "Linux" ]; then
     log "Linux detected. Looking for apt..."
+
     if ! [ -x "$(command -v apt)" ]; then
         logw  "apt isn't available and I don't know what to do :-("
         exit 1
@@ -96,7 +97,9 @@ if ! [ -x "$(command -v gulp)" ]; then
     npm i -g gulp-cli
 fi
 
-log "Downloading installer dependencies..."
-npm i
+log "Verifying installer dependencies..."
+if ! [ -d "$DIR/node_modules" ]; then
+    npm i
+fi
 
-log "Dotfiles-installer is ready to rock!"
+log "Dotfiles-installer is ready to rock! Run 'gulp' to begin."

@@ -19,4 +19,5 @@ WORKDIR /home/robmc/
 RUN ln -sf /mnt/dotfiles-installer ./df
 RUN ln -sf ./.nvm/nvm.sh nvm-init
 RUN echo "cd df" >> .bashrc
+RUN echo ". ./bootstrap.sh" >> .bashrc
 ENTRYPOINT /bin/bash
