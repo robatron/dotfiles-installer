@@ -5,7 +5,6 @@ const { exec } = require('shelljs');
 const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
-const { IS_LINUX, IS_MAC } = require('./src/platform');
 
 // Init
 createGlobalLogger();

@@ -1,5 +1,6 @@
 const commandExistsSync = require('command-exists').sync;
 const { exec } = require('shelljs');
+const { IS_LINUX, IS_MAC } = require('./platform');
 
 // Install the specified package. Returns any encountered errors.
 const installPackage = (pkg) => {
