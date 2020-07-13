@@ -8,7 +8,7 @@ const installPackage = (pkg) => {
 
     // Pick install commands
     if (pkg.meta.installCommands) {
-        installCommands.concat(pkg.meta.installCommands);
+        pkg.meta.installCommands.forEach((cmd) => installCommands.push(cmd));
     } else if (IS_MAC) {
         installCommands.push(`brew install ${pkg.name}`);
     } else if (IS_LINUX) {
