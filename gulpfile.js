@@ -6,7 +6,7 @@ const { fileExists } = require('./src/fileUtils');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
 const { IS_LINUX } = require('./src/platform');
-const { createVerifyTasks } = require('./src/taskUtils');
+const { createInstallTasks, createVerifyTasks } = require('./src/taskUtils');
 
 // Init
 createGlobalLogger();
@@ -107,46 +107,10 @@ const PYTHON_PACKAGES = [
     }),
 ];
 
-/* -------------------------------------------------------------------------- */
-/*                                    Tasks                                   */
-/* -------------------------------------------------------------------------- */
-
-// Install Python stuff
-function assurePythonPackages(cb) {
-    log.info('Assuring Python packages...');
-
-    let installErrorCount = 0;
-
-    PYTHON_PACKAGES.forEach((pkg) => {
-        if (pkg.meta.skipInstall) {
-            log.warn(`Skipping '${pkg.name}'...`);
-        }
-
-        log.info(`Verifying '${pkg.name}' is installed...`);
-
-        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
-            log.info(`Package '${pkg.name}' is not installed. Installing...`);
-            const installError = installPackage(pkg);
-
-            if (installError) {
-                log.warn(installError);
-                ++installErrorCount;
-            }
-        }
-    });
-
-    if (installErrorCount) {
-        throw new Error(
-            `Encountered ${installErrorCount} error${
-                installErrorCount !== 1 ? 's' : ''
-            } installing Python packages.`,
-        );
-    }
-
-    cb();
-}
-
 exports.verifyPrereqPackages = series(createVerifyTasks(PREREQ_PACKAGES));
-exports.assurePythonPackages = assurePythonPackages;
+exports.installPythonPackages = series(createInstallTasks(PYTHON_PACKAGES));
 
-exports.default = series(exports.verifyPrereqPackages, assurePythonPackages);
+exports.default = series(
+    exports.verifyPrereqPackages,
+    exports.installPythonPackages,
+);
