@@ -1,6 +1,20 @@
 const commandExistsSync = require('command-exists').sync;
 const { exec } = require('shelljs');
 const { IS_LINUX, IS_MAC } = require('./platform');
+const Package = require('./Package');
+
+// Create a new package object from a definition
+const createNewPackage = (pkg) => {
+    if (typeof pkg === 'string') {
+        return new Package(pkg);
+    } else if (Array.isArray(pkg)) {
+        const pkgName = pkg[0];
+        const pkgMeta = pkg[1];
+        return new Package(pkgName, pkgMeta);
+    } else {
+        throw new Error(`Malformed package definition: ${JSON.stringify(pkg)}`);
+    }
+};
 
 // Install the specified package. Returns any encountered errors.
 const installPackage = (pkg) => {
@@ -52,4 +66,4 @@ const isPackageInstalled = (pkg, testFn) => {
         : commandExistsSync(pkg.meta.command || pkg.name);
 };
 
-module.exports = { installPackage, isPackageInstalled };
+module.exports = { createNewPackage, installPackage, isPackageInstalled };
