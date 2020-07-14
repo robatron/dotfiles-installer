@@ -1,4 +1,4 @@
-const { series, task } = require('gulp');
+const { series } = require('gulp');
 const path = require('path');
 const { exec } = require('shelljs');
 const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
@@ -6,6 +6,7 @@ const { fileExists } = require('./src/fileUtils');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
 const { IS_LINUX } = require('./src/platform');
+const { createVerifyTasks } = require('./src/taskUtils');
 
 // Init
 createGlobalLogger();
@@ -71,30 +72,6 @@ const PREREQ_PACKAGES = [
     }),
 ];
 
-const createVerifyTasks = (pkgs) => {
-    const generatedTaskNames = [];
-
-    pkgs.forEach((pkg) => {
-        const taskName = `verifyInstalled:${pkg.name}`;
-
-        task(taskName, (cb) => {
-            log.info(`Verifying '${pkg.name}' is installed...`);
-
-            if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
-                throw new Error(
-                    `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,
-                );
-            }
-
-            cb();
-        });
-
-        generatedTaskNames.push(taskName);
-    });
-
-    return generatedTaskNames;
-};
-
 // Python packages to assure are installed
 const PYTHON_PACKAGES = [
     new Package('python3'),
@@ -134,33 +111,6 @@ const PYTHON_PACKAGES = [
 /*                                    Tasks                                   */
 /* -------------------------------------------------------------------------- */
 
-// Verify prereq packages are available
-const verifyPrereqPackages = (cb) => {
-    log.info('Verifying prereq packages...');
-
-    const missingPackages = [];
-
-    PREREQ_PACKAGES.forEach((pkg) => {
-        log.info(`Verifying "${pkg.name}" is installed...`);
-
-        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
-            log.warn(`❌ Package "${pkg.name}" is not installed.`);
-            missingPackages.push(pkg.name);
-        }
-    });
-
-    const missingPkgCount = missingPackages.length;
-    if (missingPkgCount) {
-        throw new Error(
-            `Missing ${missingPkgCount} prereq${
-                missingPkgCount !== 1 ? 's' : ''
-            }: ${JSON.stringify(missingPackages)} Have you run bootstrap.sh?`,
-        );
-    }
-
-    cb();
-};
-
 // Install Python stuff
 function assurePythonPackages(cb) {
     log.info('Assuring Python packages...');
@@ -199,4 +149,4 @@ function assurePythonPackages(cb) {
 exports.verifyPrereqPackages = series(createVerifyTasks(PREREQ_PACKAGES));
 exports.assurePythonPackages = assurePythonPackages;
 
-exports.default = series(verifyPrereqPackages, assurePythonPackages);
+exports.default = series(exports.verifyPrereqPackages, assurePythonPackages);
