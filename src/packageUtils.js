@@ -48,6 +48,13 @@ const installPackage = (pkg) => {
     return null;
 };
 
+// Install a package via git
+// TODO
+const installPackageViaGit = (
+    gitUrl,
+    installDir = path.join(process.env['HOME'], 'opt'),
+) => {};
+
 // Return if a package is installed
 const isPackageInstalled = (pkg, testFn) => {
     return testFn
