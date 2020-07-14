@@ -60,15 +60,14 @@ const PREREQ_PACKAGES = [
     new Package('node'),
     new Package('npm'),
     new Package('nvm', {
-        testFn: (pkg) => {
-            const nvmBinPath = path.join(
-                process.env['NVM_DIR'] ||
-                    path.join(process.env['HOME'], `.${pkg.name}`),
-                `${pkg.name}.sh`,
-            );
-
-            return fileExists(nvmBinPath);
-        },
+        testFn: (pkg) =>
+            fileExists(
+                path.join(
+                    process.env['NVM_DIR'] ||
+                        path.join(process.env['HOME'], `.${pkg.name}`),
+                    `${pkg.name}.sh`,
+                ),
+            ),
     }),
 ];
 
@@ -95,16 +94,15 @@ const PYTHON_PACKAGES = [
 
     new Package('pyenv', {
         installCommands: ['curl https://pyenv.run | bash'],
-        testFn: (pkg) => {
-            const pyenvBinPath = path.join(
-                process.env['HOME'],
-                `.${pkg.name}`,
-                'bin',
-                `${pkg.name}`,
-            );
-
-            return fileExists(pyenvBinPath);
-        },
+        testFn: (pkg) =>
+            fileExists(
+                path.join(
+                    process.env['HOME'],
+                    `.${pkg.name}`,
+                    'bin',
+                    `${pkg.name}`,
+                ),
+            ),
     }),
 ];
 
@@ -119,10 +117,6 @@ const verifyPrereqPackages = (cb) => {
     const missingPackages = [];
 
     PREREQ_PACKAGES.forEach((pkg) => {
-        if (pkg.meta.skipInstall) {
-            log.warn(`Skipping '${pkg.name}'...`);
-        }
-
         log.info(`Verifying "${pkg.name}" is installed...`);
 
         if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
@@ -150,6 +144,10 @@ function assurePythonPackages(cb) {
     let installErrorCount = 0;
 
     PYTHON_PACKAGES.forEach((pkg) => {
+        if (pkg.meta.skipInstall) {
+            log.warn(`Skipping '${pkg.name}'...`);
+        }
+
         log.info(`Verifying '${pkg.name}' is installed...`);
 
         if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
