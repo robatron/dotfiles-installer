@@ -1,4 +1,4 @@
-const { series } = require('gulp');
+const { series, task } = require('gulp');
 const path = require('path');
 const { exec } = require('shelljs');
 const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
@@ -69,6 +69,38 @@ const PREREQ_PACKAGES = [
                 ),
             ),
     }),
+];
+
+const createVerifyTask = (pkg) =>
+    function verifyTask(cb) {
+        log.info(`Verifying '${pkg.name}' is installed...`);
+
+        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
+            throw new Error(
+                `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,
+            );
+        }
+
+        cb();
+    };
+
+const PREREQ_PACKAGES_TASKS = [
+    createVerifyTask(new Package('curl')),
+    createVerifyTask(new Package('git')),
+    createVerifyTask(new Package('node')),
+    createVerifyTask(new Package('npm')),
+    createVerifyTask(
+        new Package('nvm', {
+            testFn: (pkg) =>
+                fileExists(
+                    path.join(
+                        process.env['NVM_DIR'] ||
+                            path.join(process.env['HOME'], `.${pkg.name}`),
+                        `${pkg.name}.sh`,
+                    ),
+                ),
+        }),
+    ),
 ];
 
 // Python packages to assure are installed
@@ -172,7 +204,7 @@ function assurePythonPackages(cb) {
     cb();
 }
 
-exports.verifyPrereqPackages = verifyPrereqPackages;
+exports.verifyPrereqPackages = series(PREREQ_PACKAGES_TASKS);
 exports.assurePythonPackages = assurePythonPackages;
 
 exports.default = series(verifyPrereqPackages, assurePythonPackages);
