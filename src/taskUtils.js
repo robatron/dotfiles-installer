@@ -1,10 +1,25 @@
 const { task } = require('gulp');
 const { installPackage, isPackageInstalled } = require('./assureInstalled');
+const Package = require('./Package');
 
-const createVerifyTasks = (pkgs) => {
+// Create a new package object from a definition
+const createNewPackage = (pkg) => {
+    if (typeof pkg === 'string') {
+        return new Package(pkg);
+    } else if (Array.isArray(pkg)) {
+        const pkgName = pkg[0];
+        const pkgMeta = pkg[1];
+        return new Package(pkgName, pkgMeta);
+    } else {
+        throw new Error(`Malformed package definition: ${JSON.stringify(pkg)}`);
+    }
+};
+
+const createVerifyTasks = (pkgDefs) => {
     const generatedTaskNames = [];
 
-    pkgs.forEach((pkg) => {
+    pkgDefs.forEach((pkgDef) => {
+        const pkg = createNewPackage(pkgDef);
         const taskName = `verifyPackage:${pkg.name}`;
 
         task(taskName, (cb) => {
@@ -25,10 +40,11 @@ const createVerifyTasks = (pkgs) => {
     return generatedTaskNames;
 };
 
-const createInstallTasks = (pkgs) => {
+const createInstallTasks = (pkgDefs) => {
     const generatedTaskNames = [];
 
-    pkgs.forEach((pkg) => {
+    pkgDefs.forEach((pkgDef) => {
+        const pkg = createNewPackage(pkgDef);
         const taskName = `installPackage:${pkg.name}`;
 
         task(taskName, (cb) => {
