@@ -18,16 +18,17 @@ const installPackage = (pkg) => {
     }
 
     // Run install commands
-    installCommands.forEach((cmd) => {
+    for (let i = 0; i < installCommands.length; ++i) {
+        const cmd = installCommands[i];
         const returnCode = exec(cmd).code;
-        if (!returnCode) {
+        if (returnCode > 0) {
             const fullCommandMessage =
                 installCommands.length > 1
                     ? ` Full command set: ${JSON.stringify(installCommands)}`
                     : '';
             return `Install command '${cmd}' failed for package '${pkg.name}'.${fullCommandMessage}`;
         }
-    });
+    }
 
     // Return without error
     return null;

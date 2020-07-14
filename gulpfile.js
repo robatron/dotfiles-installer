@@ -5,6 +5,7 @@ const { exec } = require('shelljs');
 const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
+const { IS_LINUX } = require('./src/platform');
 
 // Init
 createGlobalLogger();
@@ -71,10 +72,8 @@ const PREREQ_PACKAGES = [
 
             try {
                 accessSync(nvmBinPath);
-                console.log('>>> exists');
                 return true;
             } catch (err) {
-                console.log('>>> does not exist');
                 return false;
             }
         },
@@ -84,17 +83,45 @@ const PREREQ_PACKAGES = [
 // Python packages to assure are installed
 const PYTHON_PACKAGES = [
     new Package('python3'),
+
+    // Distutils required for installing `pip`
+    new Package('python3-distutils', {
+        // Only need to install on Linux
+        skipInstall: !IS_LINUX,
+    }),
     new Package('pip', {
         installCommands: [
             'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
             'sudo -H python3 /tmp/get-pip.py',
         ],
     }),
+
+    // Required for `yadm`
     new Package('envtpl', {
         installCommands: ['sudo -H pip install envtpl'],
     }),
+
     new Package('pyenv', {
         installCommands: ['curl https://pyenv.run | bash'],
+        testFn: (pkg) => {
+            const pyenvBinPath = path.join(
+                process.env['HOME'],
+                `.${pkg.name}`,
+                'bin',
+                `${pkg.name}`,
+            );
+
+            log.info(
+                `Custom test for '${pkg.name}': Looking for '${pyenvBinPath}'`,
+            );
+
+            try {
+                accessSync(pyenvBinPath);
+                return true;
+            } catch (err) {
+                return false;
+            }
+        },
     }),
 ];
 
@@ -109,6 +136,10 @@ const verifyPrereqPackages = (cb) => {
     const missingPackages = [];
 
     PREREQ_PACKAGES.forEach((pkg) => {
+        if (pkg.meta.skipInstall) {
+            log.warn(`Skipping '${pkg.name}'...`);
+        }
+
         log.info(`Verifying "${pkg.name}" is installed...`);
 
         if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
@@ -133,12 +164,12 @@ const verifyPrereqPackages = (cb) => {
 function assurePythonPackages(cb) {
     log.info('Assuring Python packages...');
 
-    const installErrorCount = 0;
+    let installErrorCount = 0;
 
     PYTHON_PACKAGES.forEach((pkg) => {
         log.info(`Verifying '${pkg.name}' is installed...`);
 
-        if (!isPackageInstalled(pkg)) {
+        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
             log.info(`Package '${pkg.name}' is not installed. Installing...`);
             const installError = installPackage(pkg);
 
@@ -150,7 +181,11 @@ function assurePythonPackages(cb) {
     });
 
     if (installErrorCount) {
-        throw new Error(`There were error(s) installing Python packages.`);
+        throw new Error(
+            `Encountered ${installErrorCount} error${
+                installErrorCount !== 1 ? 's' : ''
+            } installing Python packages.`,
+        );
     }
 
     cb();
