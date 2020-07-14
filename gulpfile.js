@@ -71,37 +71,29 @@ const PREREQ_PACKAGES = [
     }),
 ];
 
-const createVerifyTask = (pkg) =>
-    function verifyTask(cb) {
-        log.info(`Verifying '${pkg.name}' is installed...`);
+const createVerifyTasks = (pkgs) => {
+    const generatedTaskNames = [];
 
-        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
-            throw new Error(
-                `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,
-            );
-        }
+    pkgs.forEach((pkg) => {
+        const taskName = `verifyInstalled:${pkg.name}`;
 
-        cb();
-    };
+        task(taskName, (cb) => {
+            log.info(`Verifying '${pkg.name}' is installed...`);
 
-const PREREQ_PACKAGES_TASKS = [
-    createVerifyTask(new Package('curl')),
-    createVerifyTask(new Package('git')),
-    createVerifyTask(new Package('node')),
-    createVerifyTask(new Package('npm')),
-    createVerifyTask(
-        new Package('nvm', {
-            testFn: (pkg) =>
-                fileExists(
-                    path.join(
-                        process.env['NVM_DIR'] ||
-                            path.join(process.env['HOME'], `.${pkg.name}`),
-                        `${pkg.name}.sh`,
-                    ),
-                ),
-        }),
-    ),
-];
+            if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
+                throw new Error(
+                    `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,
+                );
+            }
+
+            cb();
+        });
+
+        generatedTaskNames.push(taskName);
+    });
+
+    return generatedTaskNames;
+};
 
 // Python packages to assure are installed
 const PYTHON_PACKAGES = [
@@ -204,7 +196,7 @@ function assurePythonPackages(cb) {
     cb();
 }
 
-exports.verifyPrereqPackages = series(PREREQ_PACKAGES_TASKS);
+exports.verifyPrereqPackages = series(createVerifyTasks(PREREQ_PACKAGES));
 exports.assurePythonPackages = assurePythonPackages;
 
 exports.default = series(verifyPrereqPackages, assurePythonPackages);
