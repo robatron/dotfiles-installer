@@ -37,7 +37,18 @@ const installPackage = (pkg) => {
 // Return if a package is installed
 const isPackageInstalled = (pkg, testFn) => {
     return testFn
-        ? testFn(pkg)
+        ? (() => {
+              log.info(
+                  `Using custom test to verify '${pkg.name}' is installed...`,
+              );
+              const result = testFn(pkg);
+              if (!result) {
+                  log.info(
+                      `Custom test for '${pkg.name}' failed. Assuming not installed...`,
+                  );
+              }
+              return result;
+          })()
         : commandExistsSync(pkg.meta.command || pkg.name);
 };
 

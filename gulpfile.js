@@ -1,8 +1,8 @@
-const { accessSync } = require('fs');
 const { series } = require('gulp');
 const path = require('path');
 const { exec } = require('shelljs');
 const { installPackage, isPackageInstalled } = require('./src/assureInstalled');
+const { fileExists } = require('./src/fileUtils');
 const { createGlobalLogger } = require('./src/logger');
 const Package = require('./src/Package');
 const { IS_LINUX } = require('./src/platform');
@@ -62,20 +62,12 @@ const PREREQ_PACKAGES = [
     new Package('nvm', {
         testFn: (pkg) => {
             const nvmBinPath = path.join(
-                process.env['NVM_DIR'] || `${process.env['HOME']}/.${pkg.name}`,
+                process.env['NVM_DIR'] ||
+                    path.join(process.env['HOME'], `.${pkg.name}`),
                 `${pkg.name}.sh`,
             );
 
-            log.info(
-                `Custom test for '${pkg.name}': Looking for '${nvmBinPath}'`,
-            );
-
-            try {
-                accessSync(nvmBinPath);
-                return true;
-            } catch (err) {
-                return false;
-            }
+            return fileExists(nvmBinPath);
         },
     }),
 ];
@@ -111,16 +103,7 @@ const PYTHON_PACKAGES = [
                 `${pkg.name}`,
             );
 
-            log.info(
-                `Custom test for '${pkg.name}': Looking for '${pyenvBinPath}'`,
-            );
-
-            try {
-                accessSync(pyenvBinPath);
-                return true;
-            } catch (err) {
-                return false;
-            }
+            return fileExists(pyenvBinPath);
         },
     }),
 ];
