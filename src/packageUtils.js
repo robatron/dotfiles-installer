@@ -1,6 +1,7 @@
 const commandExistsSync = require('command-exists').sync;
 const { exec } = require('shelljs');
 const { IS_LINUX, IS_MAC } = require('./platform');
+const Phase = require('./Phase');
 const Package = require('./Package');
 
 // Create a new package object from a definition
@@ -13,6 +14,12 @@ const createNewPackage = (pkg) => {
         return new Package(pkgName, pkgMeta);
     } else {
         throw new Error(`Malformed package definition: ${JSON.stringify(pkg)}`);
+    }
+};
+
+const createNewPhase = (phaseDef) => {
+    if (Array.isArray(phaseDef) && phaseDef.length === 2) {
+        return new Phase(phaseDef[0], phaseDef[1]);
     }
 };
 
@@ -73,4 +80,9 @@ const isPackageInstalled = (pkg, testFn) => {
         : commandExistsSync(pkg.meta.command || pkg.name);
 };
 
-module.exports = { createNewPackage, installPackage, isPackageInstalled };
+module.exports = {
+    createNewPackage,
+    createNewPhase,
+    installPackage,
+    isPackageInstalled,
+};

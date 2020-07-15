@@ -1,18 +1,48 @@
-const { task } = require('gulp');
+const gulp = require('gulp');
 const {
     createNewPackage,
+    createNewPhase,
     installPackage,
     isPackageInstalled,
 } = require('./packageUtils');
 
-const createVerifyTasks = (pkgDefs) => {
+const createPhaseTasks = (phaseDefs) => {
+    const phaseTasks = [];
+
+    phaseDefs.forEach((phaseDef) => {
+        const phase = createNewPhase(phaseDef);
+
+        const generatedPkgTaskNames = createTasks(
+            phase.name,
+            phase.action,
+            phase.packages,
+        );
+        const packageTasks = gulp[phase.asyncType](generatedPkgTaskNames);
+
+        phaseTasks.push(packageTasks);
+    });
+
+    return phaseTasks;
+};
+
+const createTasks = (phaseName, actionType, pkgDefs) => {
+    if (actionType === 'verify') {
+        return createVerifyTasks(pkgDefs, phaseName);
+    } else if (actionType === 'install') {
+        return createInstallTasks(pkgDefs, phaseName);
+    } else {
+        throw new Error('Unsupported actionType');
+    }
+};
+
+const createVerifyTasks = (pkgDefs, phaseName) => {
     const generatedTaskNames = [];
 
     pkgDefs.forEach((pkgDef) => {
         const pkg = createNewPackage(pkgDef);
-        const taskName = `verifyPackage:${pkg.name}`;
+        const taskName = `${phaseName}:verify:${pkg.name}`;
 
-        task(taskName, (cb) => {
+        gulp.task(taskName, (cb) => {
             log.info(`Verifying '${pkg.name}' is installed...`);
 
             if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
@@ -30,14 +60,14 @@ const createVerifyTasks = (pkgDefs) => {
     return generatedTaskNames;
 };
 
-const createInstallTasks = (pkgDefs) => {
+const createInstallTasks = (pkgDefs, phaseName) => {
     const generatedTaskNames = [];
 
     pkgDefs.forEach((pkgDef) => {
         const pkg = createNewPackage(pkgDef);
-        const taskName = `installPackage:${pkg.name}`;
+        const taskName = `${phaseName}:install:${pkg.name}`;
 
-        task(taskName, (cb) => {
+        gulp.task(taskName, (cb) => {
             if (pkg.meta.skipInstall) {
                 log.warn(`Skipping '${pkg.name}'...`);
                 cb();
@@ -70,6 +100,7 @@ const createInstallTasks = (pkgDefs) => {
 };
 
 module.exports = {
+    createPhaseTasks,
     createInstallTasks,
     createVerifyTasks,
 };

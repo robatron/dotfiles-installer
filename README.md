@@ -32,3 +32,10 @@ Mac OS X:
 ## Testing (WIP)
 
 Assure [Docker](https://docs.docker.com/engine/install/ubuntu/) is installed.
+
+## TODO
+
+-   Create tasks the recommended way
+-   Convert to TypeScript
+-   Validate definitions (Phase & Package)
+-   Combine "phase" and "package", allow arbitrary structures
