@@ -30,7 +30,6 @@ const verifyPackages = [
     .map((pkgDef) => createPackage(pkgDef, 'verify'))
     .map((pkg) => createTask(pkg, exports));
 
-const verifyPhase = parallel(verifyPackages);
+exports.verifyPhase = parallel(verifyPackages);
 
-exports.verifyPhase = verifyPhase;
-exports.default = series(verifyPhase);
+exports.default = series(exports.verifyPhase);
