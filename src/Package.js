@@ -1,7 +1,7 @@
 const Package = class {
     constructor(name, meta = {}) {
-        this.name = name;
         this.meta = meta;
+        this.name = name;
     }
 };
 

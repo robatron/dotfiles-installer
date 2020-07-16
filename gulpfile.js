@@ -1,14 +1,36 @@
-const { series } = require('gulp');
+const { series, parallel } = require('gulp');
 const PACKAGES = require('./PACKAGES');
 const { createGlobalLogger } = require('./src/logger');
 
-const {
-    createPhaseTasks,
-    createInstallTasks,
-    createVerifyTasks,
-} = require('./src/taskUtils');
+const { createTask } = require('./src/taskUtils');
+const { createPackage } = require('./src/packageUtils');
 
 // Init
 createGlobalLogger();
 
-exports.default = series(createPhaseTasks(PACKAGES));
+const verifyPackages = [
+    'curl',
+    'git',
+    'node',
+    'npm',
+    [
+        'nvm',
+        {
+            testFn: (pkg) =>
+                fileExists(
+                    path.join(
+                        process.env['NVM_DIR'] ||
+                            path.join(process.env['HOME'], `.${pkg.name}`),
+                        `${pkg.name}.sh`,
+                    ),
+                ),
+        },
+    ],
+]
+    .map((pkgDef) => createPackage(pkgDef, 'verify'))
+    .map((pkg) => createTask(pkg, exports));
+
+const verifyPhase = parallel(verifyPackages);
+
+exports.verifyPhase = verifyPhase;
+exports.default = series(verifyPhase);

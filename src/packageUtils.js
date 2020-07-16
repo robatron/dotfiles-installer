@@ -5,13 +5,13 @@ const Phase = require('./Phase');
 const Package = require('./Package');
 
 // Create a new package object from a definition
-const createNewPackage = (pkg) => {
+const createPackage = (pkg, action) => {
     if (typeof pkg === 'string') {
-        return new Package(pkg);
+        return new Package(pkg, { action });
     } else if (Array.isArray(pkg)) {
         const pkgName = pkg[0];
         const pkgMeta = pkg[1];
-        return new Package(pkgName, pkgMeta);
+        return new Package(pkgName, { ...pkgMeta, action });
     } else {
         throw new Error(`Malformed package definition: ${JSON.stringify(pkg)}`);
     }
@@ -81,7 +81,7 @@ const isPackageInstalled = (pkg, testFn) => {
 };
 
 module.exports = {
-    createNewPackage,
+    createPackage,
     createNewPhase,
     installPackage,
     isPackageInstalled,
