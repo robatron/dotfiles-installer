@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 jobs:
-  test-bootstrap-and-install:
+  test-all:
     strategy:
       fail-fast: false
       matrix:
