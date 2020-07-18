@@ -27,7 +27,7 @@ Mac OS X:
     git clone \
         git@github.com:robatron/dotfiles-installer.git \
         ~/opt/dotfiles-installer && /
-    ~/opt/bootstrap.sh && \
+    . ~/opt/bootstrap.sh && \
 
     # Run the installer
     gulp
@@ -39,7 +39,7 @@ TBD.
 ## TODO
 
 -   ~~Create tasks the recommended way~~
--   Configure GitHub Actions for continuous testing
+-   ~~Configure GitHub Actions for continuous testing~~
 -   Create and validate package defs
 -   Combine "phase" and "package", allow arbitrary structures
 -   Validate definitions (Phase & Package)
