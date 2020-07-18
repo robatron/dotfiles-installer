@@ -17,6 +17,7 @@ const createPackage = (pkg, action) => {
     }
 };
 
+// Create a new phase object from a definition
 const createNewPhase = (phaseDef) => {
     if (Array.isArray(phaseDef) && phaseDef.length === 2) {
         return new Phase(phaseDef[0], phaseDef[1]);
@@ -35,7 +36,9 @@ const installPackage = (pkg) => {
     } else if (IS_LINUX) {
         installCommands.push(`sudo apt install -y ${pkg.name}`);
     } else {
-        return `Cannot determine install command(s) for package '${pkg.name}'`;
+        throw new Error(
+            `Cannot determine install command(s) for package '${pkg.name}'`,
+        );
     }
 
     // Run install commands
@@ -47,12 +50,11 @@ const installPackage = (pkg) => {
                 installCommands.length > 1
                     ? ` Full command set: ${JSON.stringify(installCommands)}`
                     : '';
-            return `Install command '${cmd}' failed for package '${pkg.name}'.${fullCommandMessage}`;
+            throw new Error(
+                `Install command '${cmd}' failed for package '${pkg.name}'.${fullCommandMessage}`,
+            );
         }
     }
-
-    // Return without error
-    return null;
 };
 
 // Install a package via git
@@ -62,7 +64,7 @@ const installPackageViaGit = (
     installDir = path.join(process.env['HOME'], 'opt'),
 ) => {};
 
-// Return if a package is installed
+// Return if a package is installed or not
 const isPackageInstalled = (pkg, testFn) => {
     return testFn
         ? (() => {

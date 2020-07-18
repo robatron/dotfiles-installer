@@ -1,7 +1,9 @@
+const path = require('path');
 const { series, parallel } = require('gulp');
 const PACKAGES = require('./PACKAGES');
+const { ACTIONS } = require('./src/constants');
+const { fileExists } = require('./src/fileUtils');
 const { createGlobalLogger } = require('./src/logger');
-
 const { createTask } = require('./src/taskUtils');
 const { createPackage } = require('./src/packageUtils');
 
@@ -27,7 +29,7 @@ const verifyPackages = [
         },
     ],
 ]
-    .map((pkgDef) => createPackage(pkgDef, 'verify'))
+    .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
     .map((pkg) => createTask(pkg, exports));
 
 exports.verifyPhase = parallel(verifyPackages);

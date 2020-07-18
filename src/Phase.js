@@ -1,3 +1,5 @@
+const { ACTIONS } = require('./constants');
+
 // A "phase" defines actions to be performed on a set of packages
 const Phase = class {
     constructor(name, phaseOpts = {}) {
@@ -14,8 +16,8 @@ const Phase = class {
         // Run the packages in serial or parallel?
         this.asyncType = phaseOpts.asyncType || 'series';
 
-        // Action to perform on each package
-        this.action = phaseOpts.action || 'verify';
+        // Action to perform on each package, defaulting to VERIFY
+        this.action = phaseOpts.action || ACTIONS.VERIFY;
     }
 };
 
