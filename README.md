@@ -1,6 +1,6 @@
-# dotfiles-installer
+# [WIP] dotfiles-installer
 
-> Installs my personal dotfiles and programs
+> A custom provisioning system to install my preferred programs and personal dotfiles
 
 ## Prerequisites
 
@@ -20,22 +20,25 @@ Mac OS X:
 
 ## Install
 
+    # Download and bootstrap the installer
     mkdir -p ~/opt && /
-        git clone \
-            git@github.com:robatron/dotfiles-installer.git ~/opt/dotfiles-installer && /
-        ~/opt/bootstrap.sh
+    git clone \
+        git@github.com:robatron/dotfiles-installer.git \
+        ~/opt/dotfiles-installer && /
+    ~/opt/bootstrap.sh && \
 
-## Update (WIP)
+    # Run the installer
+    gulp
 
-    dotfiles update
+## Usage
 
-## Testing (WIP)
-
-Assure [Docker](https://docs.docker.com/engine/install/ubuntu/) is installed.
+TBD.
 
 ## TODO
 
--   Create tasks the recommended way
--   Convert to TypeScript
--   Validate definitions (Phase & Package)
+-   ~~Create tasks the recommended way~~
+-   Configure GitHub Actions for continuous testing
+-   Create and validate package defs
 -   Combine "phase" and "package", allow arbitrary structures
+-   Validate definitions (Phase & Package)
+-   Convert to TypeScript
