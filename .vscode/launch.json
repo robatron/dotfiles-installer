@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Gulp",
+            "name": "Gulp debug",
             "skipFiles": ["<node_internals>/**"],
             "runtimeVersion": "12.18.2",
             "runtimeExecutable": "gulp"
