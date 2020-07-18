@@ -1,6 +1,6 @@
 # [WIP] dotfiles-installer
 
-![Tests](https://github.com/robatron/dotfiles-installer/workflows/Tests/badge.svg)
+[![Tests](https://github.com/robatron/dotfiles-installer/workflows/Tests/badge.svg)](https://github.com/robatron/dotfiles-installer/actions)
 
 A custom provisioning system to install my preferred programs and personal dotfiles
 
