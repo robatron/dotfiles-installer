@@ -1,4 +1,4 @@
-name: Test everything
+name: Tests
 
 on:
   push:
