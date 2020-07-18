@@ -1,6 +1,8 @@
 # [WIP] dotfiles-installer
 
-> A custom provisioning system to install my preferred programs and personal dotfiles
+![Tests](https://github.com/robatron/dotfiles-installer/workflows/Tests/badge.svg)
+
+A custom provisioning system to install my preferred programs and personal dotfiles
 
 ## Prerequisites
 
