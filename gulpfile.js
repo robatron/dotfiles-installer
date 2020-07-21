@@ -18,14 +18,16 @@ const verifyPackages = [
     [
         'nvm',
         {
-            testFn: (pkg) =>
-                fileExists(
-                    path.join(
-                        process.env['NVM_DIR'] ||
-                            path.join(process.env['HOME'], `.${pkg.name}`),
-                        `${pkg.name}.sh`,
+            actionArgs: {
+                testFn: (pkg) =>
+                    fileExists(
+                        path.join(
+                            process.env['NVM_DIR'] ||
+                                path.join(process.env['HOME'], `.${pkg.name}`),
+                            `${pkg.name}.sh`,
+                        ),
                     ),
-                ),
+            },
         },
     ],
 ]

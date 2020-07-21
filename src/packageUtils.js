@@ -19,24 +19,18 @@ const createPackage = (pkg, action) => {
     }
 };
 
-// Create a new phase object from a definition
-const createNewPhase = (phaseDef) => {
-    if (Array.isArray(phaseDef) && phaseDef.length === 2) {
-        return new Phase(phaseDef[0], phaseDef[1]);
-    }
-};
-
 // Install the specified package
 const installPackage = (pkg) => {
-    const installCommands = [];
+    const installCommands = pkg.actionArgs.installCommands;
+    const cmds = [];
 
     // Pick commands to run for the installation of this package
-    if (pkg.installCommands) {
-        pkg.installCommands.forEach((cmd) => installCommands.push(cmd));
+    if (installCommands) {
+        installCommands.forEach((cmd) => cmds.push(cmd));
     } else if (IS_MAC) {
-        installCommands.push(`brew install ${pkg.name}`);
+        cmds.push(`brew install ${pkg.name}`);
     } else if (IS_LINUX) {
-        installCommands.push(`sudo apt install -y ${pkg.name}`);
+        cmds.push(`sudo apt install -y ${pkg.name}`);
     } else {
         throw new Error(
             `Cannot determine install command(s) for package '${pkg.name}'`,
@@ -44,11 +38,11 @@ const installPackage = (pkg) => {
     }
 
     // Run install commands
-    installCommands.forEach((cmd) => {
+    cmds.forEach((cmd) => {
         if (exec(cmd).code) {
             const fullCommandMessage =
-                installCommands.length > 1
-                    ? ` Full command set: ${JSON.stringify(installCommands)}`
+                cmds.length > 1
+                    ? ` Full command set: ${JSON.stringify(cmds)}`
                     : '';
             throw new Error(
                 `Install command '${cmd}' failed for package '${pkg.name}'.${fullCommandMessage}`,
@@ -58,8 +52,10 @@ const installPackage = (pkg) => {
 };
 
 // Return if a package is installed or not
-const isPackageInstalled = (pkg, testFn) =>
-    testFn
+const isPackageInstalled = (pkg) => {
+    const testFn = pkg.actionArgs.testFn;
+
+    return testFn
         ? (() => {
               log.info(
                   `Using custom test to verify '${pkg.name}' is installed...`,
@@ -73,10 +69,10 @@ const isPackageInstalled = (pkg, testFn) =>
               return result;
           })()
         : commandExistsSync(pkg.command);
+};
 
 module.exports = {
     createPackage,
-    createNewPhase,
     installPackage,
     isPackageInstalled,
 };

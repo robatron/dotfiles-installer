@@ -6,6 +6,9 @@ const Package = class {
         // Target action to be performed on this package
         this.action = pkgOpts.action;
 
+        // Arguments supported and/or required for the action
+        this.actionArgs = pkgOpts.actionArgs || {};
+
         // System command, defaulting to the package name
         this.command = pkgOpts.command || this.name;
 

@@ -4,8 +4,6 @@ const { ACTIONS } = require('./constants');
 
 // Create a single package task
 const createPackageTask = (pkg, exp) => {
-    console.log('>>>', pkg); // DEBUGGGG
-
     const taskName = `${pkg.action}:${pkg.name}`;
 
     const task = (cb) => {
@@ -16,7 +14,7 @@ const createPackageTask = (pkg, exp) => {
 
         log.info(`Verifying '${pkg.name}' is installed...`);
 
-        if (!isPackageInstalled(pkg, pkg.testFn)) {
+        if (!isPackageInstalled(pkg)) {
             if (pkg.action === ACTIONS.INSTALL) {
                 log.info(
                     `Package '${pkg.name}' is not installed. Installing...`,
