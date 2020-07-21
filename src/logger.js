@@ -1,6 +1,6 @@
 const { createLogger, format, transports } = require('winston');
 
-// Create a global logger for all to use if one doesn't exist
+// Create a global logger for all modules
 const createGlobalLogger = () => {
     global.log =
         global.log ||

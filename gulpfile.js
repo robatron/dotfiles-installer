@@ -4,7 +4,7 @@ const PACKAGES = require('./PACKAGES');
 const { ACTIONS } = require('./src/constants');
 const { fileExists } = require('./src/fileUtils');
 const { createGlobalLogger } = require('./src/logger');
-const { createTask } = require('./src/taskUtils');
+const { createPackageTask } = require('./src/taskUtils');
 const { createPackage } = require('./src/packageUtils');
 
 // Init
@@ -30,7 +30,7 @@ const verifyPackages = [
     ],
 ]
     .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
-    .map((pkg) => createTask(pkg, exports));
+    .map((pkg) => createPackageTask(pkg, exports));
 
 exports.verifyPhase = parallel(verifyPackages);
 

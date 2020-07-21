@@ -1,37 +1,34 @@
 const gulp = require('gulp');
-const {
-    createNewPackage,
-    createNewPhase,
-    installPackage,
-    isPackageInstalled,
-} = require('./packageUtils');
+const { installPackage, isPackageInstalled } = require('./packageUtils');
 const { ACTIONS } = require('./constants');
 
-// Create a single task
-const createTask = (pkg, exp) => {
-    const taskName = `${pkg.meta.action}:${pkg.name}`;
+// Create a single package task
+const createPackageTask = (pkg, exp) => {
+    console.log('>>>', pkg); // DEBUGGGG
+
+    const taskName = `${pkg.action}:${pkg.name}`;
 
     const task = (cb) => {
-        if (pkg.meta.skipInstall) {
+        if (pkg.skipInstall) {
             log.warn(`Skipping '${pkg.name}'...`);
             cb();
         }
 
         log.info(`Verifying '${pkg.name}' is installed...`);
 
-        if (!isPackageInstalled(pkg, pkg.meta.testFn)) {
-            if (pkg.meta.action === ACTIONS.INSTALL) {
+        if (!isPackageInstalled(pkg, pkg.testFn)) {
+            if (pkg.action === ACTIONS.INSTALL) {
                 log.info(
                     `Package '${pkg.name}' is not installed. Installing...`,
                 );
                 installPackage(pkg);
-            } else if (pkg.meta.action === ACTIONS.VERIFY) {
+            } else if (pkg.action === ACTIONS.VERIFY) {
                 throw new Error(
                     `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,
                 );
             } else {
                 throw new Error(
-                    `Action '${pkg.meta.action}' for package '${pkg.name}' is not supported.`,
+                    `Action '${pkg.action}' for package '${pkg.name}' is not supported.`,
                 );
             }
         }
@@ -47,27 +44,6 @@ const createTask = (pkg, exp) => {
     return task;
 };
 
-// TODO
-const createPhaseTasks = (phaseDefs) => {
-    const phaseTasks = [];
-
-    phaseDefs.forEach((phaseDef) => {
-        const phase = createNewPhase(phaseDef);
-
-        const generatedPkgTaskNames = createTasks(
-            phase.name,
-            phase.action,
-            phase.packages,
-        );
-        const packageTasks = gulp[phase.asyncType](generatedPkgTaskNames);
-
-        phaseTasks.push(packageTasks);
-    });
-
-    return phaseTasks;
-};
-
 module.exports = {
-    createTask,
-    createPhaseTasks,
+    createPackageTask,
 };

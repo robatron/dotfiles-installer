@@ -1,7 +1,10 @@
 const { fileExists } = require('./src/fileUtils');
 const path = require('path');
 const { exec } = require('shelljs');
-const { IS_LINUX } = require('./src/platform');
+const {
+    ACTIONS,
+    PLATFORM: { IS_LINUX },
+} = require('./src/constants');
 
 /* -------------------------------------------------------------------------- */
 /*                             Package definitions                            */
@@ -46,7 +49,7 @@ GUI utils (mac):
     - visual-studio-code
 */
 
-module.exports = [
+const old = [
     [
         // Prereq packages to verify first
         'prereq',
@@ -131,3 +134,49 @@ module.exports = [
         },
     ],
 ];
+
+/*
+    - Package: Single thing to act apon (verify, install, etc.)
+    - Phase: An action to be performed on a set of packages
+    - Phases: A set of phases
+*/
+
+module.exports = {
+    action: ACTIONS.RUN_PHASES,
+
+    // Run tasks in parallel? (Serial by default)
+    parallel: false,
+
+    // Run these
+    targets: [
+        [
+            'verifyPrereqs',
+            {
+                action: ACTIONS.VERIFY,
+                parallel: true,
+                targets: [
+                    'curl',
+                    'git',
+                    'node',
+                    'npm',
+                    [
+                        'nvm',
+                        {
+                            actionFn: (pkg) =>
+                                fileExists(
+                                    path.join(
+                                        process.env['NVM_DIR'] ||
+                                            path.join(
+                                                process.env['HOME'],
+                                                `.${pkg.name}`,
+                                            ),
+                                        `${pkg.name}.sh`,
+                                    ),
+                                ),
+                        },
+                    ],
+                ],
+            },
+        ],
+    ],
+};

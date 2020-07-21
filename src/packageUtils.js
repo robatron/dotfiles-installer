@@ -1,6 +1,8 @@
 const commandExistsSync = require('command-exists').sync;
 const { exec } = require('shelljs');
-const { IS_LINUX, IS_MAC } = require('./platform');
+const {
+    PLATFORM: { IS_LINUX, IS_MAC },
+} = require('./constants');
 const Phase = require('./Phase');
 const Package = require('./Package');
 
@@ -10,8 +12,8 @@ const createPackage = (pkg, action) => {
         return new Package(pkg, { action });
     } else if (Array.isArray(pkg)) {
         const pkgName = pkg[0];
-        const pkgMeta = pkg[1];
-        return new Package(pkgName, { ...pkgMeta, action });
+        const pkgOpts = pkg[1];
+        return new Package(pkgName, { ...pkgOpts, action });
     } else {
         throw new Error(`Malformed package definition: ${JSON.stringify(pkg)}`);
     }
@@ -24,13 +26,13 @@ const createNewPhase = (phaseDef) => {
     }
 };
 
-// Install the specified package. Returns any encountered errors.
+// Install the specified package
 const installPackage = (pkg) => {
     const installCommands = [];
 
-    // Pick install commands
-    if (pkg.meta.installCommands) {
-        pkg.meta.installCommands.forEach((cmd) => installCommands.push(cmd));
+    // Pick commands to run for the installation of this package
+    if (pkg.installCommands) {
+        pkg.installCommands.forEach((cmd) => installCommands.push(cmd));
     } else if (IS_MAC) {
         installCommands.push(`brew install ${pkg.name}`);
     } else if (IS_LINUX) {
@@ -42,10 +44,8 @@ const installPackage = (pkg) => {
     }
 
     // Run install commands
-    for (let i = 0; i < installCommands.length; ++i) {
-        const cmd = installCommands[i];
-        const returnCode = exec(cmd).code;
-        if (returnCode > 0) {
+    installCommands.forEach((cmd) => {
+        if (exec(cmd).code) {
             const fullCommandMessage =
                 installCommands.length > 1
                     ? ` Full command set: ${JSON.stringify(installCommands)}`
@@ -54,19 +54,12 @@ const installPackage = (pkg) => {
                 `Install command '${cmd}' failed for package '${pkg.name}'.${fullCommandMessage}`,
             );
         }
-    }
+    });
 };
 
-// Install a package via git
-// TODO
-const installPackageViaGit = (
-    gitUrl,
-    installDir = path.join(process.env['HOME'], 'opt'),
-) => {};
-
 // Return if a package is installed or not
-const isPackageInstalled = (pkg, testFn) => {
-    return testFn
+const isPackageInstalled = (pkg, testFn) =>
+    testFn
         ? (() => {
               log.info(
                   `Using custom test to verify '${pkg.name}' is installed...`,
@@ -79,8 +72,7 @@ const isPackageInstalled = (pkg, testFn) => {
               }
               return result;
           })()
-        : commandExistsSync(pkg.meta.command || pkg.name);
-};
+        : commandExistsSync(pkg.command);
 
 module.exports = {
     createPackage,

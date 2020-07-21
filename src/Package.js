@@ -1,7 +1,16 @@
 const Package = class {
-    constructor(name, meta = {}) {
-        this.meta = meta;
+    constructor(name, pkgOpts = {}) {
+        // Name of this package
         this.name = name;
+
+        // Target action to be performed on this package
+        this.action = pkgOpts.action;
+
+        // System command, defaulting to the package name
+        this.command = pkgOpts.command || this.name;
+
+        // Skip the action
+        this.skipAction = pkgOpts.skipAction || false;
     }
 };
 

@@ -1,13 +1,7 @@
-const { ACTIONS } = require('./constants');
-
-// A "phase" defines actions to be performed on a set of packages
+// Phase is a class that represents a set of actions to be executed.
 const Phase = class {
     constructor(name, phaseOpts = {}) {
-        if (!(name && typeof name === 'string')) {
-            throw new Error('Phase `name` must be a non-empty string');
-        }
-
-        // Name of this phase (string)
+        // Name of this phase
         this.name = name;
 
         // Package definitions (array)
@@ -18,6 +12,8 @@ const Phase = class {
 
         // Action to perform on each package, defaulting to VERIFY
         this.action = phaseOpts.action || ACTIONS.VERIFY;
+
+        this.targets = phaseOpts.targets;
     }
 };
 
