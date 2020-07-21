@@ -1,8 +1,13 @@
 module.exports = {
-    // Supported actions that can be performed on targets of a phase
+    // Actions that can be performed on supported targets of a phase
     ACTIONS: {
+        // Verify a package is installed
         VERIFY: 'verify',
+
+        // Install a package if it is not already
         INSTALL: 'install',
+
+        // Run a phase
         RUN_PHASES: 'run-tasks',
     },
 
