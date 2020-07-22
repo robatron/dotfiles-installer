@@ -141,44 +141,49 @@ const old = [
     - Phases: A set of phases
 */
 
-module.exports = {
-    action: ACTIONS.RUN_PHASES,
+module.exports = [
+    [
+        'root',
+        {
+            action: ACTIONS.RUN_PHASES,
 
-    // Run tasks in parallel? (Serial by default)
-    parallel: false,
+            // Run tasks in parallel? (Serial by default)
+            parallel: false,
 
-    // Run these
-    targets: [
-        [
-            'verifyPrereqs',
-            {
-                action: ACTIONS.VERIFY,
-                parallel: true,
-                targets: [
-                    'curl',
-                    'git',
-                    'node',
-                    'npm',
-                    [
-                        'nvm',
-                        {
-                            actionArgs: {
-                                testFn: (pkg) =>
-                                    fileExists(
-                                        path.join(
-                                            process.env['NVM_DIR'] ||
+            // Run these
+            targets: [
+                [
+                    'verifyPrereqs',
+                    {
+                        action: ACTIONS.VERIFY,
+                        parallel: true,
+                        targets: [
+                            'curl',
+                            'git',
+                            'node',
+                            'npm',
+                            [
+                                'nvm',
+                                {
+                                    actionArgs: {
+                                        testFn: (pkg) =>
+                                            fileExists(
                                                 path.join(
-                                                    process.env['HOME'],
-                                                    `.${pkg.name}`,
+                                                    process.env['NVM_DIR'] ||
+                                                        path.join(
+                                                            process.env['HOME'],
+                                                            `.${pkg.name}`,
+                                                        ),
+                                                    `${pkg.name}.sh`,
                                                 ),
-                                            `${pkg.name}.sh`,
-                                        ),
-                                    ),
-                            },
-                        },
-                    ],
+                                            ),
+                                    },
+                                },
+                            ],
+                        ],
+                    },
                 ],
-            },
-        ],
+            ],
+        },
     ],
-};
+];

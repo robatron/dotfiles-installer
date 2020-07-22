@@ -1,6 +1,12 @@
 const gulp = require('gulp');
-const { installPackage, isPackageInstalled } = require('./packageUtils');
+const {
+    createPackage,
+    installPackage,
+    isPackageInstalled,
+} = require('./packageUtils');
 const { ACTIONS } = require('./constants');
+const Phase = require('./Phase');
+const { parallel } = require('gulp');
 
 // Create a single package task
 const createPackageTask = (pkg, exp) => {
@@ -42,6 +48,22 @@ const createPackageTask = (pkg, exp) => {
     return task;
 };
 
+// Recursively create an entire phase task
+const createPhaseTask = (phaseDef, exp) => {
+    const phase = new Phase(phaseDef[0], phaseDef[1]);
+
+    // Base case to detect a leaf
+    if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
+        const asyncType = phase.parallel ? 'parallel' : 'series';
+        return gulp[asyncType](
+            phase.targets
+                .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
+                .map((pkg) => createPackageTask(pkg, exports)),
+        );
+    }
+};
+
 module.exports = {
     createPackageTask,
+    createPhaseTask,
 };
