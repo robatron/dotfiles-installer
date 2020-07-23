@@ -44,6 +44,7 @@ describe('createPhaseDefTreeRoot', () => {
                 },
             ],
         ];
+        expect(result).toEqual(expected);
     });
 
     it('leaverages createPhaseDef', () => {
@@ -53,6 +54,7 @@ describe('createPhaseDefTreeRoot', () => {
                 parallel: true,
             }),
         ];
+        expect(result).toEqual(expected);
     });
 
     it('defaults to serial', () => {
@@ -62,5 +64,6 @@ describe('createPhaseDefTreeRoot', () => {
                 parallel: false,
             }),
         ];
+        expect(result).toEqual(expected);
     });
 });
