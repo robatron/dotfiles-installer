@@ -83,8 +83,7 @@ module.exports = createPhaseDefTreeRoot([
     createPhaseDef('installPythonPhase', ACTIONS.INSTALL, [
         'python3',
         [
-            // Distutils required for installing `pip`. Only need to install
-            // on Linux
+            // Required for installing `pip`. Only needed on Linux
             'python3-distutils',
             {
                 skipInstall: !IS_LINUX,

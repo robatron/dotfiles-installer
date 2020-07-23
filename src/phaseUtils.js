@@ -13,7 +13,7 @@ const createPhaseDef = (name, action, targets, opts = {}) => [
 // Helper function to create the root phase definition with required parameters
 // and structure
 const createPhaseDefTreeRoot = (targets, parallel = false) => [
-    ['default', { action: ACTIONS.RUN_PHASES, parallel, targets }],
+    createPhaseDef('default', ACTIONS.RUN_PHASES, targets, { parallel: false }),
 ];
 
 module.exports = {
