@@ -1,17 +1,10 @@
-const path = require('path');
-const { series, parallel } = require('gulp');
 const PACKAGES = require('./PACKAGES');
-const { ACTIONS } = require('./src/constants');
-const { fileExists } = require('./src/fileUtils');
 const { createGlobalLogger } = require('./src/logger');
-const { createPackageTask, createPhaseTask } = require('./src/taskUtils');
-const { createPackage } = require('./src/packageUtils');
+const { createPhaseTasks } = require('./src/taskUtils');
 
 // Init
 createGlobalLogger();
 
-const verifyPrereqPhaseDef = PACKAGES[0][1].targets[0];
+exports.allPhases = createPhaseTasks(PACKAGES, exports);
 
-exports.verifyPhase = createPhaseTask(verifyPrereqPhaseDef, exports);
-
-exports.default = series(exports.verifyPhase);
+exports.default = exports.allPhases;

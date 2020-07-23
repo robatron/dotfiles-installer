@@ -48,22 +48,30 @@ const createPackageTask = (pkg, exp) => {
     return task;
 };
 
-// Recursively create an entire phase task
-const createPhaseTask = (phaseDef, exp) => {
-    const phase = new Phase(phaseDef[0], phaseDef[1]);
-
-    // Base case to detect a leaf
-    if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
+// Recursively create an phase task tree based on the specified definition
+const createPhaseTasks = (phaseDefs, exp) => {
+    for (let i = 0; i < phaseDefs.length; ++i) {
+        const phaseDef = phaseDefs[i];
+        const phase = new Phase(phaseDef[0], phaseDef[1]);
         const asyncType = phase.parallel ? 'parallel' : 'series';
-        return gulp[asyncType](
-            phase.targets
-                .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
-                .map((pkg) => createPackageTask(pkg, exports)),
-        );
+        let phaseTask;
+
+        // Recursively build phase tasks. Base case: Targets are packages
+        if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
+            return gulp[asyncType](
+                phase.targets
+                    .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
+                    .map((pkg) => createPackageTask(pkg, exports)),
+            );
+        } else if (phase.action === ACTIONS.RUN_PHASES) {
+            return gulp[asyncType](createPhaseTasks(phase.targets, exp));
+        } else {
+            throw new Error(`Unsupported action: ${phase.action}`);
+        }
     }
 };
 
 module.exports = {
     createPackageTask,
-    createPhaseTask,
+    createPhaseTasks,
 };
