@@ -11,7 +11,20 @@ defaults:
     shell: bash
 
 jobs:
-  test-all:
+  test-unit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npx jest
+
+  test-e2e:
     strategy:
       fail-fast: false
       matrix:
