@@ -1,4 +1,4 @@
-name: Tests
+name: "Unit & end-to-end tests"
 
 on:
   push:
@@ -11,7 +11,7 @@ defaults:
     shell: bash
 
 jobs:
-  test-unit:
+  unit-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Run unit tests
         run: npx jest
 
-  test-e2e:
+  e2e-tests:
     strategy:
       fail-fast: false
       matrix:

@@ -7,7 +7,7 @@ const Package = class {
         this.action = pkgOpts.action;
 
         // Arguments supported and/or required for the action
-        this.actionArgs = pkgOpts.actionArgs || {};
+        this.actionArgs = pkgOpts.actionArgs || pkgOpts;
 
         // System command, defaulting to the package name
         this.command = pkgOpts.command || this.name;
