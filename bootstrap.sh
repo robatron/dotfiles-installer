@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
-# This script installs programs and dependencies required to run the
-# dotfiles-installer
+# This is the BOOTSTRAPPER script that installs system programs and dependencies
+# required to run the dotfiles-installer
 
 set -e # Exit on any error
 

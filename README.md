@@ -4,43 +4,45 @@
 
 A custom provisioning system to install my preferred programs and personal dotfiles
 
+## Supported systems
+
+-   Mac OS X
+-   Ubuntu
+
 ## Prerequisites
 
-Ubuntu:
+Git is required to install, bootstrap, and run dotfiles-installer. On Ubuntu, you can install it via `apt`:
 
-    sudo apt update && \
-        sudo apt upgrade -y && \
-        sudo apt install git -y
+    sudo apt update && sudo apt install git -y
 
-Mac OS X:
+On Mac OS X, you can install it via [Homebrew](https://brew.sh/):
 
-    # Install Homebrew
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
-    # Install git
     brew install git
 
-## Install
+## Download, bootstrap, & start
 
-    # Download and bootstrap the installer
-    mkdir -p ~/opt && /
+    # 1. Download to ~/opt
+    mkdir -p ~/opt && \
     git clone \
         git@github.com:robatron/dotfiles-installer.git \
-        ~/opt/dotfiles-installer && /
-    . ~/opt/bootstrap.sh && \
+        ~/opt/dotfiles-installer
 
-    # Run the installer
+    # 2. Bootstrap required system dependencies
+    cd ~/opt/dotfiles-installer && \
+    . ~/bootstrap.sh && \
+
+    # 3. Start the installer
     gulp
 
-## Usage
+## [WIP] Usage
 
-TBD.
+Modify `PACKAGES.js` and run `gulp` after changes.
 
 ## TODO
 
 -   ~~Create tasks the recommended way~~
 -   ~~Configure GitHub Actions for continuous testing~~
--   Create and validate package defs
--   Combine "phase" and "package", allow arbitrary structures
--   Validate definitions (Phase & Package)
--   Convert to TypeScript
+-   ~~Create and validate package defs~~
+-   ~~Combine "phase" and "package", allow arbitrary structures~~
+-   Validate definitions (Phase & Package) w/ unit tests
+-   Convert to TypeScript (?)
