@@ -50,6 +50,8 @@ const createPackageTask = (pkg, exp) => {
 
 // Recursively create an phase task tree based on the specified definition
 const createPhaseTasks = (phaseDefs, exp) => {
+    const phaseTasks = [];
+
     for (let i = 0; i < phaseDefs.length; ++i) {
         const phaseDef = phaseDefs[i];
         const phase = new Phase(phaseDef[0], phaseDef[1]);
@@ -59,7 +61,7 @@ const createPhaseTasks = (phaseDefs, exp) => {
         // Recursively build phase tasks. Base case: Targets are packages
         if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
             phaseTargetTasks = phase.targets
-                .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
+                .map((pkgDef) => createPackage(pkgDef, phase.action))
                 .map((pkg) => createPackageTask(pkg, exports));
         } else if (phase.action === ACTIONS.RUN_PHASES) {
             phaseTargetTasks = createPhaseTasks(phase.targets, exp);
@@ -71,8 +73,10 @@ const createPhaseTasks = (phaseDefs, exp) => {
         phaseTask.displayName = phase.name;
         exp && (exp[phase.name] = phaseTask);
 
-        return phaseTask;
+        phaseTasks.push(phaseTask);
     }
+
+    return phaseTasks;
 };
 
 module.exports = {
