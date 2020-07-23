@@ -1,6 +1,8 @@
 const PACKAGES = require('./PACKAGES');
 const { createGlobalLogger } = require('./src/logger');
-const { createPhaseTasks } = require('./src/taskUtils');
+const { createPhaseTaskTree } = require('./src/taskUtils');
 
 createGlobalLogger();
-createPhaseTasks(PACKAGES, exports);
+
+// Create the full gulp task tree from the package definitions
+createPhaseTaskTree(PACKAGES, exports);

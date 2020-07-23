@@ -6,11 +6,12 @@ const {
 } = require('./packageUtils');
 const { ACTIONS } = require('./constants');
 const Phase = require('./Phase');
-const { parallel } = require('gulp');
 
 // Create a single package task
-const createPackageTask = (pkg, exp) => {
-    const taskName = `${pkg.action}:${pkg.name}`;
+const createPackageTask = (pkg, exp, taskNamePrefix) => {
+    const taskName = `${taskNamePrefix ? `${taskNamePrefix}:` : ''}${
+        pkg.action
+    }:${pkg.name}`;
 
     const task = (cb) => {
         if (pkg.skipInstall) {
@@ -48,38 +49,35 @@ const createPackageTask = (pkg, exp) => {
     return task;
 };
 
-// Recursively create an phase task tree based on the specified definition
-const createPhaseTasks = (phaseDefs, exp) => {
-    const phaseTasks = [];
+// Create a single phase task
+const createPhaseTask = (phaseDef, exp) => {
+    const phase = new Phase(phaseDef[0], phaseDef[1]);
+    const asyncType = phase.parallel ? 'parallel' : 'series';
+    let phaseTargetTasks;
 
-    for (let i = 0; i < phaseDefs.length; ++i) {
-        const phaseDef = phaseDefs[i];
-        const phase = new Phase(phaseDef[0], phaseDef[1]);
-        const asyncType = phase.parallel ? 'parallel' : 'series';
-        let phaseTargetTasks;
-
-        // Recursively build phase tasks. Base case: Targets are packages
-        if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
-            phaseTargetTasks = phase.targets
-                .map((pkgDef) => createPackage(pkgDef, phase.action))
-                .map((pkg) => createPackageTask(pkg, exports));
-        } else if (phase.action === ACTIONS.RUN_PHASES) {
-            phaseTargetTasks = createPhaseTasks(phase.targets, exp);
-        } else {
-            throw new Error(`Unsupported action: ${phase.action}`);
-        }
-
-        const phaseTask = gulp[asyncType](phaseTargetTasks);
-        phaseTask.displayName = phase.name;
-        exp && (exp[phase.name] = phaseTask);
-
-        phaseTasks.push(phaseTask);
+    // Recursively build phase tasks. Base case: Targets are packages
+    if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
+        phaseTargetTasks = phase.targets
+            .map((pkgDef) => createPackage(pkgDef, phase.action))
+            .map((pkg) => createPackageTask(pkg, exp, phase.name));
+    } else if (phase.action === ACTIONS.RUN_PHASES) {
+        phaseTargetTasks = createPhaseTaskTree(phase.targets, exp);
+    } else {
+        throw new Error(`Unsupported action: ${phase.action}`);
     }
 
-    return phaseTasks;
+    const phaseTask = gulp[asyncType](phaseTargetTasks);
+    phaseTask.displayName = phase.name;
+    exp && (exp[phase.name] = phaseTask);
+
+    return phaseTask;
 };
+
+// Recursively create an phase task tree based on the specified definition
+const createPhaseTaskTree = (phaseDefs, exp) =>
+    phaseDefs.map((phaseDef) => createPhaseTask(phaseDef, exp));
 
 module.exports = {
     createPackageTask,
-    createPhaseTasks,
+    createPhaseTaskTree,
 };
