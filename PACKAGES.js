@@ -5,6 +5,7 @@ const {
     ACTIONS,
     PLATFORM: { IS_LINUX },
 } = require('./src/constants');
+const { createPhaseDef, createPhaseDefTreeRoot } = require('./src/phaseUtils');
 
 /* -------------------------------------------------------------------------- */
 /*                             Package definitions                            */
@@ -49,107 +50,80 @@ GUI utils (mac):
     - visual-studio-code
 */
 
-module.exports = [
-    [
-        'default',
-        {
-            action: ACTIONS.RUN_PHASES,
-
-            // Run tasks in parallel? (Serial by default)
-            parallel: false,
-
-            // Run these
-            targets: [
-                [
-                    'verifyPrereqsPhase',
-                    {
-                        action: ACTIONS.VERIFY,
-                        parallel: true,
-                        targets: [
-                            'curl',
-                            'git',
-                            'node',
-                            'npm',
-                            [
-                                'nvm',
-                                {
-                                    actionArgs: {
-                                        testFn: (pkg) =>
-                                            fileExists(
-                                                path.join(
-                                                    process.env['NVM_DIR'] ||
-                                                        path.join(
-                                                            process.env['HOME'],
-                                                            `.${pkg.name}`,
-                                                        ),
-                                                    `${pkg.name}.sh`,
-                                                ),
-                                            ),
-                                    },
-                                },
-                            ],
-                        ],
-                    },
-                ],
-                [
-                    // Python packages
-                    'installPythonPhase',
-                    {
-                        parallel: false,
-                        action: ACTIONS.INSTALL,
-                        targets: [
-                            'python3',
-                            [
-                                // Distutils required for installing `pip`. Only need to install
-                                // on Linux
-                                'python3-distutils',
-                                {
-                                    skipInstall: !IS_LINUX,
-                                    testFn: (pkg) =>
-                                        !exec(`dpkg -s '${pkg.name}'`, {
-                                            silent: true,
-                                        }).code,
-                                },
-                            ],
-                            [
-                                'pip',
-                                {
-                                    installCommands: [
-                                        'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
-                                        'sudo -H python3 /tmp/get-pip.py',
-                                    ],
-                                },
-                            ],
-                            [
-                                // Required for `yadm`
-                                'envtpl',
-                                {
-                                    installCommands: [
-                                        'sudo -H pip install envtpl',
-                                    ],
-                                },
-                            ],
-                            [
-                                'pyenv',
-                                {
-                                    installCommands: [
-                                        'curl https://pyenv.run | bash',
-                                    ],
-                                    testFn: (pkg) =>
-                                        fileExists(
-                                            path.join(
-                                                process.env['HOME'],
-                                                `.${pkg.name}`,
-                                                'bin',
-                                                `${pkg.name}`,
-                                            ),
+module.exports = createPhaseDefTreeRoot([
+    createPhaseDef(
+        'verifyPrereqsPhase',
+        ACTIONS.VERIFY,
+        [
+            'curl',
+            'git',
+            'node',
+            'npm',
+            [
+                'nvm',
+                {
+                    actionArgs: {
+                        testFn: (pkg) =>
+                            fileExists(
+                                path.join(
+                                    process.env['NVM_DIR'] ||
+                                        path.join(
+                                            process.env['HOME'],
+                                            `.${pkg.name}`,
                                         ),
-                                },
-                            ],
-                        ],
+                                    `${pkg.name}.sh`,
+                                ),
+                            ),
                     },
-                ],
+                },
             ],
-        },
-    ],
-];
+        ],
+        { parallel: true },
+    ),
+    createPhaseDef('installPythonPhase', ACTIONS.INSTALL, [
+        'python3',
+        [
+            // Distutils required for installing `pip`. Only need to install
+            // on Linux
+            'python3-distutils',
+            {
+                skipInstall: !IS_LINUX,
+                testFn: (pkg) =>
+                    !exec(`dpkg -s '${pkg.name}'`, {
+                        silent: true,
+                    }).code,
+            },
+        ],
+        [
+            'pip',
+            {
+                installCommands: [
+                    'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
+                    'sudo -H python3 /tmp/get-pip.py',
+                ],
+            },
+        ],
+        [
+            // Required for `yadm`
+            'envtpl',
+            {
+                installCommands: ['sudo -H pip install envtpl'],
+            },
+        ],
+        [
+            'pyenv',
+            {
+                installCommands: ['curl https://pyenv.run | bash'],
+                testFn: (pkg) =>
+                    fileExists(
+                        path.join(
+                            process.env['HOME'],
+                            `.${pkg.name}`,
+                            'bin',
+                            `${pkg.name}`,
+                        ),
+                    ),
+            },
+        ],
+    ]),
+]);
