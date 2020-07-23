@@ -143,7 +143,7 @@ const old = [
 
 module.exports = [
     [
-        'root',
+        'default',
         {
             action: ACTIONS.RUN_PHASES,
 
@@ -153,7 +153,7 @@ module.exports = [
             // Run these
             targets: [
                 [
-                    'verifyPrereqs',
+                    'verifyPrereqsPhase',
                     {
                         action: ACTIONS.VERIFY,
                         parallel: true,

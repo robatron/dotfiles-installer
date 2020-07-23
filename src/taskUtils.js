@@ -54,20 +54,24 @@ const createPhaseTasks = (phaseDefs, exp) => {
         const phaseDef = phaseDefs[i];
         const phase = new Phase(phaseDef[0], phaseDef[1]);
         const asyncType = phase.parallel ? 'parallel' : 'series';
-        let phaseTask;
+        let phaseTargetTasks;
 
         // Recursively build phase tasks. Base case: Targets are packages
         if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
-            return gulp[asyncType](
-                phase.targets
-                    .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
-                    .map((pkg) => createPackageTask(pkg, exports)),
-            );
+            phaseTargetTasks = phase.targets
+                .map((pkgDef) => createPackage(pkgDef, ACTIONS.VERIFY))
+                .map((pkg) => createPackageTask(pkg, exports));
         } else if (phase.action === ACTIONS.RUN_PHASES) {
-            return gulp[asyncType](createPhaseTasks(phase.targets, exp));
+            phaseTargetTasks = createPhaseTasks(phase.targets, exp);
         } else {
             throw new Error(`Unsupported action: ${phase.action}`);
         }
+
+        const phaseTask = gulp[asyncType](phaseTargetTasks);
+        phaseTask.displayName = phase.name;
+        exp && (exp[phase.name] = phaseTask);
+
+        return phaseTask;
     }
 };
 
