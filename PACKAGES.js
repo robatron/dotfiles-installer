@@ -84,7 +84,7 @@ module.exports = createPhaseDefTreeRoot([
             // Required for installing `pip`. Only needed on Linux
             'python3-distutils',
             {
-                skipInstall: !IS_LINUX,
+                skipAction: !IS_LINUX,
                 testFn: (pkg) =>
                     !exec(`dpkg -s '${pkg.name}'`, {
                         silent: true,

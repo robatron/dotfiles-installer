@@ -14,7 +14,7 @@ const createPackageTask = (pkg, exp, taskNamePrefix) => {
     }:${pkg.name}`;
 
     const task = (cb) => {
-        if (pkg.skipInstall) {
+        if (pkg.skipAction) {
             log.warn(`Skipping '${pkg.name}'...`);
             cb();
         }
