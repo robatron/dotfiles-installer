@@ -16,7 +16,7 @@ const createPackageTask = (pkg, exp, taskNamePrefix) => {
     const task = (cb) => {
         if (pkg.skipAction) {
             log.warn(`Skipping '${pkg.name}'...`);
-            cb();
+            return cb();
         }
 
         log.info(`Verifying '${pkg.name}' is installed...`);
@@ -38,7 +38,7 @@ const createPackageTask = (pkg, exp, taskNamePrefix) => {
             }
         }
 
-        cb();
+        return cb();
     };
 
     // Set task display name so the task name displays when running, and export
