@@ -4,6 +4,10 @@ const {
     createPhaseTaskTree,
 } = require('../taskUtils');
 const Package = require('../Package');
+const packageUtils = require('../packageUtils');
+const { ACTIONS } = require('../constants');
+
+jest.mock('../packageUtils');
 
 const defaultTestPackage = new Package('packageName', {
     action: 'action',
@@ -33,8 +37,10 @@ describe('createPackageTask', () => {
     });
 
     describe('the test task itself', () => {
+        const mockCb = jest.fn(() => 'cbReturn');
         const logWarnMock = jest.fn();
         const logInfoMock = jest.fn();
+
         global.log = {
             info: logInfoMock,
             warn: logWarnMock,
@@ -45,7 +51,6 @@ describe('createPackageTask', () => {
         });
 
         it('skips the action if specified', () => {
-            const mockCb = jest.fn(() => 'cbReturn');
             const testPackage = new Package('packageName', {
                 skipAction: true,
             });
@@ -56,6 +61,69 @@ describe('createPackageTask', () => {
             expect(logWarnMock).toBeCalledWith("Skipping 'packageName'...");
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
+        });
+
+        it('always verifies the package is installed and returns the callback', () => {
+            packageUtils.isPackageInstalled.mockReturnValue(true);
+
+            const taskFn = createPackageTask(defaultTestPackage, {});
+            const taskResult = taskFn(mockCb);
+
+            expect(logInfoMock).toBeCalledWith(
+                "Verifying 'packageName' is installed...",
+            );
+            expect(packageUtils.isPackageInstalled).toBeCalledWith(
+                defaultTestPackage,
+            );
+            expect(mockCb).toBeCalledTimes(1);
+            expect(taskResult).toEqual('cbReturn');
+        });
+
+        it('installs the package if install action specified', () => {
+            packageUtils.isPackageInstalled.mockReturnValue(false);
+
+            const testPackage = new Package('packageName', {
+                action: ACTIONS.INSTALL,
+            });
+            const taskFn = createPackageTask(testPackage, {});
+            const taskResult = taskFn(mockCb);
+
+            expect(logInfoMock).toBeCalledWith(
+                "Package 'packageName' is not installed. Installing...",
+            );
+            expect(packageUtils.installPackage).toBeCalledWith(testPackage);
+            expect(mockCb).toBeCalledTimes(1);
+            expect(taskResult).toEqual('cbReturn');
+        });
+
+        it('throws if the package is not installed and verify action specified', () => {
+            packageUtils.isPackageInstalled.mockReturnValue(false);
+
+            const testPackage = new Package('packageName', {
+                action: ACTIONS.VERIFY,
+            });
+            const taskFn = createPackageTask(testPackage, {});
+
+            expect(() => {
+                taskFn(mockCb);
+            }).toThrow(
+                "Package 'packageName' is not installed! (Have you run bootstrap.sh?)",
+            );
+        });
+
+        it('throws if the package action is not supported', () => {
+            packageUtils.isPackageInstalled.mockReturnValue(false);
+
+            const testPackage = new Package('packageName', {
+                action: 'unsupportedAction',
+            });
+            const taskFn = createPackageTask(testPackage, {});
+
+            expect(() => {
+                taskFn(mockCb);
+            }).toThrow(
+                "Action 'unsupportedAction' for package 'packageName' is not supported.",
+            );
         });
     });
 });
