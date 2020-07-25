@@ -22,7 +22,7 @@ jobs:
         run: npm ci
 
       - name: Run unit tests
-        run: npm test -- --ci --verbose
+        run: npm test -- --ci
 
   e2e-tests:
     strategy:

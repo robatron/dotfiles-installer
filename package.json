@@ -7,7 +7,7 @@
         "build": "docker build --tag dotfiles .",
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",
         "start": "docker run --volume $(pwd):/mnt/dotfiles-installer --interactive --tty dotfiles /bin/bash",
-        "test": "jest"
+        "test": "jest --verbose"
     },
     "author": "",
     "license": "ISC",
