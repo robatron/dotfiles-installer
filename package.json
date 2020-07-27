@@ -1,8 +1,8 @@
 {
-    "name": "dotfiles-installer",
+    "name": "akinizer",
     "version": "1.0.0",
-    "description": "Install deez dotfiles",
-    "main": "gulpfile.js",
+    "description": "Custom provisioning utility",
+    "main": "./src/index.js",
     "scripts": {
         "build": "docker build --tag dotfiles .",
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",

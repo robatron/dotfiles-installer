@@ -1,8 +1,6 @@
-# [WIP] dotfiles-installer
+# [WIP] akinizer
 
-[![Tests](https://github.com/robatron/dotfiles-installer/workflows/Tests/badge.svg)](https://github.com/robatron/dotfiles-installer/actions)
-
-A custom provisioning system to install my preferred programs and personal dotfiles
+A custom provisioning system to install my preferred programs and personal dotfiles.
 
 ## Supported systems
 
@@ -46,3 +44,8 @@ Modify `PACKAGES.js` and run `gulp` after changes.
 -   ~~Combine "phase" and "package", allow arbitrary structures~~
 -   Validate definitions (Phase & Package) w/ unit tests
 -   Convert to TypeScript (?)
+-   Support ES6 imports
+-   Add eslint, prettier
+-   Remove local docker stuff
+-   Rename dotfiles-installer -> assimilator
+-   Document API
