@@ -3,19 +3,20 @@ const { exec } = require('shelljs');
 const {
     PLATFORM: { IS_LINUX, IS_MAC },
 } = require('./constants');
-const Phase = require('./Phase');
 const Package = require('./Package');
 
 // Create a new package object from a definition
-const createPackage = (pkg, action) => {
-    if (typeof pkg === 'string') {
-        return new Package(pkg, { action });
-    } else if (Array.isArray(pkg)) {
-        const pkgName = pkg[0];
-        const pkgOpts = pkg[1];
+const createPackage = (pkgDef, action) => {
+    if (typeof pkgDef === 'string') {
+        return new Package(pkgDef, { action });
+    } else if (Array.isArray(pkgDef)) {
+        const pkgName = pkgDef[0];
+        const pkgOpts = pkgDef[1];
         return new Package(pkgName, { ...pkgOpts, action });
     } else {
-        throw new Error(`Malformed package definition: ${JSON.stringify(pkg)}`);
+        throw new Error(
+            `Malformed package definition: ${JSON.stringify(pkgDef)}`,
+        );
     }
 };
 

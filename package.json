@@ -7,12 +7,14 @@
         "build": "docker build --tag dotfiles .",
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",
         "start": "docker run --volume $(pwd):/mnt/dotfiles-installer --interactive --tty dotfiles /bin/bash",
-        "test": "jest --verbose"
+        "test": "jest --verbose",
+        "watch": "jest --watch"
     },
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "jest": "^26.1.0"
+        "jest": "^26.1.0",
+        "prettier": "^2.0.5"
     },
     "dependencies": {
         "command-exists": "^1.2.9",
