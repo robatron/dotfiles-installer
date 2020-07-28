@@ -31,21 +31,3 @@ On Mac OS X, you can install it via [Homebrew](https://brew.sh/):
 
     # 3. Start the installer
     gulp
-
-## [WIP] Usage
-
-Modify `PACKAGES.js` and run `gulp` after changes.
-
-## TODO
-
--   ~~Create tasks the recommended way~~
--   ~~Configure GitHub Actions for continuous testing~~
--   ~~Create and validate package defs~~
--   ~~Combine "phase" and "package", allow arbitrary structures~~
--   Validate definitions (Phase & Package) w/ unit tests
--   Convert to TypeScript (?)
--   Support ES6 imports
--   Add eslint, prettier
--   Remove local docker stuff
--   Rename dotfiles-installer -> assimilator
--   Document API
