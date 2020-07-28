@@ -9,45 +9,6 @@ const {
     createPhaseDefTreeRoot,
 } = require('.');
 
-/*
-Dotfiles:
-    - yadm
-    - dotfiles themselves
-
-Base utils (linux):
-    - cowsay
-    - fortune-mod
-    - gpg
-    - zsh
-    - gshuf (symlink shuf)
-
-Base utils (mac):
-    - caskroom/homebrew-cask (tap)
-    - coreutils
-    - cowsay
-    - fortune
-    - gpg
-    - pyenv
-    - reattach-to-user-namespace
-    - tmux
-    - zplug
-
-Common:
-    oh-my-zsh
-    spaceship-prompt
-    powerline fonts
-
-GUI utils (mac):
-    - deluge \
-    - google-chrome \
-    - iterm2 \
-    - keepingyouawake \
-    - spectacle \
-    - vagrant \
-    - virtualbox \
-    - visual-studio-code
-*/
-
 // Package tree phase definition
 const packageTree = createPhaseDefTreeRoot([
     createPhaseDef(
