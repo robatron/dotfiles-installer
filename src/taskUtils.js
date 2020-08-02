@@ -51,7 +51,9 @@ const createPackageTask = (pkg, exp, taskNamePrefix) => {
 
 // Create a single phase task
 const createPhaseTask = (phaseDef, exp) => {
-    const phase = new Phase(phaseDef[0], phaseDef[1]);
+    const phaseName = phaseDef[0];
+    const phaseOpts = phaseDef[1];
+    const phase = new Phase(phaseName, phaseOpts);
     const asyncType = phase.parallel ? 'parallel' : 'series';
     let phaseTargetTasks;
 
