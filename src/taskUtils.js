@@ -81,5 +81,6 @@ const createPhaseTaskTree = (phaseDefs, exp) =>
 
 module.exports = {
     createPackageTask,
+    createPhaseTask,
     createPhaseTaskTree,
 };

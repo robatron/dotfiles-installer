@@ -1,3 +1,4 @@
+const gulp = require('gulp');
 const {
     createPackageTask,
     createPhaseTask,
@@ -6,8 +7,10 @@ const {
 const Package = require('../Package');
 const packageUtils = require('../packageUtils');
 const { ACTIONS } = require('../constants');
+const { createPhaseDef } = require('../phaseUtils');
 
 jest.mock('../packageUtils');
+jest.mock('gulp');
 
 const defaultTestPackage = new Package('packageName', {
     action: 'action',
@@ -125,5 +128,25 @@ describe('createPackageTask', () => {
                 "Action 'unsupportedAction' for package 'packageName' is not supported.",
             );
         });
+    });
+});
+
+describe('createPhaseTask', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        gulp.series.mockReturnValue('gulpSeriesReturnValue');
+    });
+
+    it('creates a single phase task for VERIFY or INSTALL actions', () => {
+        const phaseDef = createPhaseDef('phaseName', ACTIONS.VERIFY, [
+            'target-a',
+            'target-b',
+            'target-c',
+        ]);
+        const testExports = {};
+        const actual = createPhaseTask(phaseDef, testExports);
+        const expected = 'gulpSeriesReturnValue';
+
+        expect(actual).toBe(expected);
     });
 });
