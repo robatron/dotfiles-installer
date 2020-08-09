@@ -63,7 +63,7 @@ const createPhaseTask = (phaseDef, exp) => {
             .map((pkgDef) => createPackage(pkgDef, phase.action))
             .map((pkg) => createPackageTask(pkg, exp, phase.name));
     } else if (phase.action === ACTIONS.RUN_PHASES) {
-        phaseTargetTasks = createPhaseTaskTree(phase.targets, exp);
+        phaseTargetTasks = createPhaseTreeTasks(phase.targets, exp);
     } else {
         throw new Error(`Unsupported action: ${phase.action}`);
     }
@@ -76,11 +76,11 @@ const createPhaseTask = (phaseDef, exp) => {
 };
 
 // Recursively create an phase task tree based on the specified definition
-const createPhaseTaskTree = (phaseDefs, exp) =>
+const createPhaseTreeTasks = (phaseDefs, exp) =>
     phaseDefs.map((phaseDef) => createPhaseTask(phaseDef, exp));
 
 module.exports = {
     createPackageTask,
     createPhaseTask,
-    createPhaseTaskTree,
+    createPhaseTreeTasks,
 };

@@ -3,8 +3,8 @@ const gulp = require('gulp');
 const {
     ACTIONS,
     createPhaseDef,
-    createPhaseDefTreeRoot,
-    createPhaseTaskTree,
+    createPhaseTreeDef,
+    createPhaseTreeTasks,
     fileExists,
     PLATFORM: { IS_LINUX },
 } = require('../index');
@@ -36,7 +36,7 @@ const defaultTestTargets = [
     ],
 ];
 
-describe('createPhaseTaskTree', () => {
+describe('createPhaseTreeTasks', () => {
     it('creates a phase task tree from a phase tree definition', () => {
         // TODO
     });

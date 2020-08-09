@@ -1,8 +1,8 @@
 const { ACTIONS, PLATFORM } = require('./constants');
 const { fileExists } = require('./fileUtils');
 const { createGlobalLogger } = require('./logger');
-const { createPhaseDef, createPhaseDefTreeRoot } = require('./phaseUtils');
-const { createPhaseTaskTree } = require('./taskUtils');
+const { createPhaseDef, createPhaseTreeDef } = require('./phaseUtils');
+const { createPhaseTreeTasks } = require('./taskUtils');
 
 // Create logger for the whole app
 createGlobalLogger();
@@ -10,8 +10,8 @@ createGlobalLogger();
 module.exports = {
     ACTIONS,
     createPhaseDef,
-    createPhaseDefTreeRoot,
-    createPhaseTaskTree,
+    createPhaseTreeDef,
+    createPhaseTreeTasks,
     fileExists,
     PLATFORM,
 };

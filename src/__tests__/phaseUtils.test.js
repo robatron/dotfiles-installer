@@ -1,4 +1,4 @@
-const { createPhaseDef, createPhaseDefTreeRoot } = require('../phaseUtils');
+const { createPhaseDef, createPhaseTreeDef } = require('../phaseUtils');
 const { ACTIONS } = require('../constants');
 
 const testTargets = ['target-a', 'target-b', 'target-c'];
@@ -31,9 +31,9 @@ describe('createPhaseDef', () => {
     });
 });
 
-describe('createPhaseDefTreeRoot', () => {
+describe('createPhaseTreeDef', () => {
     it('creates a root phase definition', () => {
-        const result = createPhaseDefTreeRoot(testTargets, true);
+        const result = createPhaseTreeDef(testTargets, true);
         const expected = [
             [
                 'default',
@@ -48,7 +48,7 @@ describe('createPhaseDefTreeRoot', () => {
     });
 
     it('leaverages createPhaseDef', () => {
-        const result = createPhaseDefTreeRoot(testTargets, true);
+        const result = createPhaseTreeDef(testTargets, true);
         const expected = [
             createPhaseDef('default', ACTIONS.RUN_PHASES, testTargets, {
                 parallel: true,
@@ -58,7 +58,7 @@ describe('createPhaseDefTreeRoot', () => {
     });
 
     it('defaults to serial', () => {
-        const result = createPhaseDefTreeRoot(testTargets);
+        const result = createPhaseTreeDef(testTargets);
         const expected = [
             createPhaseDef('default', ACTIONS.RUN_PHASES, testTargets, {
                 parallel: false,

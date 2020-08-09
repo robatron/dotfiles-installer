@@ -1,16 +1,16 @@
 const path = require('path');
 const { exec } = require('shelljs');
 const {
-    createPhaseTaskTree,
+    createPhaseTreeTasks,
     fileExists,
     ACTIONS,
     PLATFORM: { IS_LINUX },
     createPhaseDef,
-    createPhaseDefTreeRoot,
+    createPhaseTreeDef,
 } = require('.');
 
 // Package tree phase definition
-const packageTree = createPhaseDefTreeRoot([
+const phaseTreeDef = createPhaseTreeDef([
     createPhaseDef(
         'verifyPrereqsPhase',
         ACTIONS.VERIFY,
@@ -87,4 +87,4 @@ const packageTree = createPhaseDefTreeRoot([
 
 // Create the full gulp task tree from the package definitions and export them
 // as gulp tasks
-createPhaseTaskTree(packageTree, exports);
+createPhaseTreeTasks(phaseTreeDef, exports);
