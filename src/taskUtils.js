@@ -1,11 +1,8 @@
 const gulp = require('gulp');
-const {
-    createPackage,
-    installPackage,
-    isPackageInstalled,
-} = require('./packageUtils');
+const { installPackage, isPackageInstalled } = require('./packageUtils');
 const { ACTIONS } = require('./constants');
 const Phase = require('./Phase');
+const { createPackage } = require('./Package');
 
 // Create a single package task
 const createPackageTask = (pkg, exp, taskNamePrefix) => {

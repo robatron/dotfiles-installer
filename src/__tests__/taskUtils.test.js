@@ -1,6 +1,6 @@
 const gulp = require('gulp');
 const taskUtils = require('../taskUtils');
-const Package = require('../Package');
+const { Package } = require('../Package');
 const packageUtils = require('../packageUtils');
 const { ACTIONS } = require('../constants');
 const { createPhaseDef } = require('../phaseUtils');
@@ -133,9 +133,6 @@ describe.skip('createPhaseTask', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         gulp.series.mockImplementation((phaseTargetTasks) => phaseTargetTasks);
-        packageUtils.createPackage.mockImplementation(
-            (pkgDef, action) => new Package(pkgDef, { action }),
-        );
     });
 
     it('creates a single phase task for VERIFY or INSTALL actions', () => {

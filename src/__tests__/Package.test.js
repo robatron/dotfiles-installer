@@ -1,9 +1,4 @@
-const {
-    createPackage,
-    installPackage,
-    isPackageInstalled,
-} = require('../packageUtils');
-const Package = require('../Package');
+const { createPackage, Package } = require('../Package');
 
 describe('createPackage', () => {
     it('creates a new package object a string definition', () => {

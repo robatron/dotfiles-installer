@@ -6,12 +6,11 @@ const {
     createPhaseTreeTasks,
     PLATFORM: { IS_LINUX },
 } = require('../index');
-
-jest.mock('../packageUtils');
+const taskUtils = require('../taskUtils');
 const packageUtils = require('../packageUtils');
-const { createPackage } = jest.requireActual('../packageUtils');
 
 jest.mock('gulp');
+jest.mock('../packageUtils');
 
 /**
  * defaultTestPhaseTreeDef is a definition of a phase tree exemplifying
@@ -104,22 +103,16 @@ const defaultTestPhaseTreeDef = createPhaseTreeDef([
 ]);
 
 describe('createPhaseTreeTasks', () => {
-    gulp.parallel.mockImplementation = (task) => `gulp.parallel(${task})`;
-    gulp.series.mockImplementation = (task) => `gulp.series(${task})`;
+    beforeEach(() => {
+        gulp.parallel.mockImplementation = (task) => ({
+            description: `gulp.parallel(${task})`,
+        });
+        gulp.series.mockImplementation = (task) => ({
+            displayName: null,
+            description: `gulp.series(${task})`,
+        });
+    });
 
-    packageUtils.createPackage.mockImplementation = (pkgDef, action) => {
-        if (typeof pkgDef === 'string') {
-            return new Package(pkgDef, { action });
-        } else if (Array.isArray(pkgDef)) {
-            const pkgName = pkgDef[0];
-            const pkgOpts = pkgDef[1];
-            return new Package(pkgName, { ...pkgOpts, action });
-        } else {
-            throw new Error(
-                `Malformed package definition: ${JSON.stringify(pkgDef)}`,
-            );
-        }
-    };
     packageUtils.installPackage.mockImplementation = (pkg) =>
         `installPackage(${pkg})`;
     packageUtils.isPackageInstalled.mockImplementation = (pkg) => false;

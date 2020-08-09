@@ -18,4 +18,19 @@ const Package = class {
     }
 };
 
-module.exports = Package;
+// Create a new package object from a definition
+const createPackage = (pkgDef, action) => {
+    if (typeof pkgDef === 'string') {
+        return new Package(pkgDef, { action });
+    } else if (Array.isArray(pkgDef)) {
+        const pkgName = pkgDef[0];
+        const pkgOpts = pkgDef[1];
+        return new Package(pkgName, { ...pkgOpts, action });
+    } else {
+        throw new Error(
+            `Malformed package definition: ${JSON.stringify(pkgDef)}`,
+        );
+    }
+};
+
+module.exports = { createPackage, Package };
