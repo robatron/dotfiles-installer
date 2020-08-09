@@ -1,14 +1,15 @@
 module.exports = {
     // Actions that can be performed on supported targets of a phase
     ACTIONS: {
-        // Verify a package is installed
-        VERIFY: 'verify',
-
         // Install a package if it is not already
         INSTALL: 'install',
 
         // Run a phase
+        // TODO: Make this automatic
         RUN_PHASES: 'run-tasks',
+
+        // Verify a package is installed
+        VERIFY: 'verify',
     },
 
     // Operating system

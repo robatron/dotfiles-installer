@@ -57,7 +57,7 @@ describe('createPhaseTreeDef', () => {
         expect(result).toEqual(expected);
     });
 
-    it('defaults to serial', () => {
+    it('defaults to series', () => {
         const result = createPhaseTreeDef(testTargets);
         const expected = [
             createPhaseDef('default', ACTIONS.RUN_PHASES, testTargets, {

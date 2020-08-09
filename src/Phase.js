@@ -9,7 +9,7 @@ const Phase = class {
         // Action to perform on each package, defaulting to VERIFY
         this.action = phaseOpts.action || ACTIONS.VERIFY;
 
-        // Run the packages in parallel? Default to serial
+        // Run the packages in parallel? Default to series
         this.parallel = phaseOpts.parallel || false;
 
         // Targets which to apply the action
