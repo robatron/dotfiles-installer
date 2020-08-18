@@ -15,87 +15,50 @@ jest.mock('gulp');
  * Phase actions:
  *  - INSTALL
  *  - VERIFY
- *  - RUN
+ *  - RUN_PHASES
  *
  * Phase async:
  *  - parallel
  *  - series (default)
- *
- * Package definitions:
- *  - Command as a string
- *  - Command with options
- *
- * Package args
- *  - All: <arbitrary_arg>, command, skipAction
- *  - VERIFY: testFn
- *  - INSTALL: installCommands, testFn
  */
-const installTargets = [
-    'alpha',
-    [
-        'bravo',
-        {
-            arbitraryInstallArg: 'arbitrary-install-arg',
-            command: 'delta-cli',
-            installCommands: ['foo', 'bar'],
-            skipAction: false,
-            testFn: (pkg) => false,
-        },
-    ],
-    [
-        'charlie',
-        {
-            skipAction: true,
-        },
-    ],
-    [
-        'delta',
-        {
-            testFn: (pkg) => true,
-        },
-    ],
-];
-const verifyTargets = [
-    'echo',
-    [
-        'foxtrot',
-        {
-            arbitraryInstallArg: 'arbitrary-install-arg',
-            command: 'delta-cli',
-            skipAction: false,
-            testFn: (pkg) => false,
-        },
-    ],
-    [
-        'golf',
-        {
-            skipAction: true,
-        },
-    ],
-    [
-        'hotel',
-        {
-            testFn: (pkg) => true,
-        },
-    ],
-];
+
 const defaultTestPhaseTreeDef = createPhaseTreeDef([
-    createPhaseDef('installPhase', ACTIONS.INSTALL, installTargets),
+    createPhaseDef('installPhase', ACTIONS.INSTALL, [
+        'alpha',
+        'bravo',
+        'charlie',
+    ]),
     createPhaseDef('runPhase', ACTIONS.RUN_PHASES, [
         createPhaseDef('subInstallPhase', ACTIONS.INSTALL, [
-            'indiana',
-            'juliet',
-            'kilo',
+            'delta',
+            'echo',
+            'foxtrot',
         ]),
         createPhaseDef('subVerifyPhase', ACTIONS.VERIFY, [
+            'golf',
+            'hotel',
+            'india',
+        ]),
+    ]),
+    createPhaseDef(
+        'verifyPhase',
+        ACTIONS.VERIFY,
+        [
+            'juliett',
+            'kelo',
             'lima',
             'mike',
             'november',
-        ]),
-    ]),
-    createPhaseDef('verifyPhase', ACTIONS.VERIFY, verifyTargets, {
-        parallel: true,
-    }),
+            'oscar',
+            'papa',
+            'quebec',
+            'romeo',
+            'sierra',
+        ],
+        {
+            parallel: true,
+        },
+    ),
 ]);
 
 describe('createPhaseTreeTasks', () => {
@@ -127,21 +90,26 @@ describe('createPhaseTreeTasks', () => {
             'installPhase:install:alpha',
             'installPhase:install:bravo',
             'installPhase:install:charlie',
-            'installPhase:install:delta',
             'installPhase',
             'runPhase',
-            'subInstallPhase:install:indiana',
-            'subInstallPhase:install:juliet',
-            'subInstallPhase:install:kilo',
+            'subInstallPhase:install:delta',
+            'subInstallPhase:install:echo',
+            'subInstallPhase:install:foxtrot',
             'subInstallPhase',
-            'subVerifyPhase:verify:lima',
-            'subVerifyPhase:verify:mike',
-            'subVerifyPhase:verify:november',
+            'subVerifyPhase:verify:golf',
+            'subVerifyPhase:verify:hotel',
+            'subVerifyPhase:verify:india',
             'subVerifyPhase',
-            'verifyPhase:verify:echo',
-            'verifyPhase:verify:foxtrot',
-            'verifyPhase:verify:golf',
-            'verifyPhase:verify:hotel',
+            'verifyPhase:verify:juliett',
+            'verifyPhase:verify:kelo',
+            'verifyPhase:verify:lima',
+            'verifyPhase:verify:mike',
+            'verifyPhase:verify:november',
+            'verifyPhase:verify:oscar',
+            'verifyPhase:verify:papa',
+            'verifyPhase:verify:quebec',
+            'verifyPhase:verify:romeo',
+            'verifyPhase:verify:sierra',
             'verifyPhase',
         ].forEach((taskName) => {
             expect(testExports).toHaveProperty(taskName);
