@@ -1,0 +1,132 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`createPhaseTreeTasks builds a task tree from definition 1`] = `
+Object {
+  "default": Object {
+    "asyncType": "series",
+    "displayName": "default",
+    "tasks": Array [
+      Object {
+        "asyncType": "series",
+        "displayName": "installPhase",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+      Object {
+        "asyncType": "series",
+        "displayName": "runPhase",
+        "tasks": Array [
+          Object {
+            "asyncType": "series",
+            "displayName": "subInstallPhase",
+            "tasks": Array [
+              "task-fn",
+              "task-fn",
+              "task-fn",
+            ],
+          },
+          Object {
+            "asyncType": "series",
+            "displayName": "subVerifyPhase",
+            "tasks": Array [
+              "task-fn",
+              "task-fn",
+              "task-fn",
+            ],
+          },
+        ],
+      },
+      Object {
+        "asyncType": "parallel",
+        "displayName": "verifyPhase",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+    ],
+  },
+  "installPhase": Object {
+    "asyncType": "series",
+    "displayName": "installPhase",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "installPhase:install:alpha": [Function],
+  "installPhase:install:bravo": [Function],
+  "installPhase:install:charlie": [Function],
+  "installPhase:install:delta": [Function],
+  "runPhase": Object {
+    "asyncType": "series",
+    "displayName": "runPhase",
+    "tasks": Array [
+      Object {
+        "asyncType": "series",
+        "displayName": "subInstallPhase",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+      Object {
+        "asyncType": "series",
+        "displayName": "subVerifyPhase",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+    ],
+  },
+  "subInstallPhase": Object {
+    "asyncType": "series",
+    "displayName": "subInstallPhase",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "subInstallPhase:install:indiana": [Function],
+  "subInstallPhase:install:juliet": [Function],
+  "subInstallPhase:install:kilo": [Function],
+  "subVerifyPhase": Object {
+    "asyncType": "series",
+    "displayName": "subVerifyPhase",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "subVerifyPhase:verify:lima": [Function],
+  "subVerifyPhase:verify:mike": [Function],
+  "subVerifyPhase:verify:november": [Function],
+  "verifyPhase": Object {
+    "asyncType": "parallel",
+    "displayName": "verifyPhase",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "verifyPhase:verify:echo": [Function],
+  "verifyPhase:verify:foxtrot": [Function],
+  "verifyPhase:verify:golf": [Function],
+  "verifyPhase:verify:hotel": [Function],
+}
+`;

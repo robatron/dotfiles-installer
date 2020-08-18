@@ -4,13 +4,9 @@ const {
     createPhaseDef,
     createPhaseTreeDef,
     createPhaseTreeTasks,
-    PLATFORM: { IS_LINUX },
 } = require('../index');
-const taskUtils = require('../taskUtils');
-const packageUtils = require('../packageUtils');
 
 jest.mock('gulp');
-jest.mock('../packageUtils');
 
 /**
  * defaultTestPhaseTreeDef is a definition of a phase tree exemplifying
@@ -115,10 +111,12 @@ describe('createPhaseTreeTasks', () => {
                 };
             });
         });
+    });
 
-        packageUtils.installPackage.mockImplementation = (pkg) =>
-            `installPackage(${pkg})`;
-        packageUtils.isPackageInstalled.mockImplementation = (pkg) => false;
+    it('builds a task tree from definition', () => {
+        const testExports = {};
+        createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
+        expect(testExports).toMatchSnapshot();
     });
 
     it('exposes all tasks globally', () => {
@@ -148,11 +146,5 @@ describe('createPhaseTreeTasks', () => {
         ].forEach((taskName) => {
             expect(testExports).toHaveProperty(taskName);
         });
-    });
-
-    it('builds a task tree from definition', () => {
-        const testExports = {};
-        createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
-        expect(testExports).toMatchSnapshot();
     });
 });
