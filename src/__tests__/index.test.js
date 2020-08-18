@@ -104,21 +104,53 @@ const defaultTestPhaseTreeDef = createPhaseTreeDef([
 
 describe('createPhaseTreeTasks', () => {
     beforeEach(() => {
-        gulp.parallel.mockImplementation = (task) => ({
-            description: `gulp.parallel(${task})`,
+        ['parallel', 'series'].forEach((asyncType) => {
+            gulp[asyncType] = jest.fn((tasks) => {
+                return {
+                    asyncType,
+                    displayName: null,
+                    tasks: tasks.map((task) =>
+                        typeof task === 'function' ? 'task-fn' : task,
+                    ),
+                };
+            });
         });
-        gulp.series.mockImplementation = (task) => ({
-            displayName: null,
-            description: `gulp.series(${task})`,
-        });
+
+        packageUtils.installPackage.mockImplementation = (pkg) =>
+            `installPackage(${pkg})`;
+        packageUtils.isPackageInstalled.mockImplementation = (pkg) => false;
     });
 
-    packageUtils.installPackage.mockImplementation = (pkg) =>
-        `installPackage(${pkg})`;
-    packageUtils.isPackageInstalled.mockImplementation = (pkg) => false;
-
-    it('creates a phase task tree from a phase tree definition', () => {
+    it('exposes all tasks globally', () => {
         const testExports = {};
         createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
+        [
+            'default',
+            'installPhase:install:alpha',
+            'installPhase:install:bravo',
+            'installPhase:install:charlie',
+            'installPhase:install:delta',
+            'installPhase',
+            'runPhase',
+            'subInstallPhase:install:indiana',
+            'subInstallPhase:install:juliet',
+            'subInstallPhase:install:kilo',
+            'subInstallPhase',
+            'subVerifyPhase:verify:lima',
+            'subVerifyPhase:verify:mike',
+            'subVerifyPhase:verify:november',
+            'subVerifyPhase',
+            'verifyPhase:verify:echo',
+            'verifyPhase:verify:foxtrot',
+            'verifyPhase:verify:golf',
+            'verifyPhase:verify:hotel',
+            'verifyPhase',
+        ].forEach((taskName) => {
+            expect(testExports).toHaveProperty(taskName);
+        });
+
+        expect(testExports['default'].asyncType).toBe('series');
+        expect(testExports['default'].displayName).toBe('default');
+        expect(testExports['default'].tasks[0].tasks[0]).toBe('task-fn');
     });
 });
