@@ -148,9 +148,11 @@ describe('createPhaseTreeTasks', () => {
         ].forEach((taskName) => {
             expect(testExports).toHaveProperty(taskName);
         });
+    });
 
-        expect(testExports['default'].asyncType).toBe('series');
-        expect(testExports['default'].displayName).toBe('default');
-        expect(testExports['default'].tasks[0].tasks[0]).toBe('task-fn');
+    it('builds a task tree from definition', () => {
+        const testExports = {};
+        createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
+        expect(testExports).toMatchSnapshot();
     });
 });
