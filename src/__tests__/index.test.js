@@ -34,27 +34,28 @@ const defaultTestPhaseTreeDef = createPhaseTreeDef([
             'echo',
             'foxtrot',
         ]),
+        createPhaseDef('subRunPhase', ACTIONS.RUN_PHASES, [
+            createPhaseDef('subSubInstallPhase', ACTIONS.INSTALL, [
+                'golf',
+                'hotel',
+                'india',
+            ]),
+            createPhaseDef('subSubVerifyPhase', ACTIONS.VERIFY, [
+                'juliett',
+                'kelo',
+                'lima',
+            ]),
+        ]),
         createPhaseDef('subVerifyPhase', ACTIONS.VERIFY, [
-            'golf',
-            'hotel',
-            'india',
+            'mike',
+            'november',
+            'oscar',
         ]),
     ]),
     createPhaseDef(
         'verifyPhase',
         ACTIONS.VERIFY,
-        [
-            'juliett',
-            'kelo',
-            'lima',
-            'mike',
-            'november',
-            'oscar',
-            'papa',
-            'quebec',
-            'romeo',
-            'sierra',
-        ],
+        ['papa', 'quebec', 'romeo', 'sierra'],
         {
             parallel: true,
         },
@@ -85,6 +86,9 @@ describe('createPhaseTreeTasks', () => {
     it('exposes all tasks globally', () => {
         const testExports = {};
         createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
+
+        console.log('>>>', JSON.stringify(Object.keys(testExports)));
+
         [
             'default',
             'installPhase:install:alpha',
@@ -96,16 +100,19 @@ describe('createPhaseTreeTasks', () => {
             'subInstallPhase:install:echo',
             'subInstallPhase:install:foxtrot',
             'subInstallPhase',
-            'subVerifyPhase:verify:golf',
-            'subVerifyPhase:verify:hotel',
-            'subVerifyPhase:verify:india',
+            'subRunPhase',
+            'subSubInstallPhase:install:golf',
+            'subSubInstallPhase:install:hotel',
+            'subSubInstallPhase:install:india',
+            'subSubInstallPhase',
+            'subSubVerifyPhase:verify:juliett',
+            'subSubVerifyPhase:verify:kelo',
+            'subSubVerifyPhase:verify:lima',
+            'subSubVerifyPhase',
+            'subVerifyPhase:verify:mike',
+            'subVerifyPhase:verify:november',
+            'subVerifyPhase:verify:oscar',
             'subVerifyPhase',
-            'verifyPhase:verify:juliett',
-            'verifyPhase:verify:kelo',
-            'verifyPhase:verify:lima',
-            'verifyPhase:verify:mike',
-            'verifyPhase:verify:november',
-            'verifyPhase:verify:oscar',
             'verifyPhase:verify:papa',
             'verifyPhase:verify:quebec',
             'verifyPhase:verify:romeo',

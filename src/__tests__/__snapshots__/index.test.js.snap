@@ -30,6 +30,30 @@ Object {
           },
           Object {
             "asyncType": "series",
+            "displayName": "subRunPhase",
+            "tasks": Array [
+              Object {
+                "asyncType": "series",
+                "displayName": "subSubInstallPhase",
+                "tasks": Array [
+                  "task-fn",
+                  "task-fn",
+                  "task-fn",
+                ],
+              },
+              Object {
+                "asyncType": "series",
+                "displayName": "subSubVerifyPhase",
+                "tasks": Array [
+                  "task-fn",
+                  "task-fn",
+                  "task-fn",
+                ],
+              },
+            ],
+          },
+          Object {
+            "asyncType": "series",
             "displayName": "subVerifyPhase",
             "tasks": Array [
               "task-fn",
@@ -43,12 +67,6 @@ Object {
         "asyncType": "parallel",
         "displayName": "verifyPhase",
         "tasks": Array [
-          "task-fn",
-          "task-fn",
-          "task-fn",
-          "task-fn",
-          "task-fn",
-          "task-fn",
           "task-fn",
           "task-fn",
           "task-fn",
@@ -84,6 +102,30 @@ Object {
       },
       Object {
         "asyncType": "series",
+        "displayName": "subRunPhase",
+        "tasks": Array [
+          Object {
+            "asyncType": "series",
+            "displayName": "subSubInstallPhase",
+            "tasks": Array [
+              "task-fn",
+              "task-fn",
+              "task-fn",
+            ],
+          },
+          Object {
+            "asyncType": "series",
+            "displayName": "subSubVerifyPhase",
+            "tasks": Array [
+              "task-fn",
+              "task-fn",
+              "task-fn",
+            ],
+          },
+        ],
+      },
+      Object {
+        "asyncType": "series",
         "displayName": "subVerifyPhase",
         "tasks": Array [
           "task-fn",
@@ -105,6 +147,54 @@ Object {
   "subInstallPhase:install:delta": [Function],
   "subInstallPhase:install:echo": [Function],
   "subInstallPhase:install:foxtrot": [Function],
+  "subRunPhase": Object {
+    "asyncType": "series",
+    "displayName": "subRunPhase",
+    "tasks": Array [
+      Object {
+        "asyncType": "series",
+        "displayName": "subSubInstallPhase",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+      Object {
+        "asyncType": "series",
+        "displayName": "subSubVerifyPhase",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+    ],
+  },
+  "subSubInstallPhase": Object {
+    "asyncType": "series",
+    "displayName": "subSubInstallPhase",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "subSubInstallPhase:install:golf": [Function],
+  "subSubInstallPhase:install:hotel": [Function],
+  "subSubInstallPhase:install:india": [Function],
+  "subSubVerifyPhase": Object {
+    "asyncType": "series",
+    "displayName": "subSubVerifyPhase",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "subSubVerifyPhase:verify:juliett": [Function],
+  "subSubVerifyPhase:verify:kelo": [Function],
+  "subSubVerifyPhase:verify:lima": [Function],
   "subVerifyPhase": Object {
     "asyncType": "series",
     "displayName": "subVerifyPhase",
@@ -114,9 +204,9 @@ Object {
       "task-fn",
     ],
   },
-  "subVerifyPhase:verify:golf": [Function],
-  "subVerifyPhase:verify:hotel": [Function],
-  "subVerifyPhase:verify:india": [Function],
+  "subVerifyPhase:verify:mike": [Function],
+  "subVerifyPhase:verify:november": [Function],
+  "subVerifyPhase:verify:oscar": [Function],
   "verifyPhase": Object {
     "asyncType": "parallel",
     "displayName": "verifyPhase",
@@ -125,20 +215,8 @@ Object {
       "task-fn",
       "task-fn",
       "task-fn",
-      "task-fn",
-      "task-fn",
-      "task-fn",
-      "task-fn",
-      "task-fn",
-      "task-fn",
     ],
   },
-  "verifyPhase:verify:juliett": [Function],
-  "verifyPhase:verify:kelo": [Function],
-  "verifyPhase:verify:lima": [Function],
-  "verifyPhase:verify:mike": [Function],
-  "verifyPhase:verify:november": [Function],
-  "verifyPhase:verify:oscar": [Function],
   "verifyPhase:verify:papa": [Function],
   "verifyPhase:verify:quebec": [Function],
   "verifyPhase:verify:romeo": [Function],
