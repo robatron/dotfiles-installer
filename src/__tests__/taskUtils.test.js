@@ -12,7 +12,7 @@ const defaultTestPackage = new Package('packageName', {
     action: 'action',
 });
 
-describe('createPackageTask', () => {
+describe.skip('createPackageTask', () => {
     it('returns and exports a task function, and sets the display name', () => {
         const testExports = {};
         const expectedTaskName = 'phase:action:packageName';
