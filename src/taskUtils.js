@@ -1,6 +1,10 @@
 const gulp = require('gulp');
 const { installPackage, isPackageInstalled } = require('./packageUtils');
-const { ACTIONS, PHASE_NAME_DEFAULT } = require('./constants');
+const {
+    ACTIONS,
+    PHASE_NAME_DEFAULT,
+    PHASE_NAME_DELIM,
+} = require('./constants');
 const Phase = require('./Phase');
 const { createPackage } = require('./Package');
 
@@ -34,9 +38,11 @@ const createPackageTask = (pkg, exp, taskNamePrefix) => {
         return cb();
     };
 
-    // Set task display name so the task name displays when running, and export
-    // it so it's runnable by itself
-    task.displayName = [taskNamePrefix, pkg.action, pkg.name].join(':');
+    // Create the actual gulp task and expose it globally so it can be run
+    // individually
+    task.displayName = [taskNamePrefix, pkg.action, pkg.name].join(
+        PHASE_NAME_DELIM,
+    );
     exp && (exp[task.displayName] = task);
 
     return task;
@@ -47,8 +53,10 @@ const createPhaseTask = (phaseDef, exp, phaseNamePrefix) => {
     const phaseName = phaseDef[0];
     const phaseOpts = phaseDef[1];
     const phaseNameFull =
-        (phaseNamePrefix && phaseNamePrefix !== PHASE_NAME_DEFAULT
-            ? `${phaseNamePrefix}:`
+        (phaseNamePrefix &&
+        // Don't prefix phase names with default phase
+        phaseNamePrefix !== PHASE_NAME_DEFAULT
+            ? `${phaseNamePrefix}${PHASE_NAME_DELIM}`
             : '') + phaseName;
     const phase = new Phase(phaseNameFull, phaseOpts);
     const asyncType = phase.parallel ? 'parallel' : 'series';
@@ -65,6 +73,8 @@ const createPhaseTask = (phaseDef, exp, phaseNamePrefix) => {
         throw new Error(`Unsupported action: ${phase.action}`);
     }
 
+    // Create the actual gulp combination task and expose it globally so it can
+    // be run individually
     const phaseTask = gulp[asyncType](phaseTargetTasks);
     phaseTask.displayName = phase.name;
     exp && (exp[phase.name] = phaseTask);
@@ -73,7 +83,7 @@ const createPhaseTask = (phaseDef, exp, phaseNamePrefix) => {
 };
 
 // Recursively create an phase task tree based on the specified definition
-const createPhaseTreeTasks = (phaseDefs, exp, phaseNamePrefix) =>
+const createPhaseTreeTasks = (phaseDefs, exp, phaseNamePrefix = null) =>
     phaseDefs.map((phaseDef) =>
         createPhaseTask(phaseDef, exp, phaseNamePrefix),
     );
