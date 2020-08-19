@@ -141,7 +141,7 @@ describe('createPhaseTask', () => {
     });
 
     ['INSTALL', 'VERIFY'].forEach((action) => {
-        it('creates tasks for ' + action, () => {
+        it(`creates tasks for ${action} action`, () => {
             const phaseDef = createPhaseDef(
                 defaultPhaseName,
                 ACTIONS[action],
@@ -152,5 +152,16 @@ describe('createPhaseTask', () => {
             taskUtils.createPhaseTask(phaseDef, testExports);
             expect(testExports).toMatchSnapshot();
         });
+    });
+
+    it(`creates tasks for RUN_PHASES action`, () => {
+        const phaseDef = createPhaseDef(defaultPhaseName, ACTIONS.RUN_PHASES, [
+            createPhaseDef(defaultPhaseName, ACTIONS.INSTALL, defaultPkgs),
+            createPhaseDef(defaultPhaseName, ACTIONS.VERIFY, defaultPkgs),
+        ]);
+
+        const testExports = {};
+        taskUtils.createPhaseTask(phaseDef, testExports);
+        expect(testExports).toMatchSnapshot();
     });
 });

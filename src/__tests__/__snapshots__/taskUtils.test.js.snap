@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`createPhaseTask creates tasks for INSTALL 1`] = `
+exports[`createPhaseTask creates tasks for INSTALL action 1`] = `
 Object {
   "testPhaseName": Object {
     "asyncType": "series",
@@ -17,7 +17,51 @@ Object {
 }
 `;
 
-exports[`createPhaseTask creates tasks for VERIFY 1`] = `
+exports[`createPhaseTask creates tasks for RUN_PHASES action 1`] = `
+Object {
+  "testPhaseName": Object {
+    "asyncType": "series",
+    "displayName": "testPhaseName",
+    "tasks": Array [
+      Object {
+        "asyncType": "series",
+        "displayName": "testPhaseName:testPhaseName",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+      Object {
+        "asyncType": "series",
+        "displayName": "testPhaseName:testPhaseName",
+        "tasks": Array [
+          "task-fn",
+          "task-fn",
+          "task-fn",
+        ],
+      },
+    ],
+  },
+  "testPhaseName:testPhaseName": Object {
+    "asyncType": "series",
+    "displayName": "testPhaseName:testPhaseName",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "testPhaseName:testPhaseName:install:target-a": [Function],
+  "testPhaseName:testPhaseName:install:target-b": [Function],
+  "testPhaseName:testPhaseName:install:target-c": [Function],
+  "testPhaseName:testPhaseName:verify:target-a": [Function],
+  "testPhaseName:testPhaseName:verify:target-b": [Function],
+  "testPhaseName:testPhaseName:verify:target-c": [Function],
+}
+`;
+
+exports[`createPhaseTask creates tasks for VERIFY action 1`] = `
 Object {
   "testPhaseName": Object {
     "asyncType": "series",
