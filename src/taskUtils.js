@@ -9,7 +9,7 @@ const Phase = require('./Phase');
 const { createPackage } = require('./Package');
 
 // Create a single package task
-const createPackageTask = (pkg, exp, taskNamePrefix) => {
+const createPackageTask = (pkg, exp, phaseName) => {
     const task = (cb) => {
         if (pkg.skipAction) {
             log.warn(`Skipping '${pkg.name}'...`);
@@ -40,23 +40,21 @@ const createPackageTask = (pkg, exp, taskNamePrefix) => {
 
     // Create the actual gulp task and expose it globally so it can be run
     // individually
-    task.displayName = [taskNamePrefix, pkg.action, pkg.name].join(
-        PHASE_NAME_DELIM,
-    );
+    task.displayName = [phaseName, pkg.action, pkg.name].join(PHASE_NAME_DELIM);
     exp && (exp[task.displayName] = task);
 
     return task;
 };
 
 // Create a single phase task
-const createPhaseTask = (phaseDef, exp, phaseNamePrefix) => {
+const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     const phaseName = phaseDef[0];
     const phaseOpts = phaseDef[1];
     const phaseNameFull =
-        (phaseNamePrefix &&
+        (phasePrefix &&
         // Don't prefix phase names with default phase
-        phaseNamePrefix !== PHASE_NAME_DEFAULT
-            ? `${phaseNamePrefix}${PHASE_NAME_DELIM}`
+        phasePrefix !== PHASE_NAME_DEFAULT
+            ? `${phasePrefix}${PHASE_NAME_DELIM}`
             : '') + phaseName;
     const phase = new Phase(phaseNameFull, phaseOpts);
     const asyncType = phase.parallel ? 'parallel' : 'series';

@@ -87,7 +87,7 @@ describe('createPhaseTreeTasks', () => {
         const testExports = {};
         createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
 
-        console.log('>>>', JSON.stringify(Object.keys(testExports), null, 2));
+        // console.log('>>>', JSON.stringify(Object.keys(testExports), null, 2));
 
         [
             'default',

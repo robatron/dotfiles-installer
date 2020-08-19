@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`createPhaseTask creates tasks for INSTALL 1`] = `
+Object {
+  "testPhaseName": Object {
+    "asyncType": "series",
+    "displayName": "testPhaseName",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "testPhaseName:install:target-a": [Function],
+  "testPhaseName:install:target-b": [Function],
+  "testPhaseName:install:target-c": [Function],
+}
+`;
+
+exports[`createPhaseTask creates tasks for VERIFY 1`] = `
+Object {
+  "testPhaseName": Object {
+    "asyncType": "series",
+    "displayName": "testPhaseName",
+    "tasks": Array [
+      "task-fn",
+      "task-fn",
+      "task-fn",
+    ],
+  },
+  "testPhaseName:verify:target-a": [Function],
+  "testPhaseName:verify:target-b": [Function],
+  "testPhaseName:verify:target-c": [Function],
+}
+`;

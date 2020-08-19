@@ -12,7 +12,7 @@ const defaultTestPackage = new Package('packageName', {
     action: 'action',
 });
 
-describe.skip('createPackageTask', () => {
+describe('createPackageTask', () => {
     it('returns and exports a task function, and sets the display name', () => {
         const testExports = {};
         const expectedTaskName = 'phase:action:packageName';
@@ -25,14 +25,7 @@ describe.skip('createPackageTask', () => {
 
         expect(resultTask.displayName).toBe(expectedTaskName);
         expect(typeof testExports[expectedTaskName]).toBe('function');
-        expect(typeof resultTask).toBe('function');
         expect(testExports[expectedTaskName]).toBe(resultTask);
-    });
-
-    it('does not require a prefix', () => {
-        const expectedTaskName = 'action:packageName';
-        const resultTask = taskUtils.createPackageTask(defaultTestPackage, {});
-        expect(resultTask.displayName).toBe(expectedTaskName);
     });
 
     describe('the test task itself', () => {
@@ -127,32 +120,37 @@ describe.skip('createPackageTask', () => {
     });
 });
 
-// TODO: Jest cannot compare functions. Figure out a better way to test this
-// behavior.
-describe.skip('createPhaseTask', () => {
+describe('createPhaseTask', () => {
+    const defaultPhaseName = 'testPhaseName';
+    const defaultPkgs = ['target-a', 'target-b', 'target-c'];
+
     beforeEach(() => {
         jest.clearAllMocks();
-        gulp.series.mockImplementation((phaseTargetTasks) => phaseTargetTasks);
+
+        ['parallel', 'series'].forEach((asyncType) => {
+            gulp[asyncType] = jest.fn((tasks) => {
+                return {
+                    asyncType,
+                    displayName: null,
+                    tasks: tasks.map((task) =>
+                        typeof task === 'function' ? 'task-fn' : task,
+                    ),
+                };
+            });
+        });
     });
 
-    it('creates a single phase task for VERIFY or INSTALL actions', () => {
-        // const origCreatePackageTask = taskUtils.createPackageTask;
-        // taskUtils.createPackageTask = (pkg) => `createPackageTask(${pkg})`;
+    ['INSTALL', 'VERIFY'].forEach((action) => {
+        it('creates tasks for ' + action, () => {
+            const phaseDef = createPhaseDef(
+                defaultPhaseName,
+                ACTIONS[action],
+                defaultPkgs,
+            );
 
-        const testPhaseName = 'testPhaseName';
-        const testPkgs = ['target-a', 'target-b', 'target-c'];
-        const phaseDef = createPhaseDef(
-            testPhaseName,
-            ACTIONS.VERIFY,
-            testPkgs,
-        );
-        const testExports = {};
-        const actual = taskUtils.createPhaseTask(phaseDef, testExports);
-        const expected = testPkgs.map((pkg) =>
-            taskUtils.createPackageTask(pkg, testExports, testPhaseName),
-        );
-
-        //expect(JSON.stringify(actual)).toMatchObject(JSON.stringify(expected));
-        expect(actual).toMatchObject(expected);
+            const testExports = {};
+            taskUtils.createPhaseTask(phaseDef, testExports);
+            expect(testExports).toMatchSnapshot();
+        });
     });
 });

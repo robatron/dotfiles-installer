@@ -6,8 +6,8 @@ const Phase = class {
         // Name of this phase
         this.name = name || 'namelessPhase';
 
-        // Action to perform on each package, defaulting to VERIFY
-        this.action = phaseOpts.action || ACTIONS.VERIFY;
+        // Action to perform on each package
+        this.action = phaseOpts.action;
 
         // Run the packages in parallel? Default to series
         this.parallel = phaseOpts.parallel || false;
