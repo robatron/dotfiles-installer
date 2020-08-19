@@ -1,12 +1,12 @@
-const { createPhaseDef, createPhaseTreeDef } = require('../phaseUtils');
+const { defineTaskPhase, defineTaskTreeRoot } = require('../phaseUtils');
 const { ACTIONS } = require('../constants');
 
 const testTargets = ['target-a', 'target-b', 'target-c'];
 const testOpts = { opt1: 'a', opt2: 'b' };
 
-describe('createPhaseDef', () => {
+describe('defineTaskPhase', () => {
     it('creates a phase definition', () => {
-        const result = createPhaseDef('name', 'action', testTargets, testOpts);
+        const result = defineTaskPhase('name', 'action', testTargets, testOpts);
         const expected = [
             'name',
             {
@@ -19,7 +19,7 @@ describe('createPhaseDef', () => {
     });
 
     it('supports default empty options', () => {
-        const result = createPhaseDef('name', 'action', testTargets);
+        const result = defineTaskPhase('name', 'action', testTargets);
         const expected = [
             'name',
             {
@@ -31,9 +31,9 @@ describe('createPhaseDef', () => {
     });
 });
 
-describe('createPhaseTreeDef', () => {
+describe('defineTaskTreeRoot', () => {
     it('creates a root phase definition', () => {
-        const result = createPhaseTreeDef(testTargets, true);
+        const result = defineTaskTreeRoot(testTargets, true);
         const expected = [
             [
                 'default',
@@ -47,10 +47,10 @@ describe('createPhaseTreeDef', () => {
         expect(result).toEqual(expected);
     });
 
-    it('leaverages createPhaseDef', () => {
-        const result = createPhaseTreeDef(testTargets, true);
+    it('leaverages defineTaskPhase', () => {
+        const result = defineTaskTreeRoot(testTargets, true);
         const expected = [
-            createPhaseDef('default', ACTIONS.RUN_PHASES, testTargets, {
+            defineTaskPhase('default', ACTIONS.RUN_PHASES, testTargets, {
                 parallel: true,
             }),
         ];
@@ -58,9 +58,9 @@ describe('createPhaseTreeDef', () => {
     });
 
     it('defaults to series', () => {
-        const result = createPhaseTreeDef(testTargets);
+        const result = defineTaskTreeRoot(testTargets);
         const expected = [
-            createPhaseDef('default', ACTIONS.RUN_PHASES, testTargets, {
+            defineTaskPhase('default', ACTIONS.RUN_PHASES, testTargets, {
                 parallel: false,
             }),
         ];

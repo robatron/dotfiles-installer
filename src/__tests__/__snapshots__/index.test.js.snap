@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`createPhaseTreeTasks builds a task tree from definition 1`] = `
+exports[`createTaskTree builds a task tree from definition 1`] = `
 Object {
   "default": Object {
     "asyncType": "series",

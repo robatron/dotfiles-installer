@@ -1,17 +1,17 @@
 const path = require('path');
 const { exec } = require('shelljs');
 const {
-    createPhaseTreeTasks,
+    createTaskTree,
     fileExists,
     ACTIONS,
     PLATFORM: { IS_LINUX },
-    createPhaseDef,
-    createPhaseTreeDef,
+    defineTaskPhase,
+    defineTaskTreeRoot,
 } = require('.');
 
 // Package tree phase definition
-const phaseTreeDef = createPhaseTreeDef([
-    createPhaseDef(
+const taskTreeRoot = defineTaskTreeRoot([
+    defineTaskPhase(
         'verifyPrereqsPhase',
         ACTIONS.VERIFY,
         [
@@ -38,7 +38,7 @@ const phaseTreeDef = createPhaseTreeDef([
         ],
         { parallel: true },
     ),
-    createPhaseDef('installPythonPhase', ACTIONS.INSTALL, [
+    defineTaskPhase('installPythonPhase', ACTIONS.INSTALL, [
         'python3',
         [
             // Required for installing `pip`. Only needed on Linux
@@ -87,4 +87,4 @@ const phaseTreeDef = createPhaseTreeDef([
 
 // Create the full gulp task tree from the package definitions and export them
 // as gulp tasks
-createPhaseTreeTasks(phaseTreeDef, exports);
+createTaskTree(taskTreeRoot, exports);

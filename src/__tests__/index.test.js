@@ -1,9 +1,9 @@
 const gulp = require('gulp');
 const {
     ACTIONS,
-    createPhaseDef,
-    createPhaseTreeDef,
-    createPhaseTreeTasks,
+    defineTaskPhase,
+    defineTaskTreeRoot,
+    createTaskTree,
 } = require('../index');
 
 jest.mock('gulp');
@@ -21,38 +21,37 @@ jest.mock('gulp');
  *  - parallel
  *  - series (default)
  */
-
-const defaultTestPhaseTreeDef = createPhaseTreeDef([
-    createPhaseDef('installPhase', ACTIONS.INSTALL, [
+const taskTreeRoot = defineTaskTreeRoot([
+    defineTaskPhase('installPhase', ACTIONS.INSTALL, [
         'alpha',
         'bravo',
         'charlie',
     ]),
-    createPhaseDef('runPhase', ACTIONS.RUN_PHASES, [
-        createPhaseDef('subInstallPhase', ACTIONS.INSTALL, [
+    defineTaskPhase('runPhase', ACTIONS.RUN_PHASES, [
+        defineTaskPhase('subInstallPhase', ACTIONS.INSTALL, [
             'delta',
             'echo',
             'foxtrot',
         ]),
-        createPhaseDef('subRunPhase', ACTIONS.RUN_PHASES, [
-            createPhaseDef('subSubInstallPhase', ACTIONS.INSTALL, [
+        defineTaskPhase('subRunPhase', ACTIONS.RUN_PHASES, [
+            defineTaskPhase('subSubInstallPhase', ACTIONS.INSTALL, [
                 'golf',
                 'hotel',
                 'india',
             ]),
-            createPhaseDef('subSubVerifyPhase', ACTIONS.VERIFY, [
+            defineTaskPhase('subSubVerifyPhase', ACTIONS.VERIFY, [
                 'juliett',
                 'kelo',
                 'lima',
             ]),
         ]),
-        createPhaseDef('subVerifyPhase', ACTIONS.VERIFY, [
+        defineTaskPhase('subVerifyPhase', ACTIONS.VERIFY, [
             'mike',
             'november',
             'oscar',
         ]),
     ]),
-    createPhaseDef(
+    defineTaskPhase(
         'verifyPhase',
         ACTIONS.VERIFY,
         ['papa', 'quebec', 'romeo', 'sierra'],
@@ -62,7 +61,7 @@ const defaultTestPhaseTreeDef = createPhaseTreeDef([
     ),
 ]);
 
-describe('createPhaseTreeTasks', () => {
+describe('createTaskTree', () => {
     beforeEach(() => {
         ['parallel', 'series'].forEach((asyncType) => {
             gulp[asyncType] = jest.fn((tasks) => {
@@ -79,15 +78,13 @@ describe('createPhaseTreeTasks', () => {
 
     it('builds a task tree from definition', () => {
         const testExports = {};
-        createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
+        createTaskTree(taskTreeRoot, testExports);
         expect(testExports).toMatchSnapshot();
     });
 
     it('exposes all tasks globally', () => {
         const testExports = {};
-        createPhaseTreeTasks(defaultTestPhaseTreeDef, testExports);
-
-        // console.log('>>>', JSON.stringify(Object.keys(testExports), null, 2));
+        createTaskTree(taskTreeRoot, testExports);
 
         [
             'default',
