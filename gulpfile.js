@@ -1,12 +1,12 @@
 const path = require('path');
 const { exec } = require('shelljs');
 const {
-    createTaskTree,
-    fileExists,
     ACTIONS,
-    PLATFORM: { IS_LINUX },
+    createTaskTree,
     defineTaskPhase,
     defineTaskTreeRoot,
+    fileExists,
+    isLinux,
 } = require('.');
 
 // Package tree phase definition
@@ -44,7 +44,7 @@ const taskTreeRoot = defineTaskTreeRoot([
             // Required for installing `pip`. Only needed on Linux
             'python3-distutils',
             {
-                skipAction: !IS_LINUX,
+                skipAction: !isLinux(),
                 testFn: (pkg) =>
                     !exec(`dpkg -s '${pkg.name}'`, {
                         silent: true,

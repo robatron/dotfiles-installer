@@ -15,10 +15,4 @@ module.exports = {
         // Verify a package is installed
         VERIFY: 'verify',
     },
-
-    // Operating system
-    PLATFORM: {
-        IS_MAC: process.platform === 'darwin',
-        IS_LINUX: process.platform === 'linux',
-    },
 };
