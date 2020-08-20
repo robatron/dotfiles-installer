@@ -3,7 +3,7 @@ const taskUtils = require('../taskUtils');
 const { Package } = require('../Package');
 const packageUtils = require('../packageUtils');
 const { ACTIONS } = require('../constants');
-const { defineTaskPhase } = require('../phaseUtils');
+const { definePhase } = require('../phaseUtils');
 
 jest.mock('../packageUtils');
 jest.mock('gulp');
@@ -142,7 +142,7 @@ describe('createPhaseTask', () => {
 
     ['INSTALL', 'VERIFY'].forEach((action) => {
         it(`creates tasks for ${action} action`, () => {
-            const phaseDef = defineTaskPhase(
+            const phaseDef = definePhase(
                 defaultPhaseName,
                 ACTIONS[action],
                 defaultPkgs,
@@ -155,9 +155,9 @@ describe('createPhaseTask', () => {
     });
 
     it(`creates tasks for RUN_PHASES action`, () => {
-        const phaseDef = defineTaskPhase(defaultPhaseName, ACTIONS.RUN_PHASES, [
-            defineTaskPhase(defaultPhaseName, ACTIONS.INSTALL, defaultPkgs),
-            defineTaskPhase(defaultPhaseName, ACTIONS.VERIFY, defaultPkgs),
+        const phaseDef = definePhase(defaultPhaseName, ACTIONS.RUN_PHASES, [
+            definePhase(defaultPhaseName, ACTIONS.INSTALL, defaultPkgs),
+            definePhase(defaultPhaseName, ACTIONS.VERIFY, defaultPkgs),
         ]);
 
         const testExports = {};

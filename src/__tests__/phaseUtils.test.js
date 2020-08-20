@@ -1,12 +1,12 @@
-const { defineTaskPhase, defineTaskTreeRoot } = require('../phaseUtils');
+const { definePhase, defineRoot } = require('../phaseUtils');
 const { ACTIONS } = require('../constants');
 
 const testTargets = ['target-a', 'target-b', 'target-c'];
 const testOpts = { opt1: 'a', opt2: 'b' };
 
-describe('defineTaskPhase', () => {
+describe('definePhase', () => {
     it('creates a phase definition', () => {
-        const result = defineTaskPhase('name', 'action', testTargets, testOpts);
+        const result = definePhase('name', 'action', testTargets, testOpts);
         const expected = [
             'name',
             {
@@ -19,7 +19,7 @@ describe('defineTaskPhase', () => {
     });
 
     it('supports default empty options', () => {
-        const result = defineTaskPhase('name', 'action', testTargets);
+        const result = definePhase('name', 'action', testTargets);
         const expected = [
             'name',
             {
@@ -31,9 +31,9 @@ describe('defineTaskPhase', () => {
     });
 });
 
-describe('defineTaskTreeRoot', () => {
+describe('defineRoot', () => {
     it('creates a root phase definition', () => {
-        const result = defineTaskTreeRoot(testTargets, true);
+        const result = defineRoot(testTargets, true);
         const expected = [
             [
                 'default',
@@ -47,10 +47,10 @@ describe('defineTaskTreeRoot', () => {
         expect(result).toEqual(expected);
     });
 
-    it('leaverages defineTaskPhase', () => {
-        const result = defineTaskTreeRoot(testTargets, true);
+    it('leaverages definePhase', () => {
+        const result = defineRoot(testTargets, true);
         const expected = [
-            defineTaskPhase('default', ACTIONS.RUN_PHASES, testTargets, {
+            definePhase('default', ACTIONS.RUN_PHASES, testTargets, {
                 parallel: true,
             }),
         ];
@@ -58,9 +58,9 @@ describe('defineTaskTreeRoot', () => {
     });
 
     it('defaults to series', () => {
-        const result = defineTaskTreeRoot(testTargets);
+        const result = defineRoot(testTargets);
         const expected = [
-            defineTaskPhase('default', ACTIONS.RUN_PHASES, testTargets, {
+            definePhase('default', ACTIONS.RUN_PHASES, testTargets, {
                 parallel: false,
             }),
         ];

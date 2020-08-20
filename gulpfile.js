@@ -3,15 +3,15 @@ const { exec } = require('shelljs');
 const {
     ACTIONS,
     createTaskTree,
-    defineTaskPhase,
-    defineTaskTreeRoot,
+    definePhase,
+    defineRoot,
     fileExists,
     isLinux,
 } = require('.');
 
 // Package tree phase definition
-const taskTreeRoot = defineTaskTreeRoot([
-    defineTaskPhase(
+const taskTreeRoot = defineRoot([
+    definePhase(
         'verifyPrereqsPhase',
         ACTIONS.VERIFY,
         [
@@ -38,7 +38,7 @@ const taskTreeRoot = defineTaskTreeRoot([
         ],
         { parallel: true },
     ),
-    defineTaskPhase('installPythonPhase', ACTIONS.INSTALL, [
+    definePhase('installPythonPhase', ACTIONS.INSTALL, [
         'python3',
         [
             // Required for installing `pip`. Only needed on Linux

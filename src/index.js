@@ -1,7 +1,7 @@
 const { ACTIONS } = require('./constants');
 const { fileExists } = require('./fileUtils');
 const { createGlobalLogger } = require('./logger');
-const { defineTaskPhase, defineTaskTreeRoot } = require('./phaseUtils');
+const { definePhase, defineRoot } = require('./phaseUtils');
 const { isMac, isLinux } = require('./platformUtils');
 const { createTaskTree } = require('./taskUtils');
 
@@ -11,8 +11,8 @@ createGlobalLogger();
 module.exports = {
     ACTIONS,
     createTaskTree,
-    defineTaskPhase,
-    defineTaskTreeRoot,
+    definePhase,
+    defineRoot,
     fileExists,
     isLinux,
     isMac,

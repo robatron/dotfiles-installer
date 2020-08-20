@@ -1,8 +1,8 @@
 const gulp = require('gulp');
 const {
     ACTIONS,
-    defineTaskPhase,
-    defineTaskTreeRoot,
+    definePhase,
+    defineRoot,
     createTaskTree,
 } = require('../index');
 
@@ -21,37 +21,33 @@ jest.mock('gulp');
  *  - parallel
  *  - series (default)
  */
-const taskTreeRoot = defineTaskTreeRoot([
-    defineTaskPhase('installPhase', ACTIONS.INSTALL, [
-        'alpha',
-        'bravo',
-        'charlie',
-    ]),
-    defineTaskPhase('runPhase', ACTIONS.RUN_PHASES, [
-        defineTaskPhase('subInstallPhase', ACTIONS.INSTALL, [
+const taskTreeRoot = defineRoot([
+    definePhase('installPhase', ACTIONS.INSTALL, ['alpha', 'bravo', 'charlie']),
+    definePhase('runPhase', ACTIONS.RUN_PHASES, [
+        definePhase('subInstallPhase', ACTIONS.INSTALL, [
             'delta',
             'echo',
             'foxtrot',
         ]),
-        defineTaskPhase('subRunPhase', ACTIONS.RUN_PHASES, [
-            defineTaskPhase('subSubInstallPhase', ACTIONS.INSTALL, [
+        definePhase('subRunPhase', ACTIONS.RUN_PHASES, [
+            definePhase('subSubInstallPhase', ACTIONS.INSTALL, [
                 'golf',
                 'hotel',
                 'india',
             ]),
-            defineTaskPhase('subSubVerifyPhase', ACTIONS.VERIFY, [
+            definePhase('subSubVerifyPhase', ACTIONS.VERIFY, [
                 'juliett',
                 'kelo',
                 'lima',
             ]),
         ]),
-        defineTaskPhase('subVerifyPhase', ACTIONS.VERIFY, [
+        definePhase('subVerifyPhase', ACTIONS.VERIFY, [
             'mike',
             'november',
             'oscar',
         ]),
     ]),
-    defineTaskPhase(
+    definePhase(
         'verifyPhase',
         ACTIONS.VERIFY,
         ['papa', 'quebec', 'romeo', 'sierra'],
