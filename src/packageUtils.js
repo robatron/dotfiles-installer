@@ -1,9 +1,6 @@
 const commandExistsSync = require('command-exists').sync;
-const { exec } = require('shelljs');
-const {
-    PLATFORM: { IS_LINUX, IS_MAC },
-} = require('./constants');
-const { createPackage } = require('./Package');
+const shell = require('shelljs');
+const platform = require('./platformUtils');
 
 // Install the specified package
 const installPackage = (pkg) => {
@@ -13,10 +10,10 @@ const installPackage = (pkg) => {
     // Pick commands to run for the installation of this package
     if (installCommands) {
         installCommands.forEach((cmd) => cmds.push(cmd));
-    } else if (IS_MAC) {
-        cmds.push(`brew install ${pkg.name}`);
-    } else if (IS_LINUX) {
+    } else if (platform.isLinux()) {
         cmds.push(`sudo apt install -y ${pkg.name}`);
+    } else if (platform.isMac()) {
+        cmds.push(`brew install ${pkg.name}`);
     } else {
         throw new Error(
             `Cannot determine install command(s) for package '${pkg.name}'`,
@@ -25,7 +22,8 @@ const installPackage = (pkg) => {
 
     // Run install commands
     cmds.forEach((cmd) => {
-        if (exec(cmd).code) {
+        const returnCode = shell.exec(cmd).code;
+        if (returnCode !== 0) {
             const fullCommandMessage =
                 cmds.length > 1
                     ? ` Full command set: ${JSON.stringify(cmds)}`

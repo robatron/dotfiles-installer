@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`installPackage error states throws an error if the exec return code is nonzero 1`] = `"Install command 'cmd-a' failed for package 'test-package'. Full command set: [\\"cmd-a\\",\\"cmd-b\\",\\"cmd-c\\"]"`;
+
+exports[`installPackage error states throws an error if unable to determine install commands 1`] = `"Cannot determine install command(s) for package 'test-package'"`;
