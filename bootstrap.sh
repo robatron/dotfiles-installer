@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 # This is the BOOTSTRAPPER script that installs system programs and dependencies
-# required to run the dotfiles-installer
+# required to run the akinizer
 
 set -e # Exit on any error
 
@@ -102,4 +102,4 @@ if ! [ -d "$DIR/node_modules" ]; then
     npm i
 fi
 
-log "Dotfiles-installer is ready to rock! Run 'gulp' to begin."
+log "akinizer is ready to rock! Run 'gulp' to begin."

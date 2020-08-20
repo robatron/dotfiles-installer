@@ -23,7 +23,7 @@ RUN bash /tmp/copied-dotfiles/bootstrap.sh
 # Set interactive entrypoint conditions
 USER robmc
 WORKDIR /home/robmc/
-RUN ln -sf /mnt/dotfiles-installer ./df
+RUN ln -sf /mnt/akinizer ./df
 RUN ln -sf ./.nvm/nvm.sh nvm-init
 RUN echo "cd ~/df" >> .bashrc
 ENTRYPOINT /bin/bash

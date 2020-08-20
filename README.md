@@ -9,7 +9,7 @@ A custom provisioning system to install my preferred programs and personal dotfi
 
 ## Prerequisites
 
-Git is required to install, bootstrap, and run dotfiles-installer. On Ubuntu, you can install it via `apt`:
+Git is required to install, bootstrap, and run akinizer. On Ubuntu, you can install it via `apt`:
 
     sudo apt update && sudo apt install git -y
 
@@ -19,14 +19,14 @@ On Mac OS X, you can install it via [Homebrew](https://brew.sh/):
 
 ## Download, bootstrap, & start
 
-    # 1. Download to ~/opt
+    # 1. Download akinizer to ~/opt
     mkdir -p ~/opt && \
     git clone \
-        git@github.com:robatron/dotfiles-installer.git \
-        ~/opt/dotfiles-installer
+        git@github.com:robatron/akinizer.git \
+        ~/opt/akinizer && \
 
     # 2. Bootstrap required system dependencies
-    cd ~/opt/dotfiles-installer && \
+    cd ~/opt/akinizer && \
     . ~/bootstrap.sh && \
 
     # 3. Start the installer
