@@ -1,3 +1,7 @@
+/**
+ * This file serves as an end-to-end test for akinizer, in addition to being my
+ * personal akinizer definition
+ */
 const path = require('path');
 const { exec } = require('shelljs');
 const {
@@ -83,6 +87,7 @@ const taskTreeRoot = defineRoot([
             },
         ],
     ]),
+    definePhase('installDotfilesPhase', ACTIONS.INSTALL, []),
 ]);
 
 // Create the full gulp task tree from the package definitions and export them

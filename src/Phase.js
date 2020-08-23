@@ -1,5 +1,3 @@
-const { ACTIONS } = require('./constants');
-
 // Phase is a class that represents a set of actions to be executed.
 const Phase = class {
     constructor(name, phaseOpts = {}) {
