@@ -87,7 +87,7 @@ const taskTreeRoot = defineRoot([
             },
         ],
     ]),
-    definePhase('installDotfilesPhase', ACTIONS.INSTALL, []),
+    //definePhase('installDotfilesPhase', ACTIONS.INSTALL, []),
 ]);
 
 // Create the full gulp task tree from the package definitions and export them

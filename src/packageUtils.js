@@ -4,17 +4,27 @@ const platform = require('./platformUtils');
 
 // Install the specified package
 const installPackage = (pkg) => {
-    const installCommands = pkg.actionArgs.installCommands;
+    const { gitUrl, installCommands } = pkg.actionArgs;
     const cmds = [];
 
-    // Pick commands to run for the installation of this package
+    // Use explicit install commands if specified
     if (installCommands) {
         installCommands.forEach((cmd) => cmds.push(cmd));
-    } else if (platform.isLinux()) {
+    }
+
+    // Install package from a git repository
+    else if (gitUrl) {
+    }
+
+    // Install via the system package managers
+    else if (platform.isLinux()) {
         cmds.push(`sudo apt install -y ${pkg.name}`);
     } else if (platform.isMac()) {
         cmds.push(`brew install ${pkg.name}`);
-    } else {
+    }
+
+    // Error if we don't know how to install this package
+    else {
         throw new Error(
             `Cannot determine install command(s) for package '${pkg.name}'`,
         );

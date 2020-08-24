@@ -19,6 +19,7 @@ const Package = class {
 };
 
 // Create a new package object from a definition
+// TODO: Integrate this into Package constructor
 const createPackage = (pkgDef, action) => {
     if (typeof pkgDef === 'string') {
         return new Package(pkgDef, { action });
