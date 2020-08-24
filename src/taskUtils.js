@@ -60,6 +60,13 @@ const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     const asyncType = phase.parallel ? 'parallel' : 'series';
     let phaseTargetTasks;
 
+    // Don't allow phases without targets
+    if (phase.targets.length < 1) {
+        throw new Error(
+            `Missing targets for phase "${phaseNameFull}" with action "${phase.action}"`,
+        );
+    }
+
     // Recursively build phase tasks. Base case: Targets are packages
     if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
         phaseTargetTasks = phase.targets
