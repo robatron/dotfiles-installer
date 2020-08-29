@@ -1,5 +1,9 @@
 const gulp = require('gulp');
-const { installPackage, isPackageInstalled } = require('./packageUtils');
+const {
+    installPackageViaGit,
+    installPackage,
+    isPackageInstalled,
+} = require('./packageUtils');
 const {
     ACTIONS,
     PHASE_NAME_DEFAULT,
@@ -19,11 +23,17 @@ const createPackageTask = (pkg, exp, phaseName) => {
         log.info(`Verifying '${pkg.name}' is installed...`);
 
         if (!isPackageInstalled(pkg)) {
+            log.info(`Package '${pkg.name}' is not installed`);
             if (pkg.action === ACTIONS.INSTALL) {
-                log.info(
-                    `Package '${pkg.name}' is not installed. Installing...`,
-                );
-                installPackage(pkg);
+                if (pkg.gitUrl) {
+                    log.info(
+                        `Installing package '${pkg.name}' via git from '${pkg.gitUrl}'...`,
+                    );
+                    installPackageViaGit(pkg);
+                } else {
+                    log.info(`Installing package '${pkg.name}'...`);
+                    installPackage(pkg);
+                }
             } else if (pkg.action === ACTIONS.VERIFY) {
                 throw new Error(
                     `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,

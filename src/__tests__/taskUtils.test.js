@@ -81,7 +81,10 @@ describe('createPackageTask', () => {
             const taskResult = taskFn(mockCb);
 
             expect(logInfoMock).toBeCalledWith(
-                "Package 'packageName' is not installed. Installing...",
+                "Package 'packageName' is not installed",
+            );
+            expect(logInfoMock).toBeCalledWith(
+                "Installing package 'packageName'...",
             );
             expect(packageUtils.installPackage).toBeCalledWith(testPackage);
             expect(mockCb).toBeCalledTimes(1);

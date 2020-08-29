@@ -1,19 +1,36 @@
+const fs = require('fs');
+const path = require('path');
+const git = require('nodegit');
 const commandExistsSync = require('command-exists').sync;
 const shell = require('shelljs');
+const { getConfig } = require('./config');
 const platform = require('./platformUtils');
+
+// Install the specified package via git
+const installPackageViaGit = (pkg) => {
+    const { name, gitUrl } = pkg;
+    const destDir = path.join(getConfig().gitInstallDir, name);
+
+    if (!fs.mkdirSync(destDir, { recursive: true })) {
+        log.warn(
+            `Package "${name}" not installed from "${gitUrl}". Directory "${destDir}" exists. Delete the directory to install.`,
+        );
+        return;
+    }
+
+    git.Clone(gitUrl, destDir).catch((err) => {
+        throw new Error(`Error installing package '${pkg.name}': ${err}`);
+    });
+};
 
 // Install the specified package
 const installPackage = (pkg) => {
-    const { gitUrl, installCommands } = pkg.actionArgs;
+    const { installCommands } = pkg.actionArgs;
     const cmds = [];
 
     // Use explicit install commands if specified
     if (installCommands) {
         installCommands.forEach((cmd) => cmds.push(cmd));
-    }
-
-    // Install package from a git repository
-    else if (gitUrl) {
     }
 
     // Install via the system package managers
@@ -67,5 +84,6 @@ const isPackageInstalled = (pkg) => {
 
 module.exports = {
     installPackage,
+    installPackageViaGit,
     isPackageInstalled,
 };
