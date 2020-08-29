@@ -1,11 +1,22 @@
 const commandExists = require('command-exists');
 const shell = require('shelljs');
 const { Package } = require('../Package');
-const { installPackage, isPackageInstalled } = require('../packageUtils');
+const {
+    installPackageViaGit,
+    installPackage,
+    isPackageInstalled,
+} = require('../packageUtils');
 const platform = require('../platformUtils');
 
 jest.mock('shelljs');
 jest.mock('../platformUtils');
+
+describe('installPackageViaGit', () => {
+    // Todo
+    it('installs a package via git', () => {
+        const testGitUrl = 'https://github.com/robatron/akinizer.git';
+    });
+});
 
 describe('installPackage', () => {
     beforeEach(() => {
