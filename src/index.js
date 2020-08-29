@@ -1,3 +1,4 @@
+const { getConfig, setConfig } = require('./config');
 const { ACTIONS } = require('./constants');
 const { fileExists } = require('./fileUtils');
 const { createGlobalLogger } = require('./logger');
@@ -14,6 +15,8 @@ module.exports = {
     definePhase,
     defineRoot,
     fileExists,
+    getConfig,
     isLinux,
     isMac,
+    setConfig,
 };
