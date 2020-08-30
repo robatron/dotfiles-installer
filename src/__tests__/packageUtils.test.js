@@ -1,3 +1,4 @@
+const path = require('path');
 const commandExists = require('command-exists');
 const shell = require('shelljs');
 const { Package } = require('../Package');
@@ -12,9 +13,11 @@ jest.mock('shelljs');
 jest.mock('../platformUtils');
 
 describe('installPackageViaGit', () => {
-    // Todo
     it('installs a package via git', () => {
-        const testGitUrl = 'https://github.com/robatron/akinizer.git';
+        const gitUrl = 'https://github.com/robatron/akinizer.git';
+        const pkg = new Package('test-package', { gitUrl });
+        const destDir = path.join(__dirname, pkg.name);
+        installPackageViaGit(pkg, destDir);
     });
 });
 

@@ -4,12 +4,15 @@ const git = require('nodegit');
 const commandExistsSync = require('command-exists').sync;
 const shell = require('shelljs');
 const { getConfig } = require('./config');
+const log = require('./log');
 const platform = require('./platformUtils');
 
 // Install the specified package via git
-const installPackageViaGit = (pkg) => {
+const installPackageViaGit = (
+    pkg,
+    destDir = path.join(getConfig().gitInstallDir, name),
+) => {
     const { name, gitUrl } = pkg;
-    const destDir = path.join(getConfig().gitInstallDir, name);
 
     if (!fs.mkdirSync(destDir, { recursive: true })) {
         log.warn(
@@ -19,7 +22,7 @@ const installPackageViaGit = (pkg) => {
     }
 
     git.Clone(gitUrl, destDir).catch((err) => {
-        throw new Error(`Error installing package '${pkg.name}': ${err}`);
+        log.error(`Error installing package '${pkg.name}': ${err}`);
     });
 };
 
