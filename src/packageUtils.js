@@ -14,7 +14,7 @@ const installPackageViaGit = (
 ) => {
     const {
         name,
-        actionArgs: { gitUrl },
+        actionArgs: { gitUrl, postInstall },
     } = pkg;
 
     const createdFilePath = fs.mkdirSync(destDir, { recursive: true });
@@ -25,15 +25,23 @@ const installPackageViaGit = (
         return Promise.resolve();
     }
 
-    return git.Clone(gitUrl, destDir).catch((err) => {
-        log.error(`Error installing package '${pkg.name}': ${err}`);
-        process.exit(1);
-    });
+    return git
+        .Clone(gitUrl, destDir)
+        .then(() => {
+            // Run any post install steps
+            if (postInstall) {
+                postInstall(pkg);
+            }
+        })
+        .catch((err) => {
+            log.error(`Error installing package '${pkg.name}': ${err}`);
+            process.exit(1);
+        });
 };
 
 // Install the specified package
 const installPackage = (pkg) => {
-    const { installCommands } = pkg.actionArgs;
+    const { installCommands, postInstall } = pkg.actionArgs;
     const cmds = [];
 
     // Use explicit install commands if specified
@@ -68,6 +76,11 @@ const installPackage = (pkg) => {
             );
         }
     });
+
+    // Run any post install steps
+    if (postInstall) {
+        postInstall(pkg);
+    }
 };
 
 // Return if a package is installed or not

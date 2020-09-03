@@ -65,13 +65,6 @@ const taskTreeRoot = defineRoot([
             },
         ],
         [
-            // Required for `yadm`
-            'envtpl',
-            {
-                installCommands: ['sudo -H pip install envtpl'],
-            },
-        ],
-        [
             'pyenv',
             {
                 installCommands: ['curl https://pyenv.run | bash'],
@@ -87,7 +80,22 @@ const taskTreeRoot = defineRoot([
             },
         ],
     ]),
-    //definePhase('installDotfilesPhase', ACTIONS.INSTALL, []),
+    definePhase('installDotfilesPhase', ACTIONS.INSTALL, [
+        [
+            // Required for `yadm`
+            'envtpl',
+            {
+                installCommands: ['sudo -H pip install envtpl'],
+            },
+        ],
+        [
+            'yadm',
+            {
+                gitUrl: 'https://github.com/TheLocehiliosan/yadm.git',
+                postInstall: (pkg) => {},
+            },
+        ],
+    ]),
 ]);
 
 // Create the full gulp task tree from the package definitions and export them

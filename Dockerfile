@@ -13,17 +13,17 @@ RUN \
     echo "abc123\nabc123" | passwd robmc && \
     echo "Set disable_coredump false" >> /etc/sudo.conf
 
-# Bootstrap
+# Bootstrap & install
 RUN apt-get install curl -y
+COPY . /tmp/ak/
+RUN chown -R robmc:robmc /tmp/ak/
 USER robmc
-COPY . /tmp/copied-dotfiles
-RUN cd /tmp/copied-dotfiles
-RUN bash /tmp/copied-dotfiles/bootstrap.sh
+RUN cd /tmp/ak/ && bash bootstrap.sh
 
 # Set interactive entrypoint conditions
 USER robmc
 WORKDIR /home/robmc/
-RUN ln -sf /mnt/akinizer ./df
-RUN ln -sf ./.nvm/nvm.sh nvm-init
-RUN echo "cd ~/df" >> .bashrc
+RUN ln -sf /tmp/ak ./ak
+RUN ln -sf ~/.nvm/nvm.sh nvm-init
+RUN echo "cd ~/ak" >> .bashrc
 ENTRYPOINT /bin/bash

@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const commandExists = require('command-exists');
 const rmrf = require('rimraf');
 const shell = require('shelljs');
 const log = require('../log');

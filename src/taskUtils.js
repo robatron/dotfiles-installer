@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const log = require('./log');
 const {
     installPackageViaGit,
     installPackage,
