@@ -1,7 +1,9 @@
+const fs = require('fs');
 const path = require('path');
 const commandExists = require('command-exists');
 const rmrf = require('rimraf');
 const shell = require('shelljs');
+const log = require('../log');
 const { Package } = require('../Package');
 const {
     installPackageViaGit,
@@ -11,6 +13,7 @@ const {
 const platform = require('../platformUtils');
 
 jest.mock('shelljs');
+jest.mock('../log');
 jest.mock('../platformUtils');
 
 describe('installPackageViaGit', () => {
@@ -18,12 +21,48 @@ describe('installPackageViaGit', () => {
     const pkg = new Package('test-package', { gitUrl });
     const destDir = path.join(__dirname, '__tmp__', pkg.name);
 
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     afterEach(() => {
+        // Since I'm lazy and don't want to mock the git package, we need to
+        // clean up the generated files
         rmrf.sync(path.join(destDir, '..'));
     });
 
-    it('installs a package via git', () => {
-        installPackageViaGit(pkg, destDir);
+    it('installs a package via git', (done) => {
+        installPackageViaGit(pkg, destDir).finally(() => {
+            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(true);
+            done();
+        });
+    });
+
+    it('warns and declines to clone the repo if the target directory exists', (done) => {
+        fs.mkdirSync(destDir, { recursive: true });
+
+        installPackageViaGit(pkg, destDir).finally(() => {
+            expect(log.warn).toHaveBeenCalledWith(
+                expect.stringMatching(/package.*not installed.*delete/gi),
+            );
+            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
+            done();
+        });
+    });
+
+    it('errors and exits on clone errors', (done) => {
+        const mockExit = jest
+            .spyOn(process, 'exit')
+            .mockImplementation(() => {});
+        const testPkg = new Package('test-package', { gitUrl: null });
+
+        installPackageViaGit(testPkg, destDir).finally(() => {
+            expect(log.error).toHaveBeenCalledWith(
+                expect.stringMatching(/error installing/gi),
+            );
+            expect(mockExit).toHaveBeenCalledWith(1);
+            done();
+        });
     });
 });
 

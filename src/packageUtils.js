@@ -17,15 +17,17 @@ const installPackageViaGit = (
         actionArgs: { gitUrl },
     } = pkg;
 
-    if (!fs.mkdirSync(destDir, { recursive: true })) {
+    const createdFilePath = fs.mkdirSync(destDir, { recursive: true });
+    if (!createdFilePath) {
         log.warn(
             `Package "${name}" not installed from "${gitUrl}". Directory "${destDir}" exists. Delete the directory to install.`,
         );
-        return;
+        return Promise.resolve();
     }
 
-    git.Clone(gitUrl, destDir).catch((err) => {
+    return git.Clone(gitUrl, destDir).catch((err) => {
         log.error(`Error installing package '${pkg.name}': ${err}`);
+        process.exit(1);
     });
 };
 
@@ -70,22 +72,23 @@ const installPackage = (pkg) => {
 
 // Return if a package is installed or not
 const isPackageInstalled = (pkg) => {
-    const testFn = pkg.actionArgs.testFn;
+    const { testFn } = pkg.actionArgs;
 
-    return testFn
-        ? (() => {
-              log.info(
-                  `Using custom test to verify '${pkg.name}' is installed...`,
-              );
-              const result = testFn(pkg);
-              if (!result) {
-                  log.info(
-                      `Custom test for '${pkg.name}' failed. Assuming not installed...`,
-                  );
-              }
-              return result;
-          })()
-        : commandExistsSync(pkg.command);
+    // If custom test function supplied, use it
+    if (testFn) {
+        log.info(`Using custom test to verify '${pkg.name}' is installed...`);
+
+        if (!testFn(pkg)) {
+            log.info(
+                `Custom test for '${pkg.name}' failed. Assuming not installed...`,
+            );
+            return false;
+        }
+        return true;
+    }
+
+    // Otherwise, just see if the command exists in the environment
+    return commandExistsSync(pkg.command);
 };
 
 module.exports = {
