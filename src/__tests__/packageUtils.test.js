@@ -1,5 +1,6 @@
 const path = require('path');
 const commandExists = require('command-exists');
+const rmrf = require('rimraf');
 const shell = require('shelljs');
 const { Package } = require('../Package');
 const {
@@ -13,10 +14,15 @@ jest.mock('shelljs');
 jest.mock('../platformUtils');
 
 describe('installPackageViaGit', () => {
+    const gitUrl = 'https://github.com/octocat/Hello-World.git';
+    const pkg = new Package('test-package', { gitUrl });
+    const destDir = path.join(__dirname, '__tmp__', pkg.name);
+
+    afterEach(() => {
+        rmrf.sync(path.join(destDir, '..'));
+    });
+
     it('installs a package via git', () => {
-        const gitUrl = 'https://github.com/robatron/akinizer.git';
-        const pkg = new Package('test-package', { gitUrl });
-        const destDir = path.join(__dirname, pkg.name);
         installPackageViaGit(pkg, destDir);
     });
 });
@@ -86,3 +92,6 @@ describe('installPackage', () => {
         });
     });
 });
+
+// todo
+describe.skip('isPackageinstalled', () => {});

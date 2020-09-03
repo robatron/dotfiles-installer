@@ -12,7 +12,10 @@ const installPackageViaGit = (
     pkg,
     destDir = path.join(getConfig().gitInstallDir, name),
 ) => {
-    const { name, gitUrl } = pkg;
+    const {
+        name,
+        actionArgs: { gitUrl },
+    } = pkg;
 
     if (!fs.mkdirSync(destDir, { recursive: true })) {
         log.warn(
