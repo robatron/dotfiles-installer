@@ -53,7 +53,7 @@ describe('installPackageViaGit', () => {
     it('errors and exits on clone errors', (done) => {
         const mockExit = jest
             .spyOn(process, 'exit')
-            .mockImplementation(() => {});
+            .mockImplementationOnce(() => {});
         const testPkg = new Package('test-package', { gitUrl: null });
 
         installPackageViaGit(testPkg, destDir).finally(() => {
@@ -132,5 +132,24 @@ describe('installPackage', () => {
     });
 });
 
-// todo
-describe.skip('isPackageinstalled', () => {});
+describe('isPackageinstalled', () => {
+    it('returns true if a command exists', () => {
+        // All systems should have the 'cd' command
+        const pkg = new Package('cd');
+        expect(isPackageInstalled(pkg)).toBe(true);
+    });
+
+    it('returns false if a command does not exists', () => {
+        const pkg = new Package('nänəɡˈzistənt');
+        expect(isPackageInstalled(pkg)).toBe(false);
+    });
+
+    describe('custom test function support', () => {
+        [true, false].forEach((condition) => {
+            it(`returns ${condition} when test fn returns ${condition}`, () => {
+                const pkg = new Package('tst-cmd', { testFn: () => condition });
+                expect(isPackageInstalled(pkg)).toBe(condition);
+            });
+        });
+    });
+});
