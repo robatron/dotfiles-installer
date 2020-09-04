@@ -15,6 +15,9 @@ jest.mock('shelljs');
 jest.mock('../log');
 jest.mock('../platformUtils');
 
+// Allow a little more time for the git clone to finish
+jest.setTimeout(15000);
+
 describe('installPackageViaGit', () => {
     const gitUrl = 'https://github.com/octocat/Hello-World.git';
     const pkg = new Package('test-package', { gitUrl });
