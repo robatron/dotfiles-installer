@@ -92,7 +92,9 @@ const taskTreeRoot = defineRoot([
             'yadm',
             {
                 gitUrl: 'https://github.com/TheLocehiliosan/yadm.git',
-                postInstall: (pkg) => {},
+                postInstall: (pkg) => {
+                    console.log('Yo yo yo yo yo yo yo yo yo yo');
+                },
             },
         ],
     ]),

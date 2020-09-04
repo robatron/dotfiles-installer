@@ -4,7 +4,7 @@ FROM ubuntu:20.04
 RUN \
     apt-get update && \
     apt-get install -y && \
-    apt-get install sudo git -y
+    apt-get install git rsync sudo vim -y
 
 # Add 'robmc' user
 RUN \
@@ -13,17 +13,15 @@ RUN \
     echo "abc123\nabc123" | passwd robmc && \
     echo "Set disable_coredump false" >> /etc/sudo.conf
 
-# Bootstrap & install
+# Bootstrap system, compile node_modules
 RUN apt-get install curl -y
-COPY . /tmp/ak/
-RUN chown -R robmc:robmc /tmp/ak/
+COPY --chown=robmc:robmc . /tmp/ak/
 USER robmc
 RUN cd /tmp/ak/ && bash bootstrap.sh
 
 # Set interactive entrypoint conditions
 USER robmc
 WORKDIR /home/robmc/
+COPY --chown=robmc:robmc ./deploy .
 RUN ln -sf /tmp/ak ./ak
-RUN ln -sf ~/.nvm/nvm.sh nvm-init
-RUN echo "cd ~/ak" >> .bashrc
 ENTRYPOINT /bin/bash
