@@ -1,12 +1,14 @@
 const gulp = require('gulp');
-const taskUtils = require('../taskUtils');
+const { ACTIONS } = require('../constants');
+const log = require('../log');
 const { Package } = require('../Package');
 const packageUtils = require('../packageUtils');
-const { ACTIONS } = require('../constants');
 const { definePhase } = require('../phaseUtils');
+const taskUtils = require('../taskUtils');
 
-jest.mock('../packageUtils');
 jest.mock('gulp');
+jest.mock('../packageUtils');
+jest.mock('../log');
 
 const defaultTestPackage = new Package('packageName', {
     action: 'action',
@@ -30,13 +32,6 @@ describe('createPackageTask', () => {
 
     describe('the test task itself', () => {
         const mockCb = jest.fn(() => 'cbReturn');
-        const logWarnMock = jest.fn();
-        const logInfoMock = jest.fn();
-
-        global.log = {
-            info: logInfoMock,
-            warn: logWarnMock,
-        };
 
         beforeEach(() => {
             jest.clearAllMocks();
@@ -50,7 +45,7 @@ describe('createPackageTask', () => {
 
             const taskResult = taskFn(mockCb);
 
-            expect(logWarnMock).toBeCalledWith("Skipping 'packageName'...");
+            expect(log.warn).toBeCalledWith("Skipping 'packageName'...");
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
         });
@@ -61,7 +56,7 @@ describe('createPackageTask', () => {
             const taskFn = taskUtils.createPackageTask(defaultTestPackage, {});
             const taskResult = taskFn(mockCb);
 
-            expect(logInfoMock).toBeCalledWith(
+            expect(log.info).toBeCalledWith(
                 "Verifying 'packageName' is installed...",
             );
             expect(packageUtils.isPackageInstalled).toBeCalledWith(
@@ -80,10 +75,10 @@ describe('createPackageTask', () => {
             const taskFn = taskUtils.createPackageTask(testPackage, {});
             const taskResult = taskFn(mockCb);
 
-            expect(logInfoMock).toBeCalledWith(
+            expect(log.info).toBeCalledWith(
                 "Package 'packageName' is not installed",
             );
-            expect(logInfoMock).toBeCalledWith(
+            expect(log.info).toBeCalledWith(
                 "Installing package 'packageName'...",
             );
             expect(packageUtils.installPackage).toBeCalledWith(testPackage);
