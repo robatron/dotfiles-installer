@@ -14,12 +14,12 @@ const defaultTestPackage = new Package('packageName', {
     action: 'action',
 });
 
-describe('createPackageTask', () => {
+describe('createPackageFromDefTask', () => {
     it('returns and exports a task function, and sets the display name', () => {
         const testExports = {};
         const expectedTaskName = 'phase:action:packageName';
 
-        const resultTask = taskUtils.createPackageTask(
+        const resultTask = taskUtils.createPackageFromDefTask(
             defaultTestPackage,
             testExports,
             'phase',
@@ -41,7 +41,7 @@ describe('createPackageTask', () => {
             const testPackage = new Package('packageName', {
                 skipAction: true,
             });
-            const taskFn = taskUtils.createPackageTask(testPackage, {});
+            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
 
             const taskResult = taskFn(mockCb);
 
@@ -53,7 +53,10 @@ describe('createPackageTask', () => {
         it('always verifies the package is installed and returns the callback', () => {
             packageUtils.isPackageInstalled.mockReturnValue(true);
 
-            const taskFn = taskUtils.createPackageTask(defaultTestPackage, {});
+            const taskFn = taskUtils.createPackageFromDefTask(
+                defaultTestPackage,
+                {},
+            );
             const taskResult = taskFn(mockCb);
 
             expect(log.info).toBeCalledWith(
@@ -72,7 +75,7 @@ describe('createPackageTask', () => {
             const testPackage = new Package('packageName', {
                 action: ACTIONS.INSTALL,
             });
-            const taskFn = taskUtils.createPackageTask(testPackage, {});
+            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
             const taskResult = taskFn(mockCb);
 
             expect(log.info).toBeCalledWith(
@@ -92,7 +95,7 @@ describe('createPackageTask', () => {
             const testPackage = new Package('packageName', {
                 action: ACTIONS.VERIFY,
             });
-            const taskFn = taskUtils.createPackageTask(testPackage, {});
+            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
 
             expect(() => {
                 taskFn(mockCb);
@@ -107,7 +110,7 @@ describe('createPackageTask', () => {
             const testPackage = new Package('packageName', {
                 action: 'unsupportedAction',
             });
-            const taskFn = taskUtils.createPackageTask(testPackage, {});
+            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
 
             expect(() => {
                 taskFn(mockCb);

@@ -11,10 +11,10 @@ const {
     PHASE_NAME_DELIM,
 } = require('./constants');
 const Phase = require('./Phase');
-const { createPackage } = require('./Package');
+const { createPackageFromDef } = require('./Package');
 
 // Create a single package task
-const createPackageTask = (pkg, exp, phaseName) => {
+const createPackageFromDefTask = (pkg, exp, phaseName) => {
     const task = (cb) => {
         if (pkg.skipAction) {
             log.warn(`Skipping '${pkg.name}'...`);
@@ -81,8 +81,8 @@ const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     // Recursively build phase tasks. Base case: Targets are packages
     if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
         phaseTargetTasks = phase.targets
-            .map((pkgDef) => createPackage(pkgDef, phase.action))
-            .map((pkg) => createPackageTask(pkg, exp, phase.name));
+            .map((pkgDef) => createPackageFromDef(pkgDef, phase.action))
+            .map((pkg) => createPackageFromDefTask(pkg, exp, phase.name));
     } else if (phase.action === ACTIONS.RUN_PHASES) {
         phaseTargetTasks = createTaskTree(phase.targets, exp, phase.name);
     } else {
@@ -105,7 +105,7 @@ const createTaskTree = (phaseDefs, exp, phaseNamePrefix = null) =>
     );
 
 module.exports = {
-    createPackageTask,
+    createPackageFromDefTask,
     createPhaseTask,
     createTaskTree,
 };

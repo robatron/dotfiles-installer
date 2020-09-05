@@ -19,8 +19,7 @@ const Package = class {
 };
 
 // Create a new package object from a definition
-// TODO: Integrate this into Package constructor
-const createPackage = (pkgDef, action) => {
+const createPackageFromDef = (pkgDef, action) => {
     if (typeof pkgDef === 'string') {
         return new Package(pkgDef, { action });
     } else if (Array.isArray(pkgDef)) {
@@ -34,4 +33,4 @@ const createPackage = (pkgDef, action) => {
     }
 };
 
-module.exports = { createPackage, Package };
+module.exports = { createPackageFromDef, Package };
