@@ -22,6 +22,7 @@ describe('installPackageViaGit', () => {
     const gitUrl = 'https://github.com/octocat/Hello-World.git';
     const pkg = new Package('test-package', { gitUrl });
     const destDir = path.join(__dirname, '__tmp__', pkg.name);
+    const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -35,27 +36,23 @@ describe('installPackageViaGit', () => {
 
     it('installs a package via git', (done) => {
         installPackageViaGit(pkg, destDir).finally(() => {
+            expect(log.warn).not.toBeCalled();
             expect(fs.existsSync(path.join(destDir, '.git'))).toBe(true);
             done();
         });
     });
 
-    it('warns and declines to clone the repo if the target directory exists', (done) => {
+    it('errors and exits if target directory exists', () => {
         fs.mkdirSync(destDir, { recursive: true });
-
-        installPackageViaGit(pkg, destDir).finally(() => {
-            expect(log.warn).toHaveBeenCalledWith(
-                expect.stringMatching(/package.*not installed.*delete/gi),
-            );
-            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
-            done();
-        });
+        installPackageViaGit(pkg, destDir);
+        expect(log.error).toHaveBeenCalledWith(
+            expect.stringMatching(/error installing/gi),
+        );
+        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
     });
 
     it('errors and exits on clone errors', (done) => {
-        const mockExit = jest
-            .spyOn(process, 'exit')
-            .mockImplementationOnce(() => {});
         const testPkg = new Package('test-package', { gitUrl: null });
 
         installPackageViaGit(testPkg, destDir).finally(() => {
