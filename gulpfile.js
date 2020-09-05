@@ -2,6 +2,7 @@
  * This file serves as an end-to-end test for akinizer, in addition to being my
  * personal akinizer definition
  */
+const fs = require('fs');
 const path = require('path');
 const { exec } = require('shelljs');
 const {
@@ -9,6 +10,7 @@ const {
     createTaskTree,
     definePhase,
     defineRoot,
+    getConfig,
     fileExists,
     isLinux,
 } = require('.');
@@ -76,6 +78,13 @@ const installPythonPhase = definePhase('installPythonPhase', ACTIONS.INSTALL, [
                 ),
         },
     ],
+    [
+        // Required for `yadm`
+        'envtpl',
+        {
+            installCommands: ['sudo -H pip install envtpl'],
+        },
+    ],
 ]);
 
 const installDotfilesPhase = definePhase(
@@ -83,18 +92,15 @@ const installDotfilesPhase = definePhase(
     ACTIONS.INSTALL,
     [
         [
-            // Required for `yadm`
-            'envtpl',
-            {
-                installCommands: ['sudo -H pip install envtpl'],
-            },
-        ],
-        [
             'yadm',
             {
                 gitUrl: 'https://github.com/TheLocehiliosan/yadm.git',
-                postInstall: (pkg) => {
-                    console.log('Yo yo yo yo yo yo yo yo yo yo');
+                postInstall: (pkg, { destDir }) => {
+                    const { binInstallDir } = getConfig();
+                    fs.symlinkSync(
+                        path.join(destDir, pkg.name),
+                        path.join(binInstallDir, pkg.name),
+                    );
                 },
             },
         ],
@@ -106,7 +112,7 @@ const installDotfilesPhase = definePhase(
 createTaskTree(
     defineRoot([
         // verifyPrereqsPhase,
-        installPythonPhase,
+        // installPythonPhase,
         installDotfilesPhase,
     ]),
     exports,

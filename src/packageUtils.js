@@ -8,29 +8,27 @@ const log = require('./log');
 const platform = require('./platformUtils');
 
 // Install the specified package via git
-const installPackageViaGit = (
-    pkg,
-    destDir = path.join(getConfig().gitInstallDir, name),
-) => {
+const installPackageViaGit = (pkg) => {
     const {
         name,
         actionArgs: { gitUrl, postInstall },
     } = pkg;
+    const { gitInstallDir } = getConfig();
 
-    const createdFilePath = fs.mkdirSync(destDir, { recursive: true });
+    const createdFilePath = fs.mkdirSync(gitInstallDir, { recursive: true });
     if (!createdFilePath) {
         log.warn(
-            `Package "${name}" not installed from "${gitUrl}". Directory "${destDir}" exists. Delete the directory to install.`,
+            `Package "${name}" not installed from "${gitUrl}". Directory "${gitInstallDir}" exists. Delete the directory to install.`,
         );
         return Promise.resolve();
     }
 
     return git
-        .Clone(gitUrl, destDir)
+        .Clone(gitUrl, gitInstallDir)
         .then(() => {
-            // Run any post install steps
+            // Run any post install steps, pass along pertinant info
             if (postInstall) {
-                postInstall(pkg);
+                postInstall(pkg, { gitUrl, gitInstallDir });
             }
         })
         .catch((err) => {

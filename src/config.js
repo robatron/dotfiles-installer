@@ -4,6 +4,7 @@ const path = require('path');
 // Config singleton initialized with default values
 let config = {
     // Directory in which to install git packages
+    binInstallDir: path.join(os.homedir(), 'bin'),
     gitInstallDir: path.join(os.homedir(), 'opt'),
 };
 
