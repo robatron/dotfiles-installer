@@ -42,9 +42,22 @@ describe('installPackageViaGit', () => {
         });
     });
 
-    it('errors and exits if target directory exists', () => {
+    it('warns and returns early if target directory exists', () => {
         fs.mkdirSync(destDir, { recursive: true });
+
         installPackageViaGit(pkg, destDir);
+        expect(log.warn).toHaveBeenCalledWith(
+            expect.stringMatching(/directory exists/gi),
+        );
+        expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
+    });
+
+    it('errors and exits if target directory is a file', () => {
+        const destFile = path.join(destDir, '..', 'foo.txt');
+        fs.mkdirSync(path.join(destFile, '..'), { recursive: true });
+        fs.closeSync(fs.openSync(destFile, 'w'));
+
+        installPackageViaGit(pkg, destFile);
         expect(log.error).toHaveBeenCalledWith(
             expect.stringMatching(/error installing/gi),
         );

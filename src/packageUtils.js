@@ -18,11 +18,19 @@ const installPackageViaGit = (pkg, destDir) => {
         destDir = gitInstallDir;
     }
 
+    // If there's already a file there, warn and move on
     if (fs.existsSync(destDir)) {
-        log.error(
-            `Error installing package '${pkg.name}' from '${gitUrl}': '${destDir}' exists`,
-        );
-        return process.exit(1);
+        if (fs.lstatSync(destDir).isDirectory()) {
+            log.warn(
+                `Refusing to clone '${gitUrl}' to '${destDir}'. Directory exists.`,
+            );
+            return;
+        } else {
+            log.error(
+                `Error installing package '${pkg.name}' from '${gitUrl}'. File exists.`,
+            );
+            return process.exit(1);
+        }
     }
 
     fs.mkdirSync(destDir, { recursive: true });
