@@ -111,6 +111,7 @@ Installs a package.
 -   `gitUrl` - Marks the package to be installed via git. Should be the http url to the git repo of the package.
 -   `installCommands` - Use these install commands instead of the system default.
 -   `postInstall` - Commands to run after installation
+-   `testFn` - Alternative function used to test a package is installed. Return `true` for "installed", and `false` if not. Called with the current package.
 
 ### Verify
 
