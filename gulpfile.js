@@ -94,14 +94,8 @@ const installDotfilesPhase = definePhase(
         [
             'yadm',
             {
+                binSymlink: 'yadm',
                 gitUrl: 'https://github.com/TheLocehiliosan/yadm.git',
-                postInstall: (pkg, { destDir }) => {
-                    const { binInstallDir } = getConfig();
-                    fs.symlinkSync(
-                        path.join(destDir, pkg.name),
-                        path.join(binInstallDir, pkg.name),
-                    );
-                },
             },
         ],
     ],

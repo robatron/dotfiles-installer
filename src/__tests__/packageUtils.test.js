@@ -20,8 +20,11 @@ jest.setTimeout(15000);
 
 describe('installPackageViaGit', () => {
     const gitUrl = 'https://github.com/octocat/Hello-World.git';
-    const pkg = new Package('test-package', { gitUrl });
-    const destDir = path.join(__dirname, '__tmp__', pkg.name);
+    const binSymlink = 'README';
+    const pkg = new Package('test-package', { binSymlink, gitUrl });
+    const tempDir = path.join(__dirname, '__tmp__');
+    const destDir = path.join(tempDir, 'opt', pkg.name);
+    const binDir = path.join(tempDir, 'bin');
     const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
     beforeEach(() => {
@@ -29,51 +32,63 @@ describe('installPackageViaGit', () => {
     });
 
     afterEach(() => {
-        // Since I'm lazy and don't want to mock the git package, we need to
-        // clean up the generated files
-        rmrf.sync(path.join(destDir, '..'));
+        // Since I'm lazy and don't want to mock the git package or other
+        // filesystem functions, we need to clean up the generated files
+        rmrf.sync(tempDir);
     });
 
     it('installs a package via git', (done) => {
-        installPackageViaGit(pkg, destDir).finally(() => {
-            expect(log.warn).not.toBeCalled();
+        installPackageViaGit(pkg, destDir, binDir).finally(() => {
             expect(fs.existsSync(path.join(destDir, '.git'))).toBe(true);
             done();
         });
     });
 
-    it('warns and returns early if target directory exists', () => {
-        fs.mkdirSync(destDir, { recursive: true });
-
-        installPackageViaGit(pkg, destDir);
-        expect(log.warn).toHaveBeenCalledWith(
-            expect.stringMatching(/directory exists/gi),
-        );
-        expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
-    });
-
-    it('errors and exits if target directory is a file', () => {
-        const destFile = path.join(destDir, '..', 'foo.txt');
-        fs.mkdirSync(path.join(destFile, '..'), { recursive: true });
-        fs.closeSync(fs.openSync(destFile, 'w'));
-
-        installPackageViaGit(pkg, destFile);
-        expect(log.error).toHaveBeenCalledWith(
-            expect.stringMatching(/error installing/gi),
-        );
-        expect(mockExit).toHaveBeenCalledWith(1);
-        expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
+    it('symlinks the package binary', (done) => {
+        const binFile = path.join(binDir);
+        installPackageViaGit(pkg, destDir, binDir).finally(() => {
+            expect(
+                fs.existsSync(binSymlink) &&
+                    fs.lstatSync(binSymlink).isSymbolicLink(),
+            ).toBe(true);
+            done();
+        });
     });
 
     it('errors and exits on clone errors', (done) => {
         const testPkg = new Package('test-package', { gitUrl: null });
 
-        installPackageViaGit(testPkg, destDir).finally(() => {
+        installPackageViaGit(testPkg, destDir, binDir).finally(() => {
             expect(log.error).toHaveBeenCalledWith(
                 expect.stringMatching(/error installing/gi),
             );
             expect(mockExit).toHaveBeenCalledWith(1);
             done();
+        });
+    });
+
+    describe('undesireable clone directory states', () => {
+        it('warns and returns early if target directory exists', () => {
+            fs.mkdirSync(destDir, { recursive: true });
+
+            installPackageViaGit(pkg, destDir, binDir);
+            expect(log.warn).toHaveBeenCalledWith(
+                expect.stringMatching(/directory exists/gi),
+            );
+            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
+        });
+
+        it('errors and exits if target directory is a file', () => {
+            const destFile = path.join(destDir, '..', 'foo.txt');
+            fs.mkdirSync(path.join(destFile, '..'), { recursive: true });
+            fs.closeSync(fs.openSync(destFile, 'w'));
+
+            installPackageViaGit(pkg, destFile, binDir);
+            expect(log.error).toHaveBeenCalledWith(
+                expect.stringMatching(/error installing/gi),
+            );
+            expect(mockExit).toHaveBeenCalledWith(1);
+            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
         });
     });
 });
