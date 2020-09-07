@@ -8,23 +8,18 @@ const log = require('./log');
 const platform = require('./platformUtils');
 
 // Install the specified package via git
-const installPackageViaGit = async (pkg, cloneDir, binDir) => {
+const installPackageViaGit = async (pkg) => {
     const {
-        actionArgs: {
-            gitPackage: { binSymlink, repoUrl },
-            postInstall,
-        },
+        actionArgs: { gitPackage, postInstall },
     } = pkg;
 
-    if (!cloneDir) {
-        const { gitCloneDir } = getConfig();
-        cloneDir = path.join(gitCloneDir, pkg.name);
-    }
-
-    if (!binDir) {
-        const { binInstallDir } = getConfig();
-        binDir = binInstallDir;
-    }
+    const { binSymlink, repoUrl } = gitPackage;
+    const binDir = gitPackage.binDir
+        ? gitPackage.binDir
+        : getConfig().gitBinDir;
+    const cloneDir = gitPackage.cloneDir
+        ? gitPackage.cloneDir
+        : path.join(getConfig().gitCloneDir, pkg.name);
 
     if (fs.existsSync(cloneDir)) {
         if (fs.lstatSync(cloneDir).isDirectory()) {
@@ -126,7 +121,7 @@ const installPackage = (pkg) => {
 };
 
 // Return if a package is installed or not
-const isPackageInstalled = (pkg, binDir, cloneDir) => {
+const isPackageInstalled = (pkg) => {
     const { gitPackage, testFn } = pkg.actionArgs;
 
     // If custom test function supplied, use it
@@ -145,6 +140,13 @@ const isPackageInstalled = (pkg, binDir, cloneDir) => {
     // If this is a git package, check if its cloned, and its binaries exist
     if (gitPackage) {
         const { binSymlink } = gitPackage;
+
+        const binDir = gitPackage.binDir
+            ? gitPackage.binDir
+            : getConfig().gitBinDir;
+        const cloneDir = gitPackage.cloneDir
+            ? gitPackage.cloneDir
+            : getConfig().gitCloneDir;
 
         if (!binDir) {
             const { binInstallDir } = getConfig();
