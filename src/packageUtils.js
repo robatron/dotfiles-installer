@@ -8,7 +8,7 @@ const log = require('./log');
 const platform = require('./platformUtils');
 
 // Install the specified package via git
-const installPackageViaGit = (pkg, cloneDir, binDir) => {
+const installPackageViaGit = async (pkg, cloneDir, binDir) => {
     const {
         actionArgs: { binSymlink, gitUrl, postInstall },
     } = pkg;
@@ -23,63 +23,61 @@ const installPackageViaGit = (pkg, cloneDir, binDir) => {
         binDir = binInstallDir;
     }
 
-    // Make sure the filesystem is ready for cloning
     if (fs.existsSync(cloneDir)) {
         if (fs.lstatSync(cloneDir).isDirectory()) {
             log.warn(
                 `'${gitUrl}' will not be cloned to '${cloneDir}'. Directory exists.`,
             );
-            return;
         } else {
-            log.error(
-                `Error installing package '${pkg.name}' from '${gitUrl}'. File exists.`,
+            throw new Error(
+                `Error installing package '${pkg.name}' from '${gitUrl}'. File exists: ${cloneDir}`,
             );
-            return process.exit(1);
+        }
+    } else {
+        fs.mkdirSync(cloneDir, { recursive: true });
+
+        try {
+            await git.Clone(gitUrl, cloneDir);
+        } catch (err) {
+            throw new Error(
+                `Error cloning ${gitUrl} for package '${pkg.name}': ${err}`,
+            );
         }
     }
-    fs.mkdirSync(cloneDir, { recursive: true });
 
-    return git
-        .Clone(gitUrl, cloneDir)
-        .then(() => {
-            // If a binSymlink is defined, try to symlink it
-            const binSymSrc = path.join(cloneDir, binSymlink);
-            const binSymDest = path.join(binDir, binSymlink);
+    // If a binSymlink is defined, try to symlink it
+    if (binSymlink) {
+        const binSymSrc = path.join(cloneDir, binSymlink);
+        const binSymDest = path.join(binDir, binSymlink);
 
-            if (!fs.existsSync(binSymSrc)) {
+        if (!fs.existsSync(binSymSrc)) {
+            throw new Error(
+                `Error installing package '${pkg.name}'. Bin symlink does not exist in package: ${binSymSrc}`,
+            );
+        }
+
+        if (fs.existsSync(binSymDest)) {
+            if (fs.lstatSync(binDir).isSymbolicLink()) {
+                log.warn(
+                    `'${binSymSrc}' will not be symlinked to '${binSymDest}'. Symlink exists.`,
+                );
+                return;
+            } else {
                 log.error(
-                    `Error installing package '${pkg.name}'. Bin symlink does not exist in package: ${binSymSrc}`,
+                    `Error installing package '${pkg.name}'. '${binSymDest}' file exists.`,
                 );
                 return process.exit(1);
             }
+        }
 
-            if (fs.existsSync(binSymDest)) {
-                if (fs.lstatSync(binDir).isSymbolicLink()) {
-                    log.warn(
-                        `'${binSymSrc}' will not be symlinked to '${binSymDest}'. Symlink exists.`,
-                    );
-                    return;
-                } else {
-                    log.error(
-                        `Error installing package '${pkg.name}'. '${binSymDest}' file exists.`,
-                    );
-                    return process.exit(1);
-                }
-            }
+        fs.mkdirSync(binDir, { recursive: true });
+        fs.symlinkSync(binSymSrc, binSymDest);
+    }
 
-            fs.mkdirSync(binDir, { recursive: true });
-            fs.symlinkSync(binSymSrc, binSymDest);
-        })
-        .then(() => {
-            // Run any post install steps, pass along pertinant info
-            if (postInstall) {
-                postInstall(pkg, { gitUrl, cloneDir });
-            }
-        })
-        .catch((err) => {
-            log.error(`Error installing package '${pkg.name}': ${err}`);
-            return process.exit(1);
-        });
+    // Run any post install steps, pass along pertinant info
+    if (postInstall) {
+        postInstall(pkg, { gitUrl, cloneDir });
+    }
 };
 
 // Install the specified package

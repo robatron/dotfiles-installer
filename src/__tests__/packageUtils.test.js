@@ -37,57 +37,65 @@ describe('installPackageViaGit', () => {
         rmrf.sync(tempDir);
     });
 
-    it('installs a package via git', (done) => {
-        installPackageViaGit(pkg, cloneDir, binDir).finally(() => {
-            expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
-            done();
-        });
+    it('installs a package via git', async () => {
+        await installPackageViaGit(pkg, cloneDir, binDir);
+        expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
     });
 
-    it('symlinks the package binary', (done) => {
-        const binPath = path.join(binDir, binSymlink);
-        installPackageViaGit(pkg, cloneDir, binDir).finally(() => {
-            expect(
-                fs.existsSync(binPath) &&
-                    fs.lstatSync(binPath).isSymbolicLink(),
-            ).toBe(true);
-            done();
-        });
-    });
-
-    it('errors and exits on clone errors', (done) => {
+    it('Throws on clone errors', async () => {
         const testPkg = new Package('test-package', { gitUrl: null });
 
-        installPackageViaGit(testPkg, cloneDir, binDir).finally(() => {
-            expect(log.error).toHaveBeenCalledWith(
-                expect.stringMatching(/error installing/gi),
-            );
-            expect(mockExit).toHaveBeenCalledWith(1);
-            done();
+        await expect(
+            installPackageViaGit(testPkg, cloneDir, binDir),
+        ).rejects.toThrowErrorMatchingSnapshot();
+    });
+
+    describe('symlinking functionality', () => {
+        it('symlinks the package binary', async () => {
+            const binPath = path.join(binDir, binSymlink);
+            await installPackageViaGit(pkg, cloneDir, binDir);
+            const symlinkExists =
+                fs.existsSync(binPath) &&
+                fs.lstatSync(binPath).isSymbolicLink();
+            expect(symlinkExists).toBe(true);
+        });
+
+        it("doesn't symlink the package binary if omitted", async () => {
+            const binPath = path.join(binDir, binSymlink);
+            const tstPkg = new Package('test-package', {
+                binSymlink: null,
+                gitUrl,
+            });
+            await installPackageViaGit(tstPkg, cloneDir, binDir);
+            const symlinkExists =
+                fs.existsSync(binPath) &&
+                fs.lstatSync(binPath).isSymbolicLink();
+            expect(symlinkExists).toBe(false);
         });
     });
 
     describe('undesireable target clone directory states', () => {
-        it('warns and returns early if target directory exists', () => {
+        it('warns if target directory exists', async () => {
+            const tstPkg = new Package('test-package', { gitUrl });
             fs.mkdirSync(cloneDir, { recursive: true });
 
-            installPackageViaGit(pkg, cloneDir, binDir);
+            await installPackageViaGit(tstPkg, cloneDir, binDir);
+
             expect(log.warn).toHaveBeenCalledWith(
                 expect.stringMatching(/directory exists/gi),
             );
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
         });
 
-        it('errors and exits if target directory is a file', () => {
+        it('throws if target directory is a file', async () => {
             const destFile = path.join(cloneDir, '..', 'foo.txt');
             fs.mkdirSync(path.join(destFile, '..'), { recursive: true });
             fs.closeSync(fs.openSync(destFile, 'w'));
 
-            installPackageViaGit(pkg, destFile, binDir);
-            expect(log.error).toHaveBeenCalledWith(
-                expect.stringMatching(/error installing/gi),
-            );
-            expect(mockExit).toHaveBeenCalledWith(1);
+            await expect(
+                installPackageViaGit(pkg, destFile, binDir),
+            ).rejects.toThrowErrorMatchingSnapshot();
+
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
         });
     });
