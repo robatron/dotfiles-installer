@@ -57,21 +57,19 @@ const installPackageViaGit = async (pkg, cloneDir, binDir) => {
         }
 
         if (fs.existsSync(binSymDest)) {
-            if (fs.lstatSync(binDir).isSymbolicLink()) {
+            if (fs.lstatSync(binSymDest).isSymbolicLink()) {
                 log.warn(
                     `'${binSymSrc}' will not be symlinked to '${binSymDest}'. Symlink exists.`,
                 );
-                return;
             } else {
-                log.error(
+                throw new Error(
                     `Error installing package '${pkg.name}'. '${binSymDest}' file exists.`,
                 );
-                return process.exit(1);
             }
+        } else {
+            fs.mkdirSync(binDir, { recursive: true });
+            fs.symlinkSync(binSymSrc, binSymDest);
         }
-
-        fs.mkdirSync(binDir, { recursive: true });
-        fs.symlinkSync(binSymSrc, binSymDest);
     }
 
     // Run any post install steps, pass along pertinant info
