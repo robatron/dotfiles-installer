@@ -141,28 +141,30 @@ const isPackageInstalled = (pkg, binDir, cloneDir) => {
 
     // If this is a git package, check if its cloned, and its binaries exist
     if (gitUrl) {
-        if (!cloneDir) {
-            const { gitCloneDir } = getConfig();
-            cloneDir = path.join(gitCloneDir, pkg.name);
-        }
-
         if (!binDir) {
             const { binInstallDir } = getConfig();
             binDir = binInstallDir;
         }
 
-        const cloneDir = path.join(cloneDir, pkg.name);
-        const binSrc = path.join(cloneDir, binSymlink);
-        const binDst = path.join(binDir, binSymlink);
+        if (!cloneDir) {
+            const { gitCloneDir } = getConfig();
+            cloneDir = path.join(gitCloneDir, pkg.name);
+        }
 
         const isCloneDirPresent =
             fs.existsSync(cloneDir) && fs.lstatSync(cloneDir).isDirectory();
-        const isBinsPresent =
-            fs.existsSync(binSrc) &&
-            fs.existsSync(binDst) &&
-            fs.lstatSync(binDst).isSymbolicLink();
 
-        if (isCloneDirPresent && (binDir ? isBinsPresent : true)) {
+        let areBinsPresent = true;
+        if (binSymlink) {
+            const binSrc = path.join(cloneDir, binSymlink);
+            const binDst = path.join(binDir, binSymlink);
+            areBinsPresent =
+                fs.existsSync(binSrc) &&
+                fs.existsSync(binDst) &&
+                fs.lstatSync(binDst).isSymbolicLink();
+        }
+
+        if (isCloneDirPresent && areBinsPresent) {
             return true;
         }
 
