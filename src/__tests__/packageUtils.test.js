@@ -232,4 +232,8 @@ describe('isPackageinstalled', () => {
             });
         });
     });
+
+    describe.skip('git package support', () => {
+        it('returns true if the clone directory and files exist', () => {});
+    });
 });
