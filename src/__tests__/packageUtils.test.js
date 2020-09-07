@@ -18,14 +18,15 @@ jest.mock('../platformUtils');
 // Allow a little more time for the git clone to finish
 jest.setTimeout(15000);
 
-describe('installPackageViaGit', () => {
-    const gitUrl = 'https://github.com/octocat/Hello-World.git';
-    const binSymlink = 'README';
-    const pkg = new Package('test-package', { binSymlink, gitUrl });
-    const tempDir = path.join(__dirname, '__tmp__');
-    const cloneDir = path.join(tempDir, 'opt', pkg.name);
-    const binDir = path.join(tempDir, 'bin');
+// Default git-related test values
+const gitUrl = 'https://github.com/octocat/Hello-World.git';
+const binSymlink = 'README';
+const pkg = new Package('test-package', { binSymlink, gitUrl });
+const tempDir = path.join(__dirname, '__tmp__');
+const cloneDir = path.join(tempDir, 'opt', pkg.name);
+const binDir = path.join(tempDir, 'bin');
 
+describe('installPackageViaGit', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
@@ -233,7 +234,18 @@ describe('isPackageinstalled', () => {
         });
     });
 
-    describe.skip('git package support', () => {
-        it('returns true if the clone directory and files exist', () => {});
+    describe('git package support', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        afterEach(() => {
+            rmrf.sync(tempDir);
+        });
+
+        it('returns true if the clone directory and files exist', async () => {
+            await installPackageViaGit(pkg, cloneDir, binDir);
+            expect(isPackageInstalled(pkg, binDir, cloneDir)).toBe(true);
+        });
     });
 });
