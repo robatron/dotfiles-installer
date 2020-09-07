@@ -108,7 +108,11 @@ Installs a package.
 
 #### Supported arguments
 
--   `gitUrl` - Marks the package to be installed via git. Should be the http url to the git repo of the package.
+-   `gitPackage` - Marks this package as a "git package"
+    -   `repoUrl` - Marks the package to be installed via git. Should be the http url to the git repo of the package.
+    -   `symlink` (optional) - File to symlink from the repo after its cloned
+    -   `binDir` (optional) - Symlink target directory
+    -   `cloneDir` (optional) - Clone target directory
 -   `installCommands` - Use these install commands instead of the system default.
 -   `postInstall` - Commands to run after installation
 -   `testFn` - Alternative function used to test a package is installed. Return `true` for "installed", and `false` if not. Called with the current package.
