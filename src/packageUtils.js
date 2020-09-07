@@ -10,7 +10,11 @@ const platform = require('./platformUtils');
 // Install the specified package via git
 const installPackageViaGit = async (pkg, cloneDir, binDir) => {
     const {
-        actionArgs: { binSymlink, gitUrl, postInstall },
+        actionArgs: {
+            gitPackage: { binSymlink },
+            gitUrl,
+            postInstall,
+        },
     } = pkg;
 
     if (!cloneDir) {
@@ -124,7 +128,7 @@ const installPackage = (pkg) => {
 
 // Return if a package is installed or not
 const isPackageInstalled = (pkg, binDir, cloneDir) => {
-    const { binSymlink, gitUrl, testFn } = pkg.actionArgs;
+    const { gitPackage, testFn } = pkg.actionArgs;
 
     // If custom test function supplied, use it
     if (testFn) {
@@ -140,7 +144,9 @@ const isPackageInstalled = (pkg, binDir, cloneDir) => {
     }
 
     // If this is a git package, check if its cloned, and its binaries exist
-    if (gitUrl) {
+    if (gitPackage) {
+        const { binSymlink } = gitPackage;
+
         if (!binDir) {
             const { binInstallDir } = getConfig();
             binDir = binInstallDir;

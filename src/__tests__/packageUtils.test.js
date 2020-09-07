@@ -22,7 +22,10 @@ describe('installPackageViaGit', () => {
     // Default git-related test values
     const gitUrl = 'https://github.com/octocat/Hello-World.git';
     const binSymlink = 'README';
-    const pkg = new Package('test-package', { binSymlink, gitUrl });
+    const pkg = new Package('test-package', {
+        gitPackage: { binSymlink },
+        gitUrl,
+    });
     const tempDir = path.join(__dirname, '__tmp__');
     const cloneDir = path.join(tempDir, 'opt', pkg.name);
     const binDir = path.join(tempDir, 'bin');
@@ -44,7 +47,10 @@ describe('installPackageViaGit', () => {
 
     describe('cloning functionality', () => {
         it('Throws on clone errors', async () => {
-            const testPkg = new Package('test-package', { gitUrl: null });
+            const testPkg = new Package('test-package', {
+                gitPackage: {},
+                gitUrl: null,
+            });
 
             await expect(
                 installPackageViaGit(testPkg, cloneDir, binDir),
@@ -52,7 +58,10 @@ describe('installPackageViaGit', () => {
         });
 
         it('warns if target directory exists, skips cloning', async () => {
-            const tstPkg = new Package('test-package', { gitUrl });
+            const tstPkg = new Package('test-package', {
+                gitPackage: {},
+                gitUrl,
+            });
             fs.mkdirSync(cloneDir, { recursive: true });
 
             await installPackageViaGit(tstPkg, cloneDir, binDir);
@@ -89,7 +98,7 @@ describe('installPackageViaGit', () => {
         it("doesn't symlink the package binary if omitted", async () => {
             const binPath = path.join(binDir, binSymlink);
             const tstPkg = new Package('test-package', {
-                binSymlink: null,
+                gitPackage: { binSymlink: null },
                 gitUrl,
             });
             await installPackageViaGit(tstPkg, cloneDir, binDir);
@@ -101,7 +110,7 @@ describe('installPackageViaGit', () => {
 
         it("throws if the symlink doesn't exist in package", async () => {
             const testPkg = new Package('test-package', {
-                binSymlink: 'non-existant-file.txt',
+                gitPackage: { binSymlink: 'non-existant-file.txt' },
                 gitUrl,
             });
             await expect(
@@ -135,7 +144,7 @@ describe('installPackageViaGit', () => {
     describe('postInstall', () => {
         it('calls the post install if defined', async () => {
             const tstPkg = new Package('test-package', {
-                binSymlink,
+                gitPackage: { binSymlink },
                 gitUrl,
                 postInstall: jest.fn(),
             });
@@ -263,7 +272,9 @@ describe('isPackageinstalled', () => {
 
         describe('when binSymlink is present', () => {
             const pkg = new Package('test-package', {
-                binSymlink: 'testFile.txt',
+                gitPackage: {
+                    binSymlink: 'testFile.txt',
+                },
                 gitUrl: 'https://github.com/octocat/Hello-World.git',
             });
 
@@ -279,6 +290,7 @@ describe('isPackageinstalled', () => {
 
         describe('when binSymlink is not specified', () => {
             const pkg = new Package('test-package', {
+                gitPackage: {},
                 gitUrl: 'https://github.com/octocat/Hello-World.git',
             });
 
