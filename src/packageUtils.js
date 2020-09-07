@@ -11,8 +11,7 @@ const platform = require('./platformUtils');
 const installPackageViaGit = async (pkg, cloneDir, binDir) => {
     const {
         actionArgs: {
-            gitPackage: { binSymlink },
-            gitUrl,
+            gitPackage: { binSymlink, repoUrl },
             postInstall,
         },
     } = pkg;
@@ -30,21 +29,21 @@ const installPackageViaGit = async (pkg, cloneDir, binDir) => {
     if (fs.existsSync(cloneDir)) {
         if (fs.lstatSync(cloneDir).isDirectory()) {
             log.warn(
-                `'${gitUrl}' will not be cloned to '${cloneDir}'. Directory exists.`,
+                `'${repoUrl}' will not be cloned to '${cloneDir}'. Directory exists.`,
             );
         } else {
             throw new Error(
-                `Error installing package '${pkg.name}' from '${gitUrl}'. File exists: ${cloneDir}`,
+                `Error installing package '${pkg.name}' from '${repoUrl}'. File exists: ${cloneDir}`,
             );
         }
     } else {
         fs.mkdirSync(cloneDir, { recursive: true });
 
         try {
-            await git.Clone(gitUrl, cloneDir);
+            await git.Clone(repoUrl, cloneDir);
         } catch (err) {
             throw new Error(
-                `Error cloning ${gitUrl} for package '${pkg.name}': ${err}`,
+                `Error cloning ${repoUrl} for package '${pkg.name}': ${err}`,
             );
         }
     }
@@ -78,7 +77,7 @@ const installPackageViaGit = async (pkg, cloneDir, binDir) => {
 
     // Run any post install steps, pass along pertinant info
     if (postInstall) {
-        postInstall(pkg, { gitUrl, cloneDir });
+        postInstall(pkg);
     }
 };
 

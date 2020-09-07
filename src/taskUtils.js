@@ -26,9 +26,9 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
         if (!isPackageInstalled(pkg)) {
             log.info(`Package '${pkg.name}' is not installed`);
             if (pkg.action === ACTIONS.INSTALL) {
-                if (pkg.actionArgs.gitUrl) {
+                if (pkg.actionArgs.gitPackage) {
                     log.info(
-                        `Installing package '${pkg.name}' via git from '${pkg.actionArgs.gitUrl}'...`,
+                        `Installing package '${pkg.name}' via git from '${pkg.actionArgs.gitPackage.repoUrl}'...`,
                     );
                     installPackageViaGit(pkg);
                 } else {
