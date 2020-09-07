@@ -47,7 +47,7 @@ describe('installPackageViaGit', () => {
 
             await expect(
                 installPackageViaGit(testPkg, cloneDir, binDir),
-            ).rejects.toThrowErrorMatchingSnapshot();
+            ).rejects.toThrowError(/error cloning/gi);
         });
 
         it('warns if target directory exists', async () => {
@@ -69,7 +69,7 @@ describe('installPackageViaGit', () => {
 
             await expect(
                 installPackageViaGit(pkg, destFile, binDir),
-            ).rejects.toThrowErrorMatchingSnapshot();
+            ).rejects.toThrowError(/Error installing package.*file exists/gi);
 
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
         });
@@ -105,7 +105,7 @@ describe('installPackageViaGit', () => {
             });
             await expect(
                 installPackageViaGit(testPkg, cloneDir, binDir),
-            ).rejects.toThrowErrorMatchingSnapshot();
+            ).rejects.toThrowError(/bin symlink does not exist/gi);
         });
 
         it('warns if a symlink already exists', async () => {
@@ -127,7 +127,7 @@ describe('installPackageViaGit', () => {
 
             await expect(
                 installPackageViaGit(pkg, cloneDir, binDir),
-            ).rejects.toThrowErrorMatchingSnapshot();
+            ).rejects.toThrowError(/error installing package.*file exists/gi);
         });
     });
 

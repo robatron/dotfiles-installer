@@ -3,11 +3,3 @@
 exports[`installPackage error states throws an error if the exec return code is nonzero 1`] = `"Install command 'cmd-a' failed for package 'test-package'. Full command set: [\\"cmd-a\\",\\"cmd-b\\",\\"cmd-c\\"]"`;
 
 exports[`installPackage error states throws an error if unable to determine install commands 1`] = `"Cannot determine install command(s) for package 'test-package'"`;
-
-exports[`installPackageViaGit cloning functionality Throws on clone errors 1`] = `"Error cloning null for package 'test-package': Error: String url is required."`;
-
-exports[`installPackageViaGit cloning functionality throws if target directory is a file 1`] = `"Error installing package 'test-package' from 'https://github.com/octocat/Hello-World.git'. File exists: /home/robmc/code/akinizer/src/__tests__/__tmp__/opt/foo.txt"`;
-
-exports[`installPackageViaGit symlinking functionality throws if a non-symlink file exists 1`] = `"Error installing package 'test-package'. '/home/robmc/code/akinizer/src/__tests__/__tmp__/bin/README' file exists."`;
-
-exports[`installPackageViaGit symlinking functionality throws if the symlink doesn't exist in package 1`] = `"Error installing package 'test-package'. Bin symlink does not exist in package: /home/robmc/code/akinizer/src/__tests__/__tmp__/opt/test-package/non-existant-file.txt"`;

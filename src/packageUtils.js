@@ -15,7 +15,7 @@ const installPackageViaGit = async (pkg, cloneDir, binDir) => {
 
     if (!cloneDir) {
         const { gitInstallDir } = getConfig();
-        cloneDir = gitInstallDir;
+        cloneDir = path.join(gitInstallDir, pkg.name);
     }
 
     if (!binDir) {
@@ -63,7 +63,7 @@ const installPackageViaGit = async (pkg, cloneDir, binDir) => {
                 );
             } else {
                 throw new Error(
-                    `Error installing package '${pkg.name}'. '${binSymDest}' file exists.`,
+                    `Error installing package '${pkg.name}'. File exists: ${binSymDest}`,
                 );
             }
         } else {
