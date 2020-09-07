@@ -5,7 +5,7 @@ const path = require('path');
 let config = {
     // Directory in which to install git packages
     binInstallDir: path.join(os.homedir(), 'bin'),
-    gitInstallDir: path.join(os.homedir(), 'opt'),
+    gitCloneDir: path.join(os.homedir(), 'opt'),
 };
 
 // Return a copy of the current config

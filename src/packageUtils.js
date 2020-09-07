@@ -14,8 +14,8 @@ const installPackageViaGit = async (pkg, cloneDir, binDir) => {
     } = pkg;
 
     if (!cloneDir) {
-        const { gitInstallDir } = getConfig();
-        cloneDir = path.join(gitInstallDir, pkg.name);
+        const { gitCloneDir } = getConfig();
+        cloneDir = path.join(gitCloneDir, pkg.name);
     }
 
     if (!binDir) {
@@ -124,7 +124,7 @@ const installPackage = (pkg) => {
 
 // Return if a package is installed or not
 const isPackageInstalled = (pkg) => {
-    const { testFn } = pkg.actionArgs;
+    const { binSymlink, gitUrl, testFn } = pkg.actionArgs;
 
     // If custom test function supplied, use it
     if (testFn) {
@@ -137,6 +137,28 @@ const isPackageInstalled = (pkg) => {
             return false;
         }
         return true;
+    }
+
+    // If this is a git package, check if its cloned, and its binaries exist
+    if (gitUrl) {
+        const { binInstallDir, gitCloneDir } = getConfig();
+
+        const cloneDir = path.join(gitCloneDir, pkg.name);
+        const binSrc = path.join(cloneDir, binSymlink);
+        const binDst = path.join(binInstallDir, binSymlink);
+
+        const isCloneDirPresent =
+            fs.existsSync(cloneDir) && fs.lstatSync(cloneDir).isDirectory();
+        const isBinsPresent =
+            fs.existsSync(binSrc) &&
+            fs.existsSync(binDst) &&
+            fs.lstatSync(binDst).isSymbolicLink();
+
+        if (isCloneDirPresent && (binInstallDir ? isBinsPresent : true)) {
+            return true;
+        }
+
+        return false;
     }
 
     // Otherwise, just see if the command exists in the environment
