@@ -23,7 +23,7 @@ describe('installPackageViaGit', () => {
     const binSymlink = 'README';
     const pkg = new Package('test-package', { binSymlink, gitUrl });
     const tempDir = path.join(__dirname, '__tmp__');
-    const destDir = path.join(tempDir, 'opt', pkg.name);
+    const cloneDir = path.join(tempDir, 'opt', pkg.name);
     const binDir = path.join(tempDir, 'bin');
     const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
@@ -38,18 +38,18 @@ describe('installPackageViaGit', () => {
     });
 
     it('installs a package via git', (done) => {
-        installPackageViaGit(pkg, destDir, binDir).finally(() => {
-            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(true);
+        installPackageViaGit(pkg, cloneDir, binDir).finally(() => {
+            expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
             done();
         });
     });
 
     it('symlinks the package binary', (done) => {
-        const binFile = path.join(binDir);
-        installPackageViaGit(pkg, destDir, binDir).finally(() => {
+        const binPath = path.join(binDir, binSymlink);
+        installPackageViaGit(pkg, cloneDir, binDir).finally(() => {
             expect(
-                fs.existsSync(binSymlink) &&
-                    fs.lstatSync(binSymlink).isSymbolicLink(),
+                fs.existsSync(binPath) &&
+                    fs.lstatSync(binPath).isSymbolicLink(),
             ).toBe(true);
             done();
         });
@@ -58,7 +58,7 @@ describe('installPackageViaGit', () => {
     it('errors and exits on clone errors', (done) => {
         const testPkg = new Package('test-package', { gitUrl: null });
 
-        installPackageViaGit(testPkg, destDir, binDir).finally(() => {
+        installPackageViaGit(testPkg, cloneDir, binDir).finally(() => {
             expect(log.error).toHaveBeenCalledWith(
                 expect.stringMatching(/error installing/gi),
             );
@@ -67,19 +67,19 @@ describe('installPackageViaGit', () => {
         });
     });
 
-    describe('undesireable clone directory states', () => {
+    describe('undesireable target clone directory states', () => {
         it('warns and returns early if target directory exists', () => {
-            fs.mkdirSync(destDir, { recursive: true });
+            fs.mkdirSync(cloneDir, { recursive: true });
 
-            installPackageViaGit(pkg, destDir, binDir);
+            installPackageViaGit(pkg, cloneDir, binDir);
             expect(log.warn).toHaveBeenCalledWith(
                 expect.stringMatching(/directory exists/gi),
             );
-            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
+            expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
         });
 
         it('errors and exits if target directory is a file', () => {
-            const destFile = path.join(destDir, '..', 'foo.txt');
+            const destFile = path.join(cloneDir, '..', 'foo.txt');
             fs.mkdirSync(path.join(destFile, '..'), { recursive: true });
             fs.closeSync(fs.openSync(destFile, 'w'));
 
@@ -88,7 +88,21 @@ describe('installPackageViaGit', () => {
                 expect.stringMatching(/error installing/gi),
             );
             expect(mockExit).toHaveBeenCalledWith(1);
-            expect(fs.existsSync(path.join(destDir, '.git'))).toBe(false);
+            expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
+        });
+    });
+
+    describe.skip('undesireable target symlink states', () => {
+        it("errors and exits if the symlink doesn't exist in package", () => {
+            const testPkg = new Package('test-package', {
+                binSymlink: 'non-existant-file.txt',
+                gitUrl,
+            });
+            installPackageViaGit(testPkg, cloneDir, binDir);
+            expect(log.error).toHaveBeenCalledWith(
+                expect.stringMatching(/error installing/gi),
+            );
+            expect(mockExit).toHaveBeenCalledWith(1);
         });
     });
 });

@@ -48,7 +48,7 @@ const installPackageViaGit = (pkg, cloneDir, binDir) => {
 
             if (!fs.existsSync(binSymSrc)) {
                 log.error(
-                    `Error installing package '${pkg.name}'. Bin symlink '${binSymSrc}' does not exist.`,
+                    `Error installing package '${pkg.name}'. Bin symlink does not exist in package: ${binSymSrc}`,
                 );
                 return process.exit(1);
             }
@@ -73,7 +73,7 @@ const installPackageViaGit = (pkg, cloneDir, binDir) => {
         .then(() => {
             // Run any post install steps, pass along pertinant info
             if (postInstall) {
-                postInstall(pkg, { gitUrl, destDir: cloneDir });
+                postInstall(pkg, { gitUrl, cloneDir });
             }
         })
         .catch((err) => {
