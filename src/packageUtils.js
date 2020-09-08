@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const rmrf = require('rimraf');
 const git = require('nodegit');
 const commandExistsSync = require('command-exists').sync;
 const shell = require('shelljs');
@@ -32,11 +33,12 @@ const installPackageViaGit = async (pkg) => {
             );
         }
     } else {
-        fs.mkdirSync(cloneDir, { recursive: true });
+        const createdBaseDir = fs.mkdirSync(cloneDir, { recursive: true });
 
         try {
             await git.Clone(repoUrl, cloneDir);
         } catch (err) {
+            rmrf.sync(createdBaseDir);
             throw new Error(
                 `Error cloning ${repoUrl} for package '${pkg.name}': ${err}`,
             );

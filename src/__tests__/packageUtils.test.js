@@ -37,10 +37,10 @@ describe('installPackageViaGit', () => {
     });
 
     afterAll(() => {
-        rmrf.sync(tempBasePath);
+        // rmrf.sync(tempBasePath);
     });
 
-    it.only('installs a package via git', async () => {
+    describe('basic cloning', () => {
         const tempDir = path.join(tempBasePath, uuid());
         const cloneDir = path.join(tempDir, 'opt', pkgName);
         const binDir = path.join(tempDir, 'bin');
@@ -48,20 +48,35 @@ describe('installPackageViaGit', () => {
             gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
         });
 
-        await installPackageViaGit(tstPkg);
+        it('installs a package via git', async () => {
+            await installPackageViaGit(tstPkg);
+            expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
+        });
 
-        expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
+        it('continues without error if package is already installed', async () => {
+            await installPackageViaGit(tstPkg);
+            expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
+        });
     });
 
-    describe('cloning functionality', () => {
-        it('Throws on clone errors', async () => {
+    describe('undesireable cloning conditions', () => {
+        const tempDir = path.join(tempBasePath, uuid());
+        const cloneDir = path.join(tempDir, 'opt', pkgName);
+        const binDir = path.join(tempDir, 'bin');
+
+        it.only('throws on clone errors, cleans up empty clone directory', async () => {
             const tstPkg = new Package(pkgName, {
                 gitPackage: { binDir, cloneDir, repoUrl: null },
             });
 
+            // Verify it throws when the repoUrl is missing
             await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
                 /error cloning/gi,
             );
+
+            // Verify it cleans up the created directories
+            expect(fs.existsSync(binDir)).toBe(false);
+            expect(fs.existsSync(cloneDir)).toBe(false);
         });
 
         it('warns if target directory exists, skips cloning', async () => {
@@ -79,11 +94,15 @@ describe('installPackageViaGit', () => {
         });
 
         it('throws if target directory is a file', async () => {
+            const tstPkg = new Package(pkgName, {
+                gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
+            });
+
             const destFile = path.join(cloneDir, '..', pkgName);
             fs.mkdirSync(path.join(destFile, '..'), { recursive: true });
             fs.closeSync(fs.openSync(destFile, 'w'));
 
-            await expect(installPackageViaGit(pkg)).rejects.toThrowError(
+            await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
                 /Error installing package.*file exists/gi,
             );
 
