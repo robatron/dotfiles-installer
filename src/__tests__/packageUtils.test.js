@@ -37,7 +37,7 @@ describe('installPackageViaGit', () => {
     });
 
     afterAll(() => {
-        // rmrf.sync(tempBasePath);
+        rmrf.sync(tempBasePath);
     });
 
     describe('basic cloning', () => {
@@ -172,7 +172,7 @@ describe('installPackageViaGit', () => {
         });
 
         it('warns if a symlink already exists', async () => {
-            const targetDir = path.join(fixtureDir, 'binSymlinkFileCollision');
+            const targetDir = path.join(fixtureDir, 'fullyInstalled');
             const cloneDir = path.join(targetDir, 'opt', pkgName);
             const binDir = path.join(targetDir, 'bin');
             const tstPkg = new Package(pkgName, {
@@ -192,7 +192,7 @@ describe('installPackageViaGit', () => {
         });
 
         it('throws if a non-symlink file exists', async () => {
-            const targetDir = path.join(fixtureDir, 'fullyInstalled');
+            const targetDir = path.join(fixtureDir, 'binSymlinkFileCollision');
             const cloneDir = path.join(targetDir, 'opt', pkgName);
             const binDir = path.join(targetDir, 'bin');
             const tstPkg = new Package(pkgName, {
@@ -210,8 +210,11 @@ describe('installPackageViaGit', () => {
         });
     });
 
-    describe.skip('postInstall', () => {
+    describe('postInstall', () => {
         it('calls the post install if defined', async () => {
+            const targetDir = path.join(fixtureDir, 'fullyInstalled');
+            const cloneDir = path.join(targetDir, 'opt', pkgName);
+            const binDir = path.join(targetDir, 'bin');
             const tstPkg = new Package(pkgName, {
                 gitPackage: { binDir, cloneDir, binSymlink, repoUrl },
                 postInstall: jest.fn(),
