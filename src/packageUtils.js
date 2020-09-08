@@ -146,17 +146,7 @@ const isPackageInstalled = (pkg) => {
             : getConfig().gitBinDir;
         const cloneDir = gitPackage.cloneDir
             ? gitPackage.cloneDir
-            : getConfig().gitCloneDir;
-
-        if (!binDir) {
-            const { binInstallDir } = getConfig();
-            binDir = binInstallDir;
-        }
-
-        if (!cloneDir) {
-            const { gitCloneDir } = getConfig();
-            cloneDir = path.join(gitCloneDir, pkg.name);
-        }
+            : path.join(getConfig().gitCloneDir, pkg.name);
 
         const isCloneDirPresent =
             fs.existsSync(cloneDir) && fs.lstatSync(cloneDir).isDirectory();

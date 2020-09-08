@@ -300,5 +300,12 @@ describe('isPackageinstalled', () => {
                 createTestCase(...paramCase);
             });
         });
+
+        describe('default dirs', () => {
+            it('supports optional dirs', () => {
+                const tstPkg = new Package('tst-pkg', { gitPackage: {} });
+                expect(isPackageInstalled(tstPkg)).toBe(false);
+            });
+        });
     });
 });
