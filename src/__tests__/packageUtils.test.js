@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const rmrf = require('rimraf');
 const shell = require('shelljs');
+const { v4: uuid } = require('uuid');
 const log = require('../log');
 const { Package } = require('../Package');
 const {
@@ -18,29 +19,37 @@ jest.mock('../platformUtils');
 // Allow a little more time for the git clone to finish
 jest.setTimeout(15000);
 
+const fixtureBasePath = path.join(
+    path.dirname(__filename),
+    '__fixtures__',
+    path.basename(__filename),
+);
+
 describe('installPackageViaGit', () => {
     const pkgName = 'tst-pkg';
     const repoUrl = 'https://github.com/octocat/Hello-World.git';
     const binSymlink = 'README';
-    const tempDir = path.join(__dirname, '__tmp__');
-    const cloneDir = path.join(tempDir, 'opt', pkgName);
-    const binDir = path.join(tempDir, 'bin');
-    const pkg = new Package(pkgName, {
-        gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
-    });
+    const fixtureDir = path.join(fixtureBasePath, 'installPackageViaGit');
+    const tempBasePath = path.join(fixtureDir, '__tmp__');
 
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    afterEach(() => {
-        // Since I'm lazy and don't want to mock the git package or other
-        // filesystem functions, we need to clean up the generated files
-        rmrf.sync(tempDir);
+    afterAll(() => {
+        rmrf.sync(tempBasePath);
     });
 
-    it('installs a package via git', async () => {
-        await installPackageViaGit(pkg);
+    it.only('installs a package via git', async () => {
+        const tempDir = path.join(tempBasePath, uuid());
+        const cloneDir = path.join(tempDir, 'opt', pkgName);
+        const binDir = path.join(tempDir, 'bin');
+        const tstPkg = new Package(pkgName, {
+            gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
+        });
+
+        await installPackageViaGit(tstPkg);
+
         expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(true);
     });
 
@@ -245,19 +254,16 @@ describe('isPackageinstalled', () => {
     });
 
     describe('git package support', () => {
-        const fixtureBasePath = path.join(
-            path.dirname(__filename),
-            '__fixtures__',
-            path.basename(__filename),
-            'isPackageInstalled',
-        );
-
         const createTestCase = (
             fixtureDir,
             expectedResult,
             binSymlink = null,
         ) => {
-            const targetFixtureDir = path.join(fixtureBasePath, fixtureDir);
+            const targetFixtureDir = path.join(
+                fixtureBasePath,
+                'isPackageInstalled',
+                fixtureDir,
+            );
             const binDir = path.join(targetFixtureDir, 'bin');
             const cloneDir = path.join(targetFixtureDir, 'opt');
 
