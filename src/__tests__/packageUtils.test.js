@@ -60,11 +60,10 @@ describe('installPackageViaGit', () => {
     });
 
     describe('undesireable cloning conditions', () => {
-        const tempDir = path.join(tempBasePath, uuid());
-        const cloneDir = path.join(tempDir, 'opt', pkgName);
-        const binDir = path.join(tempDir, 'bin');
-
-        it.only('throws on clone errors, cleans up empty clone directory', async () => {
+        it('throws on clone errors, cleans up empty clone directory', async () => {
+            const tempDir = path.join(tempBasePath, uuid());
+            const cloneDir = path.join(tempDir, 'opt', pkgName);
+            const binDir = path.join(tempDir, 'bin');
             const tstPkg = new Package(pkgName, {
                 gitPackage: { binDir, cloneDir, repoUrl: null },
             });
@@ -79,11 +78,13 @@ describe('installPackageViaGit', () => {
             expect(fs.existsSync(cloneDir)).toBe(false);
         });
 
-        it('warns if target directory exists, skips cloning', async () => {
+        it.only('warns if target directory exists, skips cloning', async () => {
+            const targetDir = path.join(fixtureDir, 'existingCloneDir');
+            const cloneDir = path.join(targetDir, 'opt', pkgName);
+            const binDir = path.join(targetDir, 'bin');
             const tstPkg = new Package(pkgName, {
                 gitPackage: { binDir, cloneDir, repoUrl },
             });
-            fs.mkdirSync(cloneDir, { recursive: true });
 
             await installPackageViaGit(tstPkg);
 
