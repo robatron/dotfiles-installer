@@ -95,9 +95,7 @@ const installDotfilesPhase = definePhase(
             'yadm',
             {
                 gitPackage: {
-                    binDir: '',
                     binSymlink: 'yadm',
-                    cloneDir: '',
                     repoUrl: 'https://github.com/TheLocehiliosan/yadm.git',
                 },
             },
