@@ -133,7 +133,7 @@ describe('installPackageViaGit', () => {
             ).toBe(true);
         });
 
-        it.only("doesn't symlink the package binary if omitted", async () => {
+        it("doesn't symlink the package binary if omitted", async () => {
             const tempDir = path.join(tempBasePath, uuid());
             const cloneDir = path.join(tempDir, 'opt', pkgName);
             const binDir = path.join(tempDir, 'bin');
@@ -154,7 +154,10 @@ describe('installPackageViaGit', () => {
         });
 
         it("throws if the symlink doesn't exist in package", async () => {
-            const testPkg = new Package(pkgName, {
+            const targetDir = path.join(fixtureDir, 'fullyInstalled');
+            const cloneDir = path.join(targetDir, 'opt', pkgName);
+            const binDir = path.join(targetDir, 'bin');
+            const tstPkg = new Package(pkgName, {
                 gitPackage: {
                     binDir,
                     cloneDir,
@@ -162,17 +165,26 @@ describe('installPackageViaGit', () => {
                     repoUrl,
                 },
             });
-            await expect(installPackageViaGit(testPkg)).rejects.toThrowError(
+
+            await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
                 /bin symlink does not exist/gi,
             );
         });
 
-        it('warns if a symlink already exists', async () => {
-            const touchSymlink = path.join(binDir, binSymlink);
-            fs.mkdirSync(binDir, { recursive: true });
-            fs.symlinkSync(__filename, touchSymlink);
+        it.only('warns if a symlink already exists', async () => {
+            const targetDir = path.join(fixtureDir, 'fullyInstalled');
+            const cloneDir = path.join(targetDir, 'opt', pkgName);
+            const binDir = path.join(targetDir, 'bin');
+            const tstPkg = new Package(pkgName, {
+                gitPackage: {
+                    binDir,
+                    cloneDir,
+                    binSymlink,
+                    repoUrl,
+                },
+            });
 
-            await installPackageViaGit(pkg);
+            await installPackageViaGit(tstPkg);
 
             expect(log.warn).toBeCalledWith(
                 expect.stringMatching(/will not be symlinked/gi),
