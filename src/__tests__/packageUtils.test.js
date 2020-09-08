@@ -59,7 +59,7 @@ describe('installPackageViaGit', () => {
         });
     });
 
-    describe.only('undesireable cloning conditions', () => {
+    describe('undesireable cloning conditions', () => {
         it('throws on clone errors, cleans up empty clone directory', async () => {
             const tempDir = path.join(tempBasePath, uuid());
             const cloneDir = path.join(tempDir, 'opt', pkgName);
@@ -111,13 +111,26 @@ describe('installPackageViaGit', () => {
     });
 
     describe('symlinking functionality', () => {
-        it('symlinks the package binary', async () => {
-            const binPath = path.join(binDir, binSymlink);
-            await installPackageViaGit(pkg);
-            const symlinkExists =
-                fs.existsSync(binPath) &&
-                fs.lstatSync(binPath).isSymbolicLink();
-            expect(symlinkExists).toBe(true);
+        it.only('symlinks the package binary', async () => {
+            const tempDir = path.join(tempBasePath, uuid());
+            const cloneDir = path.join(tempDir, 'opt', pkgName);
+            const binDir = path.join(tempDir, 'bin');
+            const tstPkg = new Package(pkgName, {
+                gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
+            });
+            const binSymlinkSrcPath = path.join(cloneDir, binSymlink);
+            const binSymlinkDestPath = path.join(binDir, binSymlink);
+
+            // Generate binary symlink target to avoid actually cloning
+            fs.mkdirSync(cloneDir, { recursive: true });
+            fs.closeSync(fs.openSync(binSymlinkSrcPath, 'w'));
+
+            await installPackageViaGit(tstPkg);
+
+            expect(
+                fs.existsSync(binSymlinkDestPath) &&
+                    fs.lstatSync(binSymlinkDestPath).isSymbolicLink(),
+            ).toBe(true);
         });
 
         it("doesn't symlink the package binary if omitted", async () => {
