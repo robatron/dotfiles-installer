@@ -16,7 +16,7 @@ const installPackageViaGit = async (pkg) => {
     const { binSymlink, repoUrl } = gitPackage;
     const binDir = gitPackage.binDir
         ? gitPackage.binDir
-        : getConfig().gitBinDir;
+        : getConfig().binInstallDir;
     const cloneDir = gitPackage.cloneDir
         ? gitPackage.cloneDir
         : path.join(getConfig().gitCloneDir, pkg.name);
@@ -143,7 +143,7 @@ const isPackageInstalled = (pkg) => {
 
         const binDir = gitPackage.binDir
             ? gitPackage.binDir
-            : getConfig().gitBinDir;
+            : getConfig().binInstallDir;
         const cloneDir = gitPackage.cloneDir
             ? gitPackage.cloneDir
             : path.join(getConfig().gitCloneDir, pkg.name);
