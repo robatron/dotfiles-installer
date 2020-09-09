@@ -6,7 +6,7 @@ const definePhase = (name, action, targets, opts = {}) => [
     {
         ...opts,
         action,
-        targets,
+        targets: targets.filter((target) => target),
     },
 ];
 
