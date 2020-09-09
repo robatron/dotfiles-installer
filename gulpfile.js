@@ -100,6 +100,20 @@ const installDotfilesPhase = definePhase(
                 },
             },
         ],
+        // [
+        //     'dotfiles',
+        //     {
+        //         testFn: (pkg) =>
+        //             fileExists(
+        //                 path.join(
+        //                     // process.env['HOME'],
+        //                     // `.${pkg.name}`,
+        //                     // 'bin',
+        //                     // `${pkg.name}`,
+        //                 ),
+        //             ),
+        //     },
+        // ],
     ],
 );
 
