@@ -104,7 +104,7 @@ const installDotfilesPhase = definePhase(
                 },
             },
         ],
-        process.env['CI']
+        process.env['SKIP_INTERACTIVE']
             ? null
             : [
                   'dotfiles',
