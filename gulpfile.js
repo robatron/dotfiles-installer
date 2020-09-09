@@ -2,7 +2,7 @@
  * This file serves as an end-to-end test for akinizer, in addition to being my
  * personal akinizer definition
  */
-const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { exec } = require('shelljs');
 const {
@@ -14,6 +14,10 @@ const {
     fileExists,
     isLinux,
 } = require('.');
+
+const { binInstallDir } = getConfig();
+const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
+const dotfilesRepoUrl = 'https://github.com/robatron/dotfiles.git';
 
 // Test phase definitions
 const verifyPrereqsPhase = definePhase(
@@ -100,20 +104,18 @@ const installDotfilesPhase = definePhase(
                 },
             },
         ],
-        // [
-        //     'dotfiles',
-        //     {
-        //         testFn: (pkg) =>
-        //             fileExists(
-        //                 path.join(
-        //                     // process.env['HOME'],
-        //                     // `.${pkg.name}`,
-        //                     // 'bin',
-        //                     // `${pkg.name}`,
-        //                 ),
-        //             ),
-        //     },
-        // ],
+        [
+            'dotfiles',
+            {
+                testFn: (pkg) => fileExists(dotfilesRepoDir),
+                installCommands: [
+                    `${path.join(
+                        binInstallDir,
+                        'yadm',
+                    )} clone ${dotfilesRepoUrl}`,
+                ],
+            },
+        ],
     ],
 );
 

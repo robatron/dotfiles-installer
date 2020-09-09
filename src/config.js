@@ -5,6 +5,7 @@ const path = require('path');
 let config = {
     // Directory in which to install user-space binaries
     binInstallDir: path.join(os.homedir(), 'bin'),
+
     // Directory in which to install git packages
     gitCloneDir: path.join(os.homedir(), 'opt'),
 };

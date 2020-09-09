@@ -50,6 +50,8 @@ const installPackageViaGit = async (pkg) => {
         const binSymSrc = path.join(cloneDir, binSymlink);
         const binSymDest = path.join(binDir, binSymlink);
 
+        log.info(`Symlinking ${binSymSrc} --> ${binSymDest}...`);
+
         if (!fs.existsSync(binSymSrc)) {
             throw new Error(
                 `Error installing package '${pkg.name}'. Bin symlink does not exist in package: ${binSymSrc}`,
@@ -74,6 +76,7 @@ const installPackageViaGit = async (pkg) => {
 
     // Run any post install steps, pass along pertinant info
     if (postInstall) {
+        log.info(`Running post install steps for ${pkg.name}...`);
         postInstall(pkg);
     }
 };
