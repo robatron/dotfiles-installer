@@ -10,9 +10,10 @@ const {
     createTaskTree,
     definePhase,
     defineRoot,
-    getConfig,
     fileExists,
+    getConfig,
     isLinux,
+    isMac,
 } = require('.');
 
 const { binInstallDir } = getConfig();
@@ -124,13 +125,48 @@ const installDotfilesPhase = definePhase(
 );
 
 const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
-    'coreutils', // Mac
+    [
+        'coreutils',
+        {
+            // Mac only. Favor GNU utilities over BSD's
+            skipAction: isLinux(),
+        },
+    ],
     'cowsay',
-    'fortune-mod', // Linux
-    'fortune', // Mac
+    [
+        'fortune-mod',
+        {
+            // Linux version of fortune
+            skipAction: isMac(),
+        },
+    ],
+    [
+        'fortune',
+        {
+            // Mac version of fortune
+            skipAction: isLinux(),
+        },
+    ],
     'gpg',
-    'gshuf', // Linux, needs symlink
-    'reattach-to-user-namespace', // Mac only, required for tmux to interface w/ OS X
+    [
+        'gshuf',
+        {
+            // Symlink shuf to gshuf on Linux to normalize 'shuffle' command
+            // between Linux and Mac
+            installCommands: [
+                `mkdir -p $HOME/bin/`,
+                'ln -sf `which shuf` $HOME/bin/gshuf',
+            ],
+            skipAction: isMac(),
+        },
+    ],
+    [
+        'reattach-to-user-namespace',
+        {
+            // Mac only. Required for tmux to interface w/ OS X clipboard, etc.
+            skipAction: isLinux(),
+        },
+    ],
     'tmux',
     'zsh',
 ]);
@@ -138,6 +174,11 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
 createTaskTree(
-    defineRoot([verifyPrereqsPhase, installPythonPhase, installDotfilesPhase]),
+    defineRoot([
+        verifyPrereqsPhase,
+        installPythonPhase,
+        installDotfilesPhase,
+        installUtilitiesPhase,
+    ]),
     exports,
 );
