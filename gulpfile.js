@@ -123,13 +123,21 @@ const installDotfilesPhase = definePhase(
     ],
 );
 
+const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
+    'coreutils', // Mac
+    'cowsay',
+    'fortune-mod', // Linux
+    'fortune', // Mac
+    'gpg',
+    'gshuf', // Linux, needs symlink
+    'reattach-to-user-namespace', // Mac only, required for tmux to interface w/ OS X
+    'tmux',
+    'zsh',
+]);
+
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
 createTaskTree(
-    defineRoot([
-        // verifyPrereqsPhase,
-        // installPythonPhase,
-        installDotfilesPhase,
-    ]),
+    defineRoot([verifyPrereqsPhase, installPythonPhase, installDotfilesPhase]),
     exports,
 );
