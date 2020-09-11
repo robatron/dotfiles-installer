@@ -104,24 +104,22 @@ const installDotfilesPhase = definePhase(
                 },
             },
         ],
-
-            ? null
-            : [
-                  'dotfiles',
-                  {
-                      installCommands: [
-                          `${path.join(
-                              binInstallDir,
-                              'yadm',
-                          )} clone ${dotfilesRepoUrl}`,
-                      ],
-                      // This step requires user interaction (entering a
-                      // password), so skip it if we're in a continuous-
-                      // delivery environment (GitHub Actions)
-                      skipAction: process.env['CI'],
-                      testFn: (pkg) => fileExists(dotfilesRepoDir),
-                  },
-              ],
+        [
+            'dotfiles',
+            {
+                installCommands: [
+                    `${path.join(
+                        binInstallDir,
+                        'yadm',
+                    )} clone ${dotfilesRepoUrl}`,
+                ],
+                // This step requires user interaction (entering a
+                // password), so skip it if we're in a continuous-
+                // delivery environment (GitHub Actions)
+                skipAction: process.env['CI'],
+                testFn: (pkg) => fileExists(dotfilesRepoDir),
+            },
+        ],
     ],
 );
 
