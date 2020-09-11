@@ -41,5 +41,3 @@ jobs:
 
       - name: Run installer
         run: gulp
-        env:
-          SKIP_INTERACTIVE: 1

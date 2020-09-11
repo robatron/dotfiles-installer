@@ -104,18 +104,22 @@ const installDotfilesPhase = definePhase(
                 },
             },
         ],
-        process.env['SKIP_INTERACTIVE']
+
             ? null
             : [
                   'dotfiles',
                   {
-                      testFn: (pkg) => fileExists(dotfilesRepoDir),
                       installCommands: [
                           `${path.join(
                               binInstallDir,
                               'yadm',
                           )} clone ${dotfilesRepoUrl}`,
                       ],
+                      // This step requires user interaction (entering a
+                      // password), so skip it if we're in a continuous-
+                      // delivery environment (GitHub Actions)
+                      skipAction: process.env['CI'],
+                      testFn: (pkg) => fileExists(dotfilesRepoDir),
                   },
               ],
     ],

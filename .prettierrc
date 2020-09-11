@@ -2,5 +2,14 @@
     "tabWidth": 4,
     "singleQuote": true,
     "trailingComma": "all",
-    "proseWrap": "preserve"
+    "proseWrap": "preserve",
+    "overrides": [
+        {
+            "files": ["*.yaml", "*.yml"],
+            "options": {
+                "tabWidth": 2,
+                "singleQuote": false
+            }
+        }
+    ]
 }
