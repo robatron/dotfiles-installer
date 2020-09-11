@@ -17,7 +17,7 @@ const {
 
 const { binInstallDir } = getConfig();
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
-const dotfilesRepoUrl = 'https://github.com/robatron/dotfiles.git';
+const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
 
 // Test phase definitions
 const verifyPrereqsPhase = definePhase(
