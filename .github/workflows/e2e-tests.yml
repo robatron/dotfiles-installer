@@ -1,4 +1,4 @@
-name: "Unit & end-to-end tests"
+name: "End-to-end tests"
 
 on:
   push:
@@ -11,19 +11,6 @@ defaults:
     shell: bash
 
 jobs:
-  unit-tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Install Node.js dependencies
-        run: npm ci
-
-      - name: Run unit tests
-        run: npm test -- --ci
-
   e2e-tests:
     strategy:
       fail-fast: false
