@@ -191,21 +191,16 @@ const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
     [
         'powerline',
         {
-            gitPackage: {
-                repoUrl: 'https://github.com/powerline/fonts.git',
-            },
-            testFn: (pkg) => fileExists(powerlineDir),
-        },
-    ],
-    [
-        'powerline-install',
-        {
             installCommands: [
+                `git clone https://github.com/powerline/fonts.git ${powerlineDir}`,
+                `ls -lah ${powerlineDir}`,
+
                 // Directory needs to exist and be owned by user to install
                 `mkdir -p $HOME/.local`,
                 `sudo chown -R $USER: $HOME/.local`,
                 `${powerlineDir}/install.sh`,
             ],
+            testFn: (pkg) => fileExists(powerlineDir),
         },
     ],
 
