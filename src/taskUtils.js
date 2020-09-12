@@ -17,7 +17,7 @@ const { createPackageFromDef } = require('./Package');
 const createPackageFromDefTask = (pkg, exp, phaseName) => {
     const task = (cb) => {
         if (pkg.skipAction) {
-            log.warn(`Skipping '${pkg.name}': ${pkg.skipAction}`);
+            log.warn(`Skipping '${pkg.name}'...`);
             return cb();
         }
 
