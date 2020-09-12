@@ -166,7 +166,7 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
 const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
 const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
 const powerlineDir = path.join(gitCloneDir, 'powerline');
-const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
+const installTermPhase = definePhase('installTerminalPhase', ACTIONS.INSTALL, [
     'zsh',
     [
         'oh-my-zsh',

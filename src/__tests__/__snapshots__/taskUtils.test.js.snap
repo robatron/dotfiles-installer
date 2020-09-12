@@ -11,9 +11,9 @@ Object {
       "task-fn",
     ],
   },
-  "testPhaseName:install:target-a": [Function],
-  "testPhaseName:install:target-b": [Function],
-  "testPhaseName:install:target-c": [Function],
+  "testPhaseName:target-a": [Function],
+  "testPhaseName:target-b": [Function],
+  "testPhaseName:target-c": [Function],
 }
 `;
 
@@ -52,12 +52,9 @@ Object {
       "task-fn",
     ],
   },
-  "testPhaseName:testPhaseName:install:target-a": [Function],
-  "testPhaseName:testPhaseName:install:target-b": [Function],
-  "testPhaseName:testPhaseName:install:target-c": [Function],
-  "testPhaseName:testPhaseName:verify:target-a": [Function],
-  "testPhaseName:testPhaseName:verify:target-b": [Function],
-  "testPhaseName:testPhaseName:verify:target-c": [Function],
+  "testPhaseName:testPhaseName:target-a": [Function],
+  "testPhaseName:testPhaseName:target-b": [Function],
+  "testPhaseName:testPhaseName:target-c": [Function],
 }
 `;
 
@@ -72,8 +69,8 @@ Object {
       "task-fn",
     ],
   },
-  "testPhaseName:verify:target-a": [Function],
-  "testPhaseName:verify:target-b": [Function],
-  "testPhaseName:verify:target-c": [Function],
+  "testPhaseName:target-a": [Function],
+  "testPhaseName:target-b": [Function],
+  "testPhaseName:target-c": [Function],
 }
 `;

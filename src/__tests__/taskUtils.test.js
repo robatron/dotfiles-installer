@@ -17,7 +17,7 @@ const defaultTestPackage = new Package('packageName', {
 describe('createPackageFromDefTask', () => {
     it('returns and exports a task function, and sets the display name', () => {
         const testExports = {};
-        const expectedTaskName = 'phase:action:packageName';
+        const expectedTaskName = 'phase:packageName';
 
         const resultTask = taskUtils.createPackageFromDefTask(
             defaultTestPackage,

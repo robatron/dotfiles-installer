@@ -51,7 +51,7 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
 
     // Create the actual gulp task and expose it globally so it can be run
     // individually
-    task.displayName = [phaseName, pkg.action, pkg.name].join(PHASE_NAME_DELIM);
+    task.displayName = [phaseName, pkg.name].join(PHASE_NAME_DELIM);
     exp && (exp[task.displayName] = task);
 
     return task;
