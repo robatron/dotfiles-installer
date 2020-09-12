@@ -189,7 +189,7 @@ const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
         },
     ],
     [
-        'powerline-download',
+        'powerline',
         {
             gitPackage: {
                 repoUrl: 'https://github.com/powerline/fonts.git',

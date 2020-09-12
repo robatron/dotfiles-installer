@@ -36,6 +36,7 @@ const installPackageViaGit = async (pkg) => {
         const createdBaseDir = fs.mkdirSync(cloneDir, { recursive: true });
 
         try {
+            log.info(`Cloning ${repoUrl} => ${cloneDir}`);
             await git.Clone(repoUrl, cloneDir);
         } catch (err) {
             rmrf.sync(createdBaseDir);
