@@ -129,7 +129,7 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
         'coreutils',
         {
             // Mac only. Favor GNU utilities over BSD's
-            skipAction: isLinux(),
+            skipAction: !isMac(),
         },
     ],
     'cowsay',
@@ -137,14 +137,14 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
         'fortune-mod',
         {
             // Linux version of fortune
-            skipAction: isMac(),
+            skipAction: !isLinux(),
         },
     ],
     [
         'fortune',
         {
             // Mac version of fortune
-            skipAction: isLinux(),
+            skipAction: !isMac(),
         },
     ],
     'gpg',
@@ -157,7 +157,7 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
                 `mkdir -p $HOME/bin/`,
                 'ln -sf `which shuf` $HOME/bin/gshuf',
             ],
-            skipAction: isMac(),
+            skipAction: !isLinux(),
         },
     ],
     'vim',
@@ -209,10 +209,29 @@ const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
         'reattach-to-user-namespace',
         {
             // Mac only. Required for tmux to interface w/ OS X clipboard, etc.
-            skipAction: isLinux(),
+            skipAction: !isMac(),
         },
     ],
 ]);
+
+const installMacGuiApps = definePhase(
+    'installMacGuiApps',
+    ACTIONS.INSTALL,
+    [
+        'deluge',
+        'google-chrome',
+        'iterm2',
+        'keepingyouawake',
+        'spectacle',
+        'visual-studio-code',
+    ].map((pkg) => [
+        pkg,
+        {
+            installCommands: [`brew cask install ${pkg}`],
+            skipAction: !isMac(),
+        },
+    ]),
+);
 
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
