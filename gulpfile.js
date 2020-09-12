@@ -174,9 +174,6 @@ const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
             installCommands: [
                 `wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/omzshinstall.sh`,
                 `RUNZSH=no sh /tmp/omzshinstall.sh`,
-
-                // Fix up .zshrc files
-                `cp $HOME/.zshrc.pre-oh-my-zsh $HOME/.zshrc`,
             ],
             testFn: (pkg) => fileExists(OMZDir),
         },
@@ -227,10 +224,10 @@ const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
 createTaskTree(
     defineRoot([
         verifyPrereqsPhase,
-        installPythonPhase,
-        installDotfilesPhase,
         installUtilitiesPhase,
+        installPythonPhase,
         installTermPhase,
+        installDotfilesPhase,
     ]),
     exports,
 );
