@@ -45,7 +45,9 @@ describe('createPackageFromDefTask', () => {
 
             const taskResult = taskFn(mockCb);
 
-            expect(log.warn).toBeCalledWith("Skipping 'packageName'...");
+            expect(log.warn).toBeCalledWith(
+                expect.stringMatching(/skipping 'packageName'/gi),
+            );
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
         });
