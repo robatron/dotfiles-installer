@@ -16,7 +16,7 @@ const {
     isMac,
 } = require('.');
 
-const { binInstallDir } = getConfig();
+const { binInstallDir, gitCloneDir } = getConfig();
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
 const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
 
@@ -160,6 +160,59 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
             skipAction: isMac(),
         },
     ],
+    'vim',
+]);
+
+const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
+const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
+const powerlineDir = path.join(gitCloneDir, 'powerline');
+const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
+    'zsh',
+    [
+        'oh-my-zsh',
+        {
+            installCommands: [
+                `wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/omzshinstall.sh`,
+                `RUNZSH=no sh /tmp/omzshinstall.sh`,
+
+                // Fix up .zshrc files
+                `cp $HOME/.zshrc.pre-oh-my-zsh $HOME/.zshrc`,
+            ],
+            testFn: (pkg) => fileExists(OMZDir),
+        },
+    ],
+    [
+        'spaceship-prompt',
+        {
+            installCommands: [
+                `git clone https://github.com/denysdovhan/spaceship-prompt.git ${SpaceshipThemeDir}`,
+                `ln -s "${SpaceshipThemeDir}/spaceship.zsh-theme" "${OMZDir}/themes/spaceship.zsh-theme"`,
+            ],
+            testFn: (pkg) => fileExists(SpaceshipThemeDir),
+        },
+    ],
+    [
+        'powerline-download',
+        {
+            gitPackage: {
+                repoUrl: 'https://github.com/powerline/fonts.git',
+            },
+            testFn: (pkg) => fileExists(powerlineDir),
+        },
+    ],
+    [
+        'powerline-install',
+        {
+            installCommands: [
+                // Directory needs to exist and be owned by user to install
+                `mkdirp $HOME/.local`,
+                `sudo chown -R $USER: $HOME/.local`,
+                `${powerlineDir}/install.sh`,
+            ],
+        },
+    ],
+
+    'tmux',
     [
         'reattach-to-user-namespace',
         {
@@ -167,8 +220,6 @@ const installUtilitiesPhase = definePhase('installUtilities', ACTIONS.INSTALL, [
             skipAction: isLinux(),
         },
     ],
-    'tmux',
-    'zsh',
 ]);
 
 // Create the full gulp task tree from the phase and pakage definitions and
@@ -179,6 +230,7 @@ createTaskTree(
         installPythonPhase,
         installDotfilesPhase,
         installUtilitiesPhase,
+        installTermPhase,
     ]),
     exports,
 );
