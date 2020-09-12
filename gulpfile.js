@@ -202,7 +202,7 @@ const installTermPhase = definePhase('installTerminal', ACTIONS.INSTALL, [
         {
             installCommands: [
                 // Directory needs to exist and be owned by user to install
-                `mkdirp $HOME/.local`,
+                `mkdir -p $HOME/.local`,
                 `sudo chown -R $USER: $HOME/.local`,
                 `${powerlineDir}/install.sh`,
             ],
