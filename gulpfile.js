@@ -8,6 +8,7 @@ const { exec } = require('shelljs');
 const {
     ACTIONS,
     createTaskTree,
+    definePackage: p,
     definePhase,
     defineRoot,
     fileExists,
@@ -23,8 +24,6 @@ const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
 const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
 const powerlineDir = path.join(gitCloneDir, 'powerline');
 
-const pkg = (name, args = {}) => [name, args];
-
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
 createTaskTree(
@@ -33,26 +32,23 @@ createTaskTree(
             'verifyPrereqsPhase',
             ACTIONS.VERIFY,
             [
-                'curl',
-                'git',
-                'node',
-                'npm',
-                [
-                    'nvm',
-                    {
-                        testFn: (pkg) =>
-                            fileExists(
-                                path.join(
-                                    process.env['NVM_DIR'] ||
-                                        path.join(
-                                            process.env['HOME'],
-                                            `.${pkg.name}`,
-                                        ),
-                                    `${pkg.name}.sh`,
-                                ),
+                p('curl'),
+                p('git'),
+                p('node'),
+                p('npm'),
+                p('nvm', {
+                    testFn: (pkg) =>
+                        fileExists(
+                            path.join(
+                                process.env['NVM_DIR'] ||
+                                    path.join(
+                                        process.env['HOME'],
+                                        `.${pkg.name}`,
+                                    ),
+                                `${pkg.name}.sh`,
                             ),
-                    },
-                ],
+                        ),
+                }),
             ],
             { parallel: true },
         ),

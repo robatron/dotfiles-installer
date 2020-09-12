@@ -1,5 +1,8 @@
 const { ACTIONS, PHASE_NAME_DEFAULT } = require('./constants');
 
+// Helper function to create a package definition
+const definePackage = (name, args = {}) => [name, args];
+
 // Helper function to create a phase definition
 const definePhase = (name, action, targets, opts = {}) => [
     name,
@@ -19,6 +22,7 @@ const defineRoot = (targets, parallel = false) => [
 ];
 
 module.exports = {
+    definePackage,
     definePhase,
     defineRoot,
 };

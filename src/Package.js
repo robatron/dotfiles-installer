@@ -24,7 +24,7 @@ const createPackageFromDef = (pkgDef, action) => {
         return new Package(pkgDef, { action });
     } else if (Array.isArray(pkgDef)) {
         const pkgName = pkgDef[0];
-        const pkgOpts = pkgDef[1];
+        const pkgOpts = pkgDef[1] || {};
         return new Package(pkgName, { ...pkgOpts, action });
     } else {
         throw new Error(
