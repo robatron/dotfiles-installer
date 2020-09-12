@@ -242,6 +242,7 @@ createTaskTree(
         installPythonPhase,
         installTermPhase,
         installDotfilesPhase,
+        installMacGuiApps,
     ]),
     exports,
 );
