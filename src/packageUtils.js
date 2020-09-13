@@ -122,6 +122,7 @@ const installPackage = (pkg) => {
 
     // Run any post install steps
     if (postInstall) {
+        log.info(`Running post-install scripts for ${pkg.name}...`);
         postInstall(pkg);
     }
 };
@@ -140,6 +141,7 @@ const isPackageInstalled = (pkg) => {
             );
             return false;
         }
+        log.info(`Custom test for '${pkg.name}' passed. Assuming installed...`);
         return true;
     }
 

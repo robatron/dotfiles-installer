@@ -104,11 +104,19 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
             cloneDir: powerlineDir,
             repoUrl: 'https://github.com/powerline/fonts.git',
         },
-        postInstall: [
-            `mkdir -p $HOME/.local`,
-            `sudo chown -R $USER: $HOME/.local`,
-            `${powerlineDir}/install.sh`,
-        ],
+        postInstall: (pkg) => {
+            const cmds = [
+                `mkdir -p $HOME/.local`,
+                `sudo chown -R $USER: $HOME/.local`,
+                `${powerlineDir}/install.sh`,
+            ].join(' && ');
+
+            const result = exec(cmds).code;
+
+            if (!result) {
+                throw new Error(`Post-install commands failed: ${cmds}`);
+            }
+        },
         testFn: (pkg) => fileExists(powerlineDir),
     }),
 
