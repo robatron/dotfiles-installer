@@ -167,6 +167,40 @@ const installMacGuiAppsPhase =
         ),
     );
 
+// Install Docker.
+// TODO: Support Mac
+// See https://docs.docker.com/engine/install/ubuntu/
+const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
+    isLinux() &&
+        definePhase('linux', ACTIONS.RUN_PHASES, [
+            definePhase('prereqs', ACTIONS.INSTALL, [
+                p('apt-update', {
+                    installCommands: ['sudo apt update'],
+                }),
+                p('apt-transport-https'),
+                p('ca-certificates'),
+                p('curl'),
+                p('gnupg-agent'),
+                p('software-properties-common'),
+                p('docker-apt-key', {
+                    installCommands: [
+                        `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`,
+                        `sudo add-apt-repository \
+                                "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+                                $(lsb_release -cs) \
+                                stable"`,
+                        'sudo apt update',
+                    ],
+                }),
+            ]),
+            definePhase('engine', ACTIONS.INSTALL, [
+                'docker-ce',
+                'docker-ce-cli',
+                'containerd.io',
+            ]),
+        ]),
+]);
+
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
 createTaskTree(
@@ -174,8 +208,9 @@ createTaskTree(
         installUtilsPhase,
         installPythonPhase,
         installTermPhase,
-        installDotfilesPhase,
         installMacGuiAppsPhase,
+        installDockerPhase,
+        installDotfilesPhase,
     ]),
     exports,
 );
