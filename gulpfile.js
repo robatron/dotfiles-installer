@@ -111,9 +111,9 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
                 `${powerlineDir}/install.sh`,
             ].join(' && ');
 
-            const result = exec(cmds).code;
+            const err = exec(cmds).code;
 
-            if (!result) {
+            if (err) {
                 throw new Error(`Post-install commands failed: ${cmds}`);
             }
         },
