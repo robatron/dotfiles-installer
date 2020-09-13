@@ -167,8 +167,7 @@ const installMacGuiAppsPhase =
         ),
     );
 
-// Install Docker.
-// TODO: Support Mac
+// Install Docker and make rootless
 // See https://docs.docker.com/engine/install/ubuntu/
 const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
     isLinux() &&
@@ -193,12 +192,33 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                     ],
                 }),
             ]),
+            definePhase('rootless-user', ACTIONS.INSTALL, [
+                p('add-docker-group', {
+                    installCommands: ['sudo groupadd docker'],
+                    testFn: (pkg) => {
+                        // Does the docker group exist on the system?
+                        const groups = exec('getent group')
+                            .stdout.split('\n')
+                            .map((group) => group.split(':')[0]);
+                        return groups.includes('docker');
+                    },
+                }),
+                p('add-user-to-docker-group', {
+                    installCommands: ['sudo usermod -aG docker $USER'],
+                    testFn: (pkg) => {
+                        // Does the user belong to the docker group?
+                        const groups = exec('groups').stdout.split(' ');
+                        return groups.includes('docker');
+                    },
+                }),
+            ]),
             definePhase('engine', ACTIONS.INSTALL, [
                 'docker-ce',
                 'docker-ce-cli',
                 'containerd.io',
             ]),
         ]),
+    isMac(), // TODO
 ]);
 
 // Create the full gulp task tree from the phase and pakage definitions and
