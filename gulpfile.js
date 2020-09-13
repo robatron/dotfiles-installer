@@ -28,33 +28,35 @@ const powerlineDir = path.join(gitCloneDir, 'powerline');
 // export them as gulp tasks
 createTaskTree(
     defineRoot([
-        definePhase('installUtilities', ACTIONS.INSTALL, [
-            p('coreutils', {
-                // Mac only. Favor GNU utilities over BSD's
-                skipAction: !isMac(),
-            }),
-            p('cowsay'),
-            p('fortune-mod', {
-                // Linux version of fortune
-                skipAction: !isLinux(),
-            }),
-            p('fortune', {
-                // Mac version of fortune
-                skipAction: !isMac(),
-            }),
-            p('gpg'),
-            p('gshuf', {
-                // Symlink shuf to gshuf on Linux to normalize 'shuffle' command
-                // between Linux and Mac
-                installCommands: [
-                    `mkdir -p $HOME/bin/`,
-                    'ln -sf `which shuf` $HOME/bin/gshuf',
-                ],
-                skipAction: !isLinux(),
-            }),
-            p('vim'),
+        definePhase('installUtils', ACTIONS.RUN_PHASES, [
+            definePhase('common', ACTIONS.INSTALL, [
+                p('cowsay'),
+                p('gpg'),
+                p('vim'),
+            ]),
+            isLinux() &&
+                definePhase('linux', ACTIONS.INSTALL, [
+                    // Linux version of fortune
+                    p('fortune-mod'),
+
+                    // Symlink shuf to gshuf on Linux to normalize 'shuffle'
+                    // command between Linux and Mac
+                    p('gshuf', {
+                        installCommands: [
+                            `mkdir -p $HOME/bin/`,
+                            'ln -sf `which shuf` $HOME/bin/gshuf',
+                        ],
+                    }),
+                ]),
+            isMac() &&
+                definePhase('mac', ACTIONS.INSTALL, [
+                    // Favor GNU utilities over BSD's
+                    p('coreutils'),
+                    p('fortune'),
+                ]),
         ]),
-        definePhase('installPythonPhase', ACTIONS.INSTALL, [
+
+        definePhase('installPython', ACTIONS.INSTALL, [
             p('python3'),
             p('python3-distutils', {
                 // Required for installing `pip`. Only needed on Linux
@@ -87,7 +89,8 @@ createTaskTree(
                 installCommands: ['sudo -H pip install envtpl'],
             }),
         ]),
-        definePhase('installTerminalPhase', ACTIONS.INSTALL, [
+
+        definePhase('installTerminal', ACTIONS.INSTALL, [
             p('zsh'),
             p('oh-my-zsh', {
                 installCommands: [
@@ -122,7 +125,8 @@ createTaskTree(
                 skipAction: !isMac(),
             }),
         ]),
-        definePhase('installDotfilesPhase', ACTIONS.INSTALL, [
+
+        definePhase('installDotfiles', ACTIONS.INSTALL, [
             p('yadm', {
                 gitPackage: {
                     binSymlink: 'yadm',
@@ -143,23 +147,26 @@ createTaskTree(
                 testFn: (pkg) => fileExists(dotfilesRepoDir),
             }),
         ]),
-        definePhase(
-            'installMacGuiApps',
-            ACTIONS.INSTALL,
-            [
-                'deluge',
-                'google-chrome',
-                'iterm2',
-                'keepingyouawake',
-                'spectacle',
-                'visual-studio-code',
-            ].map((name) =>
-                p(name, {
-                    installCommands: [`brew cask install ${name}`],
-                    skipAction: !isMac(),
-                }),
+
+        isMac() &&
+            definePhase(
+                'installMacGuiApps',
+                ACTIONS.INSTALL,
+                [
+                    'deluge',
+                    'google-chrome',
+                    'iterm2',
+                    'keepingyouawake',
+                    'spectacle',
+                    'visual-studio-code',
+                ].map((name) =>
+                    p(name, {
+                        installCommands: [`brew cask install ${name}`],
+                    }),
+                ),
             ),
-        ),
     ]),
+
+    // Pass along exports to expose subtasks
     exports,
 );
