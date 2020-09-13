@@ -31,20 +31,10 @@ const verifyPrereqsPhase = definePhase(
     'verifyPrereqsPhase',
     ACTIONS.VERIFY,
     [
-        p('curl'),
-        p('git'),
-        p('node'),
-        p('npm'),
-        p('nvm', {
-            testFn: (pkg) =>
-                fileExists(
-                    path.join(
-                        process.env['NVM_DIR'] ||
-                            path.join(process.env['HOME'], `.${pkg.name}`),
-                        `${pkg.name}.sh`,
-                    ),
-                ),
-        }),
+        definePackage('curl'),
+        definePackage('git'),
+        definePackage('node'),
+        definePackage('npm'),
     ],
     { parallel: true },
 );

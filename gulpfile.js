@@ -28,30 +28,6 @@ const powerlineDir = path.join(gitCloneDir, 'powerline');
 // export them as gulp tasks
 createTaskTree(
     defineRoot([
-        definePhase(
-            'verifyPrereqsPhase',
-            ACTIONS.VERIFY,
-            [
-                p('curl'),
-                p('git'),
-                p('node'),
-                p('npm'),
-                p('nvm', {
-                    testFn: (pkg) =>
-                        fileExists(
-                            path.join(
-                                process.env['NVM_DIR'] ||
-                                    path.join(
-                                        process.env['HOME'],
-                                        `.${pkg.name}`,
-                                    ),
-                                `${pkg.name}.sh`,
-                            ),
-                        ),
-                }),
-            ],
-            { parallel: true },
-        ),
         definePhase('installUtilities', ACTIONS.INSTALL, [
             p('coreutils', {
                 // Mac only. Favor GNU utilities over BSD's
