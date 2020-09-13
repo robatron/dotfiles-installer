@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 # This is the BOOTSTRAPPER script that installs system programs and dependencies
-# required to run the akinizer
+# required to apply akinizer configurations
 
 set -e # Exit on any error
 

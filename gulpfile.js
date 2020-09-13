@@ -80,17 +80,14 @@ createTaskTree(
         ]),
         definePhase('installPythonPhase', ACTIONS.INSTALL, [
             p('python3'),
-            p(
+            p('python3-distutils', {
                 // Required for installing `pip`. Only needed on Linux
-                'python3-distutils',
-                {
-                    skipAction: !isLinux(),
-                    testFn: (pkg) =>
-                        !exec(`dpkg -s '${pkg.name}'`, {
-                            silent: true,
-                        }).code,
-                },
-            ),
+                skipAction: !isLinux(),
+                testFn: (pkg) =>
+                    !exec(`dpkg -s '${pkg.name}'`, {
+                        silent: true,
+                    }).code,
+            }),
             p('pip', {
                 installCommands: [
                     'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
@@ -109,13 +106,10 @@ createTaskTree(
                         ),
                     ),
             }),
-            p(
+            p('envtpl', {
                 // Required for `yadm`
-                'envtpl',
-                {
-                    installCommands: ['sudo -H pip install envtpl'],
-                },
-            ),
+                installCommands: ['sudo -H pip install envtpl'],
+            }),
         ]),
         definePhase('installTerminalPhase', ACTIONS.INSTALL, [
             p('zsh'),
