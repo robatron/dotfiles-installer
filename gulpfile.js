@@ -100,8 +100,11 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
         testFn: (pkg) => fileExists(SpaceshipThemeDir),
     }),
     p('powerline', {
-        installCommands: [
-            `git clone https://github.com/powerline/fonts.git ${powerlineDir}`,
+        gitPackage: {
+            cloneDir: powerlineDir,
+            repoUrl: 'https://github.com/powerline/fonts.git',
+        },
+        postInstall: [
             `mkdir -p $HOME/.local`,
             `sudo chown -R $USER: $HOME/.local`,
             `${powerlineDir}/install.sh`,
