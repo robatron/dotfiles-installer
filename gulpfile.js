@@ -91,10 +91,12 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
         testFn: (pkg) => fileExists(OMZDir),
     }),
     p('spaceship-prompt', {
-        installCommands: [
-            `git clone https://github.com/denysdovhan/spaceship-prompt.git ${SpaceshipThemeDir}`,
-            `ln -s "${SpaceshipThemeDir}/spaceship.zsh-theme" "${OMZDir}/themes/spaceship.zsh-theme"`,
-        ],
+        gitPackage: {
+            binDir: `${OMZDir}/themes/spaceship.zsh-theme`,
+            binSymlink: 'spaceship.zsh-theme',
+            cloneDir: SpaceshipThemeDir,
+            repoUrl: 'https://github.com/denysdovhan/spaceship-prompt.git',
+        },
         testFn: (pkg) => fileExists(SpaceshipThemeDir),
     }),
     p('powerline', {
