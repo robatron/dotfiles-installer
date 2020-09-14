@@ -1,6 +1,6 @@
 /**
  * This file serves as an end-to-end test for akinizer, in addition to being my
- * personal akinizer definition
+ * personal akinizer configuration
  */
 const os = require('os');
 const path = require('path');
@@ -18,6 +18,14 @@ const {
 } = require('.');
 
 const { binInstallDir, gitCloneDir } = getConfig();
+
+// Phase for verifying akinizer prerequisites are installed
+const verifyPrereqsPhase = definePhase(
+    'verifyPrereqsPhase',
+    ACTIONS.VERIFY,
+    ['curl', 'git', 'node', 'npm'],
+    { parallel: true },
+);
 
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     definePhase('common', ACTIONS.INSTALL, [p('cowsay'), p('gpg'), p('vim')]),
@@ -225,6 +233,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
 // export them as gulp tasks
 createTaskTree(
     defineRoot([
+        verifyPrereqsPhase,
         installUtilsPhase,
         installPythonPhase,
         installTermPhase,

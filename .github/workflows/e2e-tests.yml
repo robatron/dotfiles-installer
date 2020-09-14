@@ -28,3 +28,6 @@ jobs:
 
       - name: Apply
         run: gulp
+
+      - name: Re-apply
+        run: gulp
