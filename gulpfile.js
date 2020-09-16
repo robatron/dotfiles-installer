@@ -46,7 +46,9 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     isMac() &&
         definePhase('mac', ACTIONS.INSTALL, [
             // Favor GNU utilities over BSD's
-            p('coreutils'),
+            p('coreutils', {
+                testFn: (pkg) => !exec(`brew list --versions coreutils`).code,
+            }),
             p('fortune'),
         ]),
 ]);
@@ -70,14 +72,7 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
     p('pyenv', {
         installCommands: ['curl https://pyenv.run | bash'],
         testFn: (pkg) =>
-            fileExists(
-                path.join(
-                    process.env['HOME'],
-                    `.${pkg.name}`,
-                    'bin',
-                    `${pkg.name}`,
-                ),
-            ),
+            fileExists(path.join(process.env['HOME'], `.${pkg.name}`)),
     }),
     p('envtpl', {
         // Required for `yadm`
@@ -135,27 +130,6 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
     }),
 ]);
 
-const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
-const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
-
-const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
-    p('yadm', {
-        gitPackage: {
-            binSymlink: 'yadm',
-            repoUrl: 'https://github.com/TheLocehiliosan/yadm.git',
-        },
-    }),
-    p('dotfiles', {
-        installCommands: [
-            `${path.join(binInstallDir, 'yadm')} clone ${dotfilesRepoUrl}`,
-        ],
-        // This step requires user interaction (entering a password), so skip
-        // it if we're in a continuous- delivery environment (GitHub Actions)
-        skipAction: process.env['CI'],
-        testFn: (pkg) => fileExists(dotfilesRepoDir),
-    }),
-]);
-
 const installMacGuiAppsPhase =
     isMac() &&
     definePhase(
@@ -171,6 +145,7 @@ const installMacGuiAppsPhase =
         ].map((name) =>
             p(name, {
                 installCommands: [`brew cask install ${name}`],
+                testFn: (pkg) => !exec(`brew list --cask ${name}`).code,
             }),
         ),
     );
@@ -226,7 +201,33 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                 'containerd.io',
             ]),
         ]),
-    // isMac(), // TODO
+    isMac() &&
+        definePhase('mac', ACTIONS.INSTALL, [
+            p('docker', {
+                installCommands: ['brew cask install docker'],
+            }),
+        ]),
+]);
+
+const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
+const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
+
+const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
+    p('yadm', {
+        gitPackage: {
+            binSymlink: 'yadm',
+            repoUrl: 'https://github.com/TheLocehiliosan/yadm.git',
+        },
+    }),
+    p('dotfiles', {
+        installCommands: [
+            `${path.join(binInstallDir, 'yadm')} clone ${dotfilesRepoUrl}`,
+        ],
+        // This step requires user interaction (entering a password), so skip
+        // it if we're in a continuous- delivery environment (GitHub Actions)
+        skipAction: process.env['CI'],
+        testFn: (pkg) => fileExists(dotfilesRepoDir),
+    }),
 ]);
 
 // Create the full gulp task tree from the phase and pakage definitions and
