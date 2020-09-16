@@ -21,9 +21,11 @@ const { binInstallDir, gitCloneDir } = getConfig();
 
 // Phase for verifying akinizer prerequisites are installed
 const verifyPrereqsPhase = definePhase(
-    'verifyPrereqsPhase',
+    'verifyPrereqs',
     ACTIONS.VERIFY,
-    ['curl', 'git', 'node', 'npm'],
+    ['curl', 'git', 'node', 'npm'].map((pkgName) =>
+        p(pkgName, { verifyCommandExists: true }),
+    ),
     { parallel: true },
 );
 
@@ -142,8 +144,7 @@ const installMacGuiAppsPhase =
             'visual-studio-code',
         ].map((name) =>
             p(name, {
-                installCommands: [`brew cask install ${name}`],
-                testFn: (pkg) => !exec(`brew list --cask ${name}`).code,
+                isGUI: true,
             }),
         ),
     );
@@ -200,11 +201,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
             ]),
         ]),
     isMac() &&
-        definePhase('mac', ACTIONS.INSTALL, [
-            p('docker', {
-                installCommands: ['brew cask install docker'],
-            }),
-        ]),
+        definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
 ]);
 
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');

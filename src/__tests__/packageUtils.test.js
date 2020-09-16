@@ -269,7 +269,9 @@ describe('installPackage', () => {
 
         expect(platform.isLinux).toBeCalledTimes(1);
         expect(platform.isMac).toBeCalledTimes(1);
-        expect(shell.exec).toBeCalledWith(`brew install ${pkg.name}`);
+        expect(shell.exec).toBeCalledWith(
+            `HOMEBREW_NO_AUTO_UPDATE=1 brew install ${pkg.name}`,
+        );
     });
 
     describe('error states', () => {
@@ -406,9 +408,26 @@ describe('isPackageinstalled', () => {
 
         it('does not query `brew list` for the package if not a mac', () => {
             platform.isMac = jest.fn(() => false);
-            shell.exec = jest.fn(() => ({ code: 0 }));
+            shell.exec = jest.fn();
             const pkg = new Package('pkg');
             isPackageInstalled(pkg);
+            expect(shell.exec).not.toBeCalled();
+        });
+
+        it('skips this test if verifyCommandExists or installCommands are present', () => {
+            platform.isMac = jest.fn(() => true);
+            shell.exec = jest.fn();
+
+            const pkgVerifyCmdExists = new Package('pkg', {
+                verifyCommandExists: true,
+            });
+            isPackageInstalled(pkgVerifyCmdExists);
+
+            const pkgWithInstallCommands = new Package('pkg', {
+                installCommands: true,
+            });
+            isPackageInstalled(pkgWithInstallCommands);
+
             expect(shell.exec).not.toBeCalled();
         });
     });

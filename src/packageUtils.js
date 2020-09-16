@@ -84,7 +84,7 @@ const installPackageViaGit = async (pkg) => {
 
 // Install the specified package
 const installPackage = (pkg) => {
-    const { installCommands, postInstall } = pkg.actionArgs;
+    const { installCommands, isGUI, postInstall } = pkg.actionArgs;
     const cmds = [];
 
     // Use explicit install commands if specified
@@ -96,7 +96,11 @@ const installPackage = (pkg) => {
     else if (platform.isLinux()) {
         cmds.push(`sudo apt install -y ${pkg.name}`);
     } else if (platform.isMac()) {
-        cmds.push(`brew install ${pkg.name}`);
+        if (isGUI) {
+            cmds.push(`brew cask install ${pkg.name}`);
+        } else {
+            cmds.push(`HOMEBREW_NO_AUTO_UPDATE=1 brew install ${pkg.name}`);
+        }
     }
 
     // Error if we don't know how to install this package
@@ -129,7 +133,13 @@ const installPackage = (pkg) => {
 
 // Return if a package is installed or not
 const isPackageInstalled = (pkg) => {
-    const { gitPackage, testFn } = pkg.actionArgs;
+    const {
+        gitPackage,
+        installCommands,
+        isGUI,
+        testFn,
+        verifyCommandExists,
+    } = pkg.actionArgs;
 
     // If custom test function supplied, use it
     if (testFn) {
@@ -177,8 +187,12 @@ const isPackageInstalled = (pkg) => {
     }
 
     // If we're on a mac, test if the package is installed w/ brew. `brew list`
-    // will return 0 (success) if the package is installed, and 1 (fail) if not
-    if (platform.isMac()) {
+    // will return 0 (success) if the package is installed, and 1 (fail) if not.
+    // Skip this if there are installCommands, or verifyCommandExists is set.
+    if (!verifyCommandExists && platform.isMac() && !installCommands) {
+        if (isGUI) {
+            return !shell.exec(`brew list --cask ${pkg.name}`).code;
+        }
         return !shell.exec(`brew list --versions ${pkg.name}`).code;
     }
 
