@@ -345,10 +345,6 @@ describe('isPackageinstalled', () => {
             });
         };
 
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-
         describe('when binSymlink is present', () => {
             [
                 ['clonedAndSymlinked', true],
@@ -376,6 +372,44 @@ describe('isPackageinstalled', () => {
                 const tstPkg = new Package('tst-pkg', { gitPackage: {} });
                 expect(isPackageInstalled(tstPkg)).toBe(false);
             });
+        });
+    });
+
+    describe('mac package support', () => {
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('queries `brew list` for the package, returns true if installed', () => {
+            platform.isMac = jest.fn(() => true);
+            shell.exec = jest.fn(() => ({ code: 0 }));
+            const pkg = new Package('pkg');
+
+            const result = isPackageInstalled(pkg);
+
+            expect(result).toBe(true);
+            expect(shell.exec).toBeCalledTimes(1);
+            expect(shell.exec).toBeCalledWith(
+                `brew list --versions ${pkg.name}`,
+            );
+        });
+
+        it('... and returns false if not installed', () => {
+            platform.isMac = jest.fn(() => true);
+            shell.exec = jest.fn(() => ({ code: 1 }));
+            const pkg = new Package('pkg');
+
+            const result = isPackageInstalled(pkg);
+
+            expect(result).toBe(false);
+        });
+
+        it('does not query `brew list` for the package if not a mac', () => {
+            platform.isMac = jest.fn(() => false);
+            shell.exec = jest.fn(() => ({ code: 0 }));
+            const pkg = new Package('pkg');
+            isPackageInstalled(pkg);
+            expect(shell.exec).not.toBeCalled();
         });
     });
 });

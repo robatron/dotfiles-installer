@@ -176,6 +176,12 @@ const isPackageInstalled = (pkg) => {
         return false;
     }
 
+    // If we're on a mac, test if the package is installed w/ brew. `brew list`
+    // will return 0 (success) if the package is installed, and 1 (fail) if not
+    if (platform.isMac()) {
+        return !shell.exec(`brew list --versions ${pkg.name}`).code;
+    }
+
     // Otherwise, just see if the command exists in the environment
     return commandExistsSync(pkg.command);
 };

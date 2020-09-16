@@ -46,9 +46,7 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     isMac() &&
         definePhase('mac', ACTIONS.INSTALL, [
             // Favor GNU utilities over BSD's
-            p('coreutils', {
-                testFn: (pkg) => !exec(`brew list --versions coreutils`).code,
-            }),
+            p('coreutils'),
             p('fortune'),
         ]),
 ]);
