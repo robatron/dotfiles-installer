@@ -226,7 +226,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                 'containerd.io',
             ]),
         ]),
-    isMac(), // TODO
+    // isMac(), // TODO
 ]);
 
 // Create the full gulp task tree from the phase and pakage definitions and
