@@ -248,7 +248,7 @@ describe('installPackage', () => {
         });
     });
 
-    it('installs with "apt" if on mac', () => {
+    it('installs with "apt" if on linux', () => {
         platform.isLinux = jest.fn(() => true);
 
         const pkg = new Package(tstPkgName);
@@ -271,6 +271,21 @@ describe('installPackage', () => {
         expect(platform.isMac).toBeCalledTimes(1);
         expect(shell.exec).toBeCalledWith(
             `HOMEBREW_NO_AUTO_UPDATE=1 brew install ${pkg.name}`,
+        );
+    });
+
+    it('installs with "brew cask" if on mac and isGUI is set', () => {
+        platform.isLinux = jest.fn(() => false);
+        platform.isMac = jest.fn(() => true);
+
+        const pkg = new Package(tstPkgName, { isGUI: true });
+
+        installPackage(pkg);
+
+        expect(platform.isLinux).toBeCalledTimes(1);
+        expect(platform.isMac).toBeCalledTimes(1);
+        expect(shell.exec).toBeCalledWith(
+            `HOMEBREW_NO_AUTO_UPDATE=1 brew cask install ${pkg.name}`,
         );
     });
 
@@ -394,6 +409,18 @@ describe('isPackageinstalled', () => {
             expect(shell.exec).toBeCalledWith(
                 `brew list --versions ${pkg.name}`,
             );
+        });
+
+        it('queries `brew list --cask` for the package if isGUI is set, returns true if installed', () => {
+            platform.isMac = jest.fn(() => true);
+            shell.exec = jest.fn(() => ({ code: 0 }));
+            const pkg = new Package('pkg', { isGUI: true });
+
+            const result = isPackageInstalled(pkg);
+
+            expect(result).toBe(true);
+            expect(shell.exec).toBeCalledTimes(1);
+            expect(shell.exec).toBeCalledWith(`brew list --cask ${pkg.name}`);
         });
 
         it('... and returns false if not installed', () => {

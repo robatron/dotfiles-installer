@@ -97,7 +97,9 @@ const installPackage = (pkg) => {
         cmds.push(`sudo apt install -y ${pkg.name}`);
     } else if (platform.isMac()) {
         if (isGUI) {
-            cmds.push(`brew cask install ${pkg.name}`);
+            cmds.push(
+                `HOMEBREW_NO_AUTO_UPDATE=1 brew cask install ${pkg.name}`,
+            );
         } else {
             cmds.push(`HOMEBREW_NO_AUTO_UPDATE=1 brew install ${pkg.name}`);
         }
