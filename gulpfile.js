@@ -19,13 +19,25 @@ const {
 
 const { binInstallDir, gitCloneDir } = getConfig();
 
-// Phase for verifying akinizer prerequisites are installed
+// Define phases. In this phase, we're verifying packages are installed.
 const verifyPrereqsPhase = definePhase(
+    // Phase name. This can be run with `gulp verifyPrereqs`
     'verifyPrereqs',
+
+    // For every package, apply the `VERIFY` action
     ACTIONS.VERIFY,
+
+    // List of packages to be verified
     ['curl', 'git', 'node', 'npm'].map((pkgName) =>
-        p(pkgName, { verifyCommandExists: true }),
+        p(pkgName, {
+            // This option verifies the package is installed as opposed to
+            // attempting to find the command
+            verifyPkgInstalled: true,
+        }),
     ),
+
+    // We can run the phase in parallel b/c package verifications are
+    // independent from each other
     { parallel: true },
 );
 
@@ -234,6 +246,7 @@ const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
 createTaskTree(
+    // Define the task tree root consisting of phases
     defineRoot([
         verifyPrereqsPhase,
         installUtilsPhase,

@@ -34,66 +34,49 @@ Once git is installed, just download, bootstrap, and run akinizer:
 
 ## Usage
 
-Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, and import akinizer. See the [./gulpfile.js][] for an example.
+Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, and import akinizer. See the [./gulpfile.js](./gulpfile.js) for an example.
 
 System configuration is defined as phases organized in a task tree. Each phase has a list of packages and an action to apply to them. Actions support different arguments. Here's an example:
 
 ```js
-const path = require('path');
 const {
     ACTIONS,
     createTaskTree,
+    definePackage: p,
     definePhase,
     defineRoot,
-    fileExists,
 } = require('akinizer');
 
-// Create the full gulp task tree from the phase and pakage definitions, then
+// Define phases. In this phase, we're verifying packages are installed.
+const verifyPrereqsPhase = definePhase(
+    // Phase name. This can be run with `gulp verifyPrereqs`
+    'verifyPrereqs',
+
+    // For every package, apply the `VERIFY` action
+    ACTIONS.VERIFY,
+
+    // List of packages to be verified
+    ['curl', 'git', 'node', 'npm'].map((pkgName) =>
+        p(pkgName, {
+            // This option verifies the package is installed as opposed to
+            // attempting to find the command
+            verifyPkgInstalled: true,
+        }),
+    ),
+
+    // We can run the phase in parallel b/c package verifications are
+    // independent from each other
+    { parallel: true },
+);
+
+// Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks
 createTaskTree(
     // Define the task tree root consisting of phases
     defineRoot([
-        // Define phases. In this phase, we're verifying packages are installed.
-        definePhase(
-            'verifyPrereqsPhase',
-
-            // For every package, apply the `VERIFY` action
-            ACTIONS.VERIFY,
-
-            // List packages to be verified
-            [
-                'curl',
-                'git',
-                'node',
-                'npm',
-
-                // Packages can control the behavior of the actions with action
-                // arguments. In this case, we're defining a `testFn` that the
-                // `VERIFY` action will use to verify this package is installed
-                [
-                    'nvm',
-                    {
-                        testFn: (pkg) =>
-                            fileExists(
-                                path.join(
-                                    process.env['NVM_DIR'] ||
-                                        path.join(
-                                            process.env['HOME'],
-                                            `.${pkg.name}`,
-                                        ),
-                                    `${pkg.name}.sh`,
-                                ),
-                            ),
-                    },
-                ],
-            ],
-
-            // We can tell the phase to run its verifications in parallel
-            { parallel: true },
-        ),
+        verifyPrereqsPhase,
+        // ...
     ]),
-
-    // Pass in `exports` so gulp tasks can be added
     exports,
 );
 ```
@@ -124,3 +107,7 @@ Verifies packages are installed.
 #### Supported arguments
 
 -   `testFn` - Alternative function used to test a package is installed. Return `true` for "installed", and `false` if not. Called with the current package.
+
+# License
+
+[MIT](./LICENSE)

@@ -140,7 +140,7 @@ const isPackageInstalled = (pkg) => {
         installCommands,
         isGUI,
         testFn,
-        verifyCommandExists,
+        verifyPkgInstalled,
     } = pkg.actionArgs;
 
     // If custom test function supplied, use it
@@ -190,8 +190,8 @@ const isPackageInstalled = (pkg) => {
 
     // If we're on a mac, test if the package is installed w/ brew. `brew list`
     // will return 0 (success) if the package is installed, and 1 (fail) if not.
-    // Skip this if there are installCommands, or verifyCommandExists is set.
-    if (!verifyCommandExists && platform.isMac() && !installCommands) {
+    // Skip this if there are installCommands, or verifyPkgInstalled is set.
+    if (!verifyPkgInstalled && platform.isMac() && !installCommands) {
         if (isGUI) {
             return !shell.exec(`brew list --cask ${pkg.name}`).code;
         }

@@ -441,12 +441,12 @@ describe('isPackageinstalled', () => {
             expect(shell.exec).not.toBeCalled();
         });
 
-        it('skips this test if verifyCommandExists or installCommands are present', () => {
+        it('skips this test if verifyPkgInstalled or installCommands are present', () => {
             platform.isMac = jest.fn(() => true);
             shell.exec = jest.fn();
 
             const pkgVerifyCmdExists = new Package('pkg', {
-                verifyCommandExists: true,
+                verifyPkgInstalled: true,
             });
             isPackageInstalled(pkgVerifyCmdExists);
 
