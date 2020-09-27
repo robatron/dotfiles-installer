@@ -30,7 +30,13 @@ const verifyPrereqsPhase = definePhase(
 );
 
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
-    definePhase('common', ACTIONS.INSTALL, [p('cowsay'), p('gpg'), p('jq'), p('vim')]),
+    definePhase('common', ACTIONS.INSTALL, [
+        p('cowsay'),
+        p('gpg'),
+        p('htop'),
+        p('jq'),
+        p('vim'),
+    ]),
     isLinux() &&
         definePhase('linux', ACTIONS.INSTALL, [
             // Linux version of fortune
