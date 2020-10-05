@@ -101,8 +101,8 @@ describe('createPackageFromDefTask', () => {
 
             expect(() => {
                 taskFn(mockCb);
-            }).toThrow(
-                "Package 'packageName' is not installed! (Have you run bootstrap.sh?)",
+            }).toThrowErrorMatchingInlineSnapshot(
+                `"Package 'packageName' is not installed!"`,
             );
         });
 
@@ -116,8 +116,8 @@ describe('createPackageFromDefTask', () => {
 
             expect(() => {
                 taskFn(mockCb);
-            }).toThrow(
-                "Action 'unsupportedAction' for package 'packageName' is not supported.",
+            }).toThrowErrorMatchingInlineSnapshot(
+                `"Action 'unsupportedAction' for package 'packageName' is not supported."`,
             );
         });
     });

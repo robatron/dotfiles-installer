@@ -168,70 +168,71 @@ const installMacGuiAppsPhase =
     );
 
 const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
-    // Install Docker engine
-    definePhase('installDocker', ACTIONS.RUN_PHASES, [
-        isLinux() &&
-            definePhase('linux', ACTIONS.RUN_PHASES, [
-                definePhase('prereqs', ACTIONS.INSTALL, [
-                    p('apt-update', {
-                        installCommands: ['sudo apt update'],
-                    }),
-                    p('apt-transport-https'),
-                    p('ca-certificates'),
-                    p('curl'),
-                    p('gnupg-agent'),
-                    p('software-properties-common'),
-                    p('docker-apt-key', {
-                        installCommands: [
-                            `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`,
-                            `sudo add-apt-repository \
+    // Install Docker for Linux
+    isLinux() &&
+        definePhase('linux', ACTIONS.RUN_PHASES, [
+            definePhase('prereqs', ACTIONS.INSTALL, [
+                p('apt-update', {
+                    installCommands: ['sudo apt update'],
+                }),
+                p('apt-transport-https'),
+                p('ca-certificates'),
+                p('gnupg-agent'),
+                p('software-properties-common'),
+                p('docker-apt-key', {
+                    installCommands: [
+                        `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`,
+                        `sudo add-apt-repository \
                                 "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
                                 $(lsb_release -cs) \
                                 stable"`,
-                            'sudo apt update',
-                        ],
-                    }),
-                ]),
-                definePhase('engine', ACTIONS.INSTALL, [
-                    'docker-ce',
-                    'docker-ce-cli',
-                    'containerd.io',
-                ]),
+                        'sudo apt update',
+                    ],
+                }),
             ]),
-        isMac() &&
-            definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
-    ]),
 
-    // Allow docker to be managed without `sudo`. Only relevant for Linux. See
-    // https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
-    isLinux() &&
-        definePhase('configureDockerRootlessMode', ACTIONS.INSTALL, [
-            p('add-docker-group', {
-                installCommands: ['sudo groupadd docker'],
-                testFn: (pkg) => {
-                    // Does the docker group exist on the system?
-                    const groups = exec('getent group')
-                        .stdout.split('\n')
-                        .map((group) => group.split(':')[0]);
-                    return groups.includes('docker');
-                },
-            }),
-            p('add-user-to-docker-group', {
-                installCommands: ['sudo usermod -aG docker $USER'],
-                testFn: (pkg) => {
-                    // Does the user belong to the docker group?
-                    const groups = exec('groups').stdout.split(' ');
-                    return groups.includes('docker');
-                },
-            }),
+            // Install engine in separate phase b/c it's apt-based
+            definePhase('engine', ACTIONS.INSTALL, [
+                'docker-ce',
+                'docker-ce-cli',
+                'containerd.io',
+            ]),
+
+            // Allow docker to be managed without `sudo`. Only relevant for Linux. See
+            // https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+            definePhase('configureDockerRootlessMode', ACTIONS.INSTALL, [
+                p('add-docker-group', {
+                    installCommands: ['sudo groupadd docker'],
+                    testFn: (pkg) => {
+                        // Does the docker group exist on the system?
+                        const groups = exec('getent group')
+                            .stdout.split('\n')
+                            .map((group) => group.split(':')[0]);
+                        return groups.includes('docker');
+                    },
+                }),
+                p('add-user-to-docker-group', {
+                    installCommands: ['sudo usermod -aG docker $USER'],
+                    testFn: (pkg) => {
+                        // Does the user belong to the docker group?
+                        const groups = exec('groups').stdout.split(' ');
+                        return groups.includes('docker');
+                    },
+                }),
+            ]),
+
+            // Verify we can run Docker (and without `sudo`)
+            definePhase('verifyDocker', ACTIONS.VERIFY, [
+                p('rootless-docker', {
+                    testFn: (pkg) => !exec(`docker run hello-world`).code,
+                }),
+            ]),
         ]),
 
-    // Verify we can run Docker (and without `sudo`)
-    definePhase('verifyDocker', ACTIONS.VERIFY, [
-        p('rootless-docker', {
-            testFn: (pkg) => !exec(`docker run hello-world`).code,
-        }),
-    ]),
+    // Install Docker for Mac. We can't configure or verify it since its a
+    // GUI app, so installation is much simpler than for Linux.
+    isMac() &&
+        definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
 ]);
 
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');

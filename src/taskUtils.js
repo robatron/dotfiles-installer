@@ -36,9 +36,7 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
                     installPackage(pkg);
                 }
             } else if (pkg.action === ACTIONS.VERIFY) {
-                throw new Error(
-                    `Package '${pkg.name}' is not installed! (Have you run bootstrap.sh?)`,
-                );
+                throw new Error(`Package '${pkg.name}' is not installed!`);
             } else {
                 throw new Error(
                     `Action '${pkg.action}' for package '${pkg.name}' is not supported.`,
