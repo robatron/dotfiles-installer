@@ -45,7 +45,6 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
                 );
             }
         }
-        log.info(`Package '${pkg.name}' is already installed! Moving on...`);
 
         return cb();
     };

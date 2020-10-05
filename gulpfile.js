@@ -167,59 +167,70 @@ const installMacGuiAppsPhase =
         ),
     );
 
-// Install Docker and make rootless
-// See https://docs.docker.com/engine/install/ubuntu/
 const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
-    isLinux() &&
-        definePhase('linux', ACTIONS.RUN_PHASES, [
-            definePhase('prereqs', ACTIONS.INSTALL, [
-                p('apt-update', {
-                    installCommands: ['sudo apt update'],
-                }),
-                p('apt-transport-https'),
-                p('ca-certificates'),
-                p('curl'),
-                p('gnupg-agent'),
-                p('software-properties-common'),
-                p('docker-apt-key', {
-                    installCommands: [
-                        `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`,
-                        `sudo add-apt-repository \
+    // Install Docker engine
+    definePhase('installDocker', ACTIONS.RUN_PHASES, [
+        isLinux() &&
+            definePhase('linux', ACTIONS.RUN_PHASES, [
+                definePhase('prereqs', ACTIONS.INSTALL, [
+                    p('apt-update', {
+                        installCommands: ['sudo apt update'],
+                    }),
+                    p('apt-transport-https'),
+                    p('ca-certificates'),
+                    p('curl'),
+                    p('gnupg-agent'),
+                    p('software-properties-common'),
+                    p('docker-apt-key', {
+                        installCommands: [
+                            `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`,
+                            `sudo add-apt-repository \
                                 "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
                                 $(lsb_release -cs) \
                                 stable"`,
-                        'sudo apt update',
-                    ],
-                }),
+                            'sudo apt update',
+                        ],
+                    }),
+                ]),
+                definePhase('engine', ACTIONS.INSTALL, [
+                    'docker-ce',
+                    'docker-ce-cli',
+                    'containerd.io',
+                ]),
             ]),
-            definePhase('rootless-user', ACTIONS.INSTALL, [
-                p('add-docker-group', {
-                    installCommands: ['sudo groupadd docker'],
-                    testFn: (pkg) => {
-                        // Does the docker group exist on the system?
-                        const groups = exec('getent group')
-                            .stdout.split('\n')
-                            .map((group) => group.split(':')[0]);
-                        return groups.includes('docker');
-                    },
-                }),
-                p('add-user-to-docker-group', {
-                    installCommands: ['sudo usermod -aG docker $USER'],
-                    testFn: (pkg) => {
-                        // Does the user belong to the docker group?
-                        const groups = exec('groups').stdout.split(' ');
-                        return groups.includes('docker');
-                    },
-                }),
-            ]),
-            definePhase('engine', ACTIONS.INSTALL, [
-                'docker-ce',
-                'docker-ce-cli',
-                'containerd.io',
-            ]),
-        ]),
-    isMac() &&
-        definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
+        isMac() &&
+            definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
+    ]),
+
+    // Allow docker to be managed without `sudo`. See
+    // https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+    definePhase('configureDockerRootlessMode', ACTIONS.INSTALL, [
+        p('add-docker-group', {
+            installCommands: ['sudo groupadd docker'],
+            testFn: (pkg) => {
+                // Does the docker group exist on the system?
+                const groups = exec('getent group')
+                    .stdout.split('\n')
+                    .map((group) => group.split(':')[0]);
+                return groups.includes('docker');
+            },
+        }),
+        p('add-user-to-docker-group', {
+            installCommands: ['sudo usermod -aG docker $USER'],
+            testFn: (pkg) => {
+                // Does the user belong to the docker group?
+                const groups = exec('groups').stdout.split(' ');
+                return groups.includes('docker');
+            },
+        }),
+    ]),
+
+    // Verify we can run Docker (and without `sudo`)
+    definePhase('verifyDocker', ACTIONS.VERIFY, [
+        p('rootless-docker', {
+            testFn: (pkg) => !exec(`docker run hello-world`).code,
+        }),
+    ]),
 ]);
 
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
