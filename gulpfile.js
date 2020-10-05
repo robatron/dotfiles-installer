@@ -202,28 +202,29 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
             definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
     ]),
 
-    // Allow docker to be managed without `sudo`. See
+    // Allow docker to be managed without `sudo`. Only relevant for Linux. See
     // https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
-    definePhase('configureDockerRootlessMode', ACTIONS.INSTALL, [
-        p('add-docker-group', {
-            installCommands: ['sudo groupadd docker'],
-            testFn: (pkg) => {
-                // Does the docker group exist on the system?
-                const groups = exec('getent group')
-                    .stdout.split('\n')
-                    .map((group) => group.split(':')[0]);
-                return groups.includes('docker');
-            },
-        }),
-        p('add-user-to-docker-group', {
-            installCommands: ['sudo usermod -aG docker $USER'],
-            testFn: (pkg) => {
-                // Does the user belong to the docker group?
-                const groups = exec('groups').stdout.split(' ');
-                return groups.includes('docker');
-            },
-        }),
-    ]),
+    isLinux() &&
+        definePhase('configureDockerRootlessMode', ACTIONS.INSTALL, [
+            p('add-docker-group', {
+                installCommands: ['sudo groupadd docker'],
+                testFn: (pkg) => {
+                    // Does the docker group exist on the system?
+                    const groups = exec('getent group')
+                        .stdout.split('\n')
+                        .map((group) => group.split(':')[0]);
+                    return groups.includes('docker');
+                },
+            }),
+            p('add-user-to-docker-group', {
+                installCommands: ['sudo usermod -aG docker $USER'],
+                testFn: (pkg) => {
+                    // Does the user belong to the docker group?
+                    const groups = exec('groups').stdout.split(' ');
+                    return groups.includes('docker');
+                },
+            }),
+        ]),
 
     // Verify we can run Docker (and without `sudo`)
     definePhase('verifyDocker', ACTIONS.VERIFY, [
