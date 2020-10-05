@@ -52,7 +52,7 @@ describe('createPackageFromDefTask', () => {
             expect(taskResult).toEqual('cbReturn');
         });
 
-        it('always verifies the package is installed and returns the callback', () => {
+        it('verifies the package is installed and returns the callback', () => {
             packageUtils.isPackageInstalled.mockReturnValue(true);
 
             const taskFn = taskUtils.createPackageFromDefTask(
@@ -67,6 +67,25 @@ describe('createPackageFromDefTask', () => {
             expect(packageUtils.isPackageInstalled).toBeCalledWith(
                 defaultTestPackage,
             );
+            expect(mockCb).toBeCalledTimes(1);
+            expect(taskResult).toEqual('cbReturn');
+        });
+
+        it('forces the action if specified', () => {
+            const testPackage = new Package('packageName', {
+                action: ACTIONS.INSTALL,
+                forceAction: true,
+            });
+            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
+            const taskResult = taskFn(mockCb);
+
+            expect(log.info).toBeCalledWith(
+                "Package 'packageName' is not installed",
+            );
+            expect(log.info).toBeCalledWith(
+                "Installing package 'packageName'...",
+            );
+            expect(packageUtils.installPackage).toBeCalledWith(testPackage);
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
         });

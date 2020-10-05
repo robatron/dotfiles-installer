@@ -15,6 +15,9 @@ const Package = class {
 
         // Skip the action
         this.skipAction = pkgOpts.skipAction || false;
+
+        // Force the action
+        this.forceAction = pkgOpts.forceAction || false;
     }
 };
 
