@@ -441,6 +441,7 @@ describe('isPackageinstalled', () => {
             expect(shell.exec).not.toBeCalled();
         });
 
+        // TODO
         it('skips this test if verifyPkgInstalled or installCommands are present', () => {
             platform.isMac = jest.fn(() => true);
             shell.exec = jest.fn();

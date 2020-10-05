@@ -60,7 +60,7 @@ const verifyPrereqsPhase = definePhase(
         p(pkgName, {
             // This option verifies the package is installed as opposed to
             // attempting to find the command
-            verifyPkgInstalled: true,
+            verifyPkgInstalled: true, // TODO
         }),
     ),
 

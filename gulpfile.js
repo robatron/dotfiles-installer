@@ -32,7 +32,7 @@ const verifyPrereqsPhase = definePhase(
         p(pkgName, {
             // This option verifies the package is installed as opposed to
             // attempting to find the command
-            verifyPkgInstalled: true,
+            verifyPkgInstalled: true, // TODO
         }),
     ),
 
@@ -41,13 +41,14 @@ const verifyPrereqsPhase = definePhase(
     { parallel: true },
 );
 
+const gshufPath = path.join(os.homedir(), 'bin', 'gshuf');
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     definePhase('common', ACTIONS.INSTALL, [
-        p('cowsay'),
-        p('gpg'),
-        p('htop'),
-        p('jq'),
-        p('vim'),
+        'cowsay',
+        'gpg',
+        'htop',
+        'jq',
+        'vim',
     ]),
     isLinux() &&
         definePhase('linux', ACTIONS.INSTALL, [
@@ -59,8 +60,9 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
             p('gshuf', {
                 installCommands: [
                     `mkdir -p $HOME/bin/`,
-                    'ln -sf `which shuf` $HOME/bin/gshuf',
+                    `ln -sf \`which shuf\` ${gshufPath}`,
                 ],
+                testFn: (pkg) => fileExists(gshufPath),
             }),
         ]),
     isMac() &&
@@ -174,6 +176,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
             definePhase('prereqs', ACTIONS.INSTALL, [
                 p('apt-update', {
                     installCommands: ['sudo apt update'],
+                    // TODO: Do at very begining
                 }),
                 p('apt-transport-https'),
                 p('ca-certificates'),
@@ -188,6 +191,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                                 stable"`,
                         'sudo apt update',
                     ],
+                    forceAction: true,
                 }),
             ]),
 

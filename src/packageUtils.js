@@ -188,6 +188,8 @@ const isPackageInstalled = (pkg) => {
         return false;
     }
 
+    // If the
+
     // If we're on a mac, test if the package is installed w/ brew. `brew list`
     // will return 0 (success) if the package is installed, and 1 (fail) if not.
     // Skip this if there are installCommands, or verifyPkgInstalled is set.
