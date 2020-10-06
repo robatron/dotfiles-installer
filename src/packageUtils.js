@@ -197,7 +197,7 @@ const isPackageInstalled = (pkg) => {
 
     // Otherwise, test if the package is installed via the system package manager.
     if (platform.isLinux()) {
-        return !exec(`dpkg -s '${pkg.name}'`).code;
+        return !shell.exec(`dpkg -s '${pkg.name}'`).code;
     } else if (platform.isMac()) {
         if (isGUI) {
             return !shell.exec(`brew list --cask '${pkg.name}'`).code;
