@@ -9,7 +9,6 @@ module.exports = {
         INSTALL: 'install',
 
         // Run a phase
-        // TODO: Make this automatic
         RUN_PHASES: 'run-tasks',
 
         // Verify a package is installed

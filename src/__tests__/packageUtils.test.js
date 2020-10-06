@@ -65,12 +65,14 @@ describe('installPackageViaGit', () => {
             const cloneDir = path.join(tempDir, 'opt', pkgName);
             const binDir = path.join(tempDir, 'bin');
             const tstPkg = new Package(pkgName, {
-                gitPackage: { binDir, cloneDir, repoUrl: null },
+                gitPackage: { binDir, cloneDir, repoUrl: 'repo-url' },
             });
 
             // Verify it throws when the repoUrl is missing
-            await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
-                /error cloning/gi,
+            await expect(
+                installPackageViaGit(tstPkg),
+            ).rejects.toThrowErrorMatchingInlineSnapshot(
+                `"Error cloning repo-url for package 'tst-pkg': Error: unsupported URL protocol"`,
             );
 
             // Verify it cleans up the created directories
@@ -296,7 +298,11 @@ describe('installPackage', () => {
 
             const pkg = new Package(tstPkgName);
 
-            expect(() => installPackage(pkg)).toThrowErrorMatchingSnapshot();
+            expect(() =>
+                installPackage(pkg),
+            ).toThrowErrorMatchingInlineSnapshot(
+                `"Cannot determine install command(s) for package 'tst-pkg'"`,
+            );
 
             expect(platform.isLinux).toBeCalledTimes(1);
             expect(platform.isMac).toBeCalledTimes(1);
@@ -308,29 +314,53 @@ describe('installPackage', () => {
             const pkg = new Package(tstPkgName, {
                 installCommands: ['cmd-a', 'cmd-b', 'cmd-c'],
             });
-            expect(() => installPackage(pkg)).toThrowErrorMatchingSnapshot();
+            expect(() =>
+                installPackage(pkg),
+            ).toThrowErrorMatchingInlineSnapshot(
+                `"Install command 'cmd-a' failed for package 'tst-pkg'. Full command set: [\\"cmd-a\\",\\"cmd-b\\",\\"cmd-c\\"]"`,
+            );
         });
     });
 });
 
 describe('isPackageinstalled', () => {
-    it('returns true if a command exists', () => {
-        // All systems should have the 'cd' command
-        const pkg = new Package('cd');
-        expect(isPackageInstalled(pkg)).toBe(true);
-    });
-
-    it('returns false if a command does not exists', () => {
-        const pkg = new Package('nänəɡˈzistənt');
-        expect(isPackageInstalled(pkg)).toBe(false);
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('custom test function support', () => {
-        [true, false].forEach((condition) => {
-            it(`returns ${condition} when test fn returns ${condition}`, () => {
-                const pkg = new Package('tst-cmd', { testFn: () => condition });
-                expect(isPackageInstalled(pkg)).toBe(condition);
-            });
+        it(`returns true when test fn returns true`, () => {
+            const pkg = new Package('tst-cmd', { testFn: () => true });
+            const actual = isPackageInstalled(pkg);
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Using custom test to verify 'tst-cmd'...",
+                  ],
+                  Array [
+                    "Verification for'tst-cmd' passed",
+                  ],
+                ]
+            `);
+            expect(actual).toBe(true);
+        });
+
+        it(`returns false when test fn returns false`, () => {
+            const pkg = new Package('tst-cmd', { testFn: () => false });
+            const actual = isPackageInstalled(pkg);
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Using custom test to verify 'tst-cmd'...",
+                  ],
+                  Array [
+                    "Verification for 'tst-cmd' failed",
+                  ],
+                ]
+            `);
+            expect(actual).toBe(false);
         });
     });
 
@@ -392,70 +422,111 @@ describe('isPackageinstalled', () => {
         });
     });
 
-    describe('mac package support', () => {
-        beforeEach(() => {
-            jest.clearAllMocks();
+    describe('command existence', () => {
+        it('verifies a command is available when the package has custom `installCommands`', () => {
+            const pkg = new Package('cd', { installCommands: [] });
+            expect(isPackageInstalled(pkg)).toBe(true);
         });
 
-        it('queries `brew list` for the package, returns true if installed', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn(() => ({ code: 0 }));
-            const pkg = new Package('pkg');
-
-            const result = isPackageInstalled(pkg);
-
-            expect(result).toBe(true);
-            expect(shell.exec).toBeCalledTimes(1);
-            expect(shell.exec).toBeCalledWith(
-                `brew list --versions ${pkg.name}`,
-            );
+        it('verifies a command is available when `verifyCommandExists` is explicitly set', () => {
+            const pkg = new Package('cd', { verifyCommandExists: true });
+            expect(isPackageInstalled(pkg)).toBe(true);
         });
 
-        it('queries `brew list --cask` for the package if isGUI is set, returns true if installed', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn(() => ({ code: 0 }));
-            const pkg = new Package('pkg', { isGUI: true });
-
-            const result = isPackageInstalled(pkg);
-
-            expect(result).toBe(true);
-            expect(shell.exec).toBeCalledTimes(1);
-            expect(shell.exec).toBeCalledWith(`brew list --cask ${pkg.name}`);
-        });
-
-        it('... and returns false if not installed', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn(() => ({ code: 1 }));
-            const pkg = new Package('pkg');
-
-            const result = isPackageInstalled(pkg);
-
-            expect(result).toBe(false);
-        });
-
-        it('does not query `brew list` for the package if not a mac', () => {
-            platform.isMac = jest.fn(() => false);
-            shell.exec = jest.fn();
-            const pkg = new Package('pkg');
-            isPackageInstalled(pkg);
-            expect(shell.exec).not.toBeCalled();
-        });
-
-        it('skips this test if verifyPkgInstalled or installCommands are present', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn();
-
-            const pkgVerifyCmdExists = new Package('pkg', {
-                verifyPkgInstalled: true,
+        it('returns false if a command does not exists', () => {
+            const pkg = new Package('nänəɡˈzistənt', {
+                verifyCommandExists: true,
             });
-            isPackageInstalled(pkgVerifyCmdExists);
+            expect(isPackageInstalled(pkg)).toBe(false);
+        });
+    });
 
-            const pkgWithInstallCommands = new Package('pkg', {
-                installCommands: true,
+    describe('system package manager verification', () => {
+        describe('linux', () => {
+            beforeEach(() => {
+                platform.isLinux = jest.fn(() => true);
+                platform.isMac = jest.fn(() => false);
             });
-            isPackageInstalled(pkgWithInstallCommands);
 
-            expect(shell.exec).not.toBeCalled();
+            it('queries `dpkg` for the package, returns true if installed', () => {
+                shell.exec = jest.fn(() => ({ code: 0 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "dpkg -s 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(true);
+            });
+
+            it('... and false if not installed', () => {
+                shell.exec = jest.fn(() => ({ code: 1 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "dpkg -s 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(false);
+            });
+        });
+
+        describe('mac', () => {
+            beforeEach(() => {
+                platform.isLinux = jest.fn(() => false);
+                platform.isMac = jest.fn(() => true);
+            });
+
+            it('queries `brew list` for the package, returns true if installed', () => {
+                shell.exec = jest.fn(() => ({ code: 0 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "brew list --versions 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(true);
+            });
+
+            it('queries `brew list --cask` for the package if isGUI is set, returns true if installed', () => {
+                shell.exec = jest.fn(() => ({ code: 0 }));
+                const pkg = new Package('pkg', { isGUI: true });
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "brew list --cask 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(true);
+            });
+
+            it('... and returns false if not installed', () => {
+                shell.exec = jest.fn(() => ({ code: 1 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(result).toBe(false);
+            });
         });
     });
 });

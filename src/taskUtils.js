@@ -15,31 +15,39 @@ const { createPackageFromDef } = require('./Package');
 
 // Create a single package task
 const createPackageFromDefTask = (pkg, exp, phaseName) => {
+    const {
+        action,
+        actionArgs: { gitPackage },
+        forceAction,
+        name: pkgName,
+        skipAction,
+    } = pkg;
+
     const task = (cb) => {
-        if (pkg.skipAction) {
-            log.warn(`Skipping '${pkg.name}'...`);
+        if (skipAction) {
+            log.warn(`Skipping '${pkgName}'...`);
             return cb();
         }
 
-        log.info(`Verifying '${pkg.name}' is installed...`);
+        log.info(`Verifying '${pkgName}' is installed...`);
 
-        if (!isPackageInstalled(pkg)) {
-            log.info(`Package '${pkg.name}' is not installed`);
-            if (pkg.action === ACTIONS.INSTALL) {
-                if (pkg.actionArgs.gitPackage) {
+        if (forceAction || !isPackageInstalled(pkg)) {
+            log.info(`Package '${pkgName}' is not installed`);
+            if (action === ACTIONS.INSTALL) {
+                if (gitPackage) {
                     log.info(
-                        `Installing package '${pkg.name}' via git from '${pkg.actionArgs.gitPackage.repoUrl}'...`,
+                        `Installing package '${pkgName}' via git from '${gitPackage.repoUrl}'...`,
                     );
                     installPackageViaGit(pkg);
                 } else {
-                    log.info(`Installing package '${pkg.name}'...`);
+                    log.info(`Installing package '${pkgName}'...`);
                     installPackage(pkg);
                 }
-            } else if (pkg.action === ACTIONS.VERIFY) {
-                throw new Error(`Package '${pkg.name}' is not installed!`);
+            } else if (action === ACTIONS.VERIFY) {
+                throw new Error(`Package '${pkgName}' is not installed!`);
             } else {
                 throw new Error(
-                    `Action '${pkg.action}' for package '${pkg.name}' is not supported.`,
+                    `Action '${action}' for package '${pkgName}' is not supported.`,
                 );
             }
         }
@@ -49,7 +57,7 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
 
     // Create the actual gulp task and expose it globally so it can be run
     // individually
-    task.displayName = [phaseName, pkg.name].join(PHASE_NAME_DELIM);
+    task.displayName = [phaseName, pkgName].join(PHASE_NAME_DELIM);
     exp && (exp[task.displayName] = task);
 
     return task;

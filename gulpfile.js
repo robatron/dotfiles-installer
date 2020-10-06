@@ -30,9 +30,9 @@ const verifyPrereqsPhase = definePhase(
     // List of packages to be verified
     ['curl', 'git', 'node', 'npm'].map((pkgName) =>
         p(pkgName, {
-            // This option verifies the package is installed as opposed to
-            // attempting to find the command
-            verifyPkgInstalled: true,
+            // This option verifies the command exists instead of verifying
+            // its package exists with the system package manager
+            verifyCommandExists: true,
         }),
     ),
 
@@ -41,13 +41,22 @@ const verifyPrereqsPhase = definePhase(
     { parallel: true },
 );
 
+// Make sure apt is up-to-date on Linux
+const updateApt = definePhase('updateApt', ACTIONS.INSTALL, [
+    p('apt-update', {
+        installCommands: ['sudo apt update'],
+        skipAction: !isLinux(),
+    }),
+]);
+
+const gshufPath = path.join(os.homedir(), 'bin', 'gshuf');
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     definePhase('common', ACTIONS.INSTALL, [
-        p('cowsay'),
-        p('gpg'),
-        p('htop'),
-        p('jq'),
-        p('vim'),
+        'cowsay',
+        'gpg',
+        'htop',
+        'jq',
+        'vim',
     ]),
     isLinux() &&
         definePhase('linux', ACTIONS.INSTALL, [
@@ -59,15 +68,16 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
             p('gshuf', {
                 installCommands: [
                     `mkdir -p $HOME/bin/`,
-                    'ln -sf `which shuf` $HOME/bin/gshuf',
+                    `ln -sf \`which shuf\` ${gshufPath}`,
                 ],
+                testFn: (pkg) => fileExists(gshufPath),
             }),
         ]),
     isMac() &&
         definePhase('mac', ACTIONS.INSTALL, [
             // Favor GNU utilities over BSD's
-            p('coreutils'),
-            p('fortune'),
+            'coreutils',
+            'fortune',
         ]),
 ]);
 
@@ -76,10 +86,6 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
     p('python3-distutils', {
         // Required for installing `pip`. Only needed on Linux
         skipAction: !isLinux(),
-        testFn: (pkg) =>
-            !exec(`dpkg -s '${pkg.name}'`, {
-                silent: true,
-            }).code,
     }),
     p('pip', {
         installCommands: [
@@ -89,8 +95,7 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
     }),
     p('pyenv', {
         installCommands: ['curl https://pyenv.run | bash'],
-        testFn: (pkg) =>
-            fileExists(path.join(process.env['HOME'], `.${pkg.name}`)),
+        testFn: (pkg) => fileExists(path.join(os.homedir(), `.${pkg.name}`)),
     }),
     p('envtpl', {
         // Required for `yadm`
@@ -101,7 +106,6 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
 const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
 const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
 const powerlineDir = path.join(gitCloneDir, 'powerline');
-
 const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
     p('zsh'),
     p('oh-my-zsh', {
@@ -172,9 +176,6 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
     isLinux() &&
         definePhase('linux', ACTIONS.RUN_PHASES, [
             definePhase('prereqs', ACTIONS.INSTALL, [
-                p('apt-update', {
-                    installCommands: ['sudo apt update'],
-                }),
                 p('apt-transport-https'),
                 p('ca-certificates'),
                 p('gnupg-agent'),
@@ -188,6 +189,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                                 stable"`,
                         'sudo apt update',
                     ],
+                    forceAction: true,
                 }),
             ]),
 
@@ -237,7 +239,6 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
 
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
 const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
-
 const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
     p('yadm', {
         gitPackage: {
@@ -250,7 +251,7 @@ const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
             `${path.join(binInstallDir, 'yadm')} clone ${dotfilesRepoUrl}`,
         ],
         // This step requires user interaction (entering a password), so skip
-        // it if we're in a continuous- delivery environment (GitHub Actions)
+        // it if we're in a continuous-delivery environment (GitHub Actions)
         skipAction: process.env['CI'],
         testFn: (pkg) => fileExists(dotfilesRepoDir),
     }),
@@ -261,6 +262,7 @@ const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
 createTaskTree(
     // Define the task tree root consisting of phases
     defineRoot([
+        updateApt,
         verifyPrereqsPhase,
         installUtilsPhase,
         installPythonPhase,
