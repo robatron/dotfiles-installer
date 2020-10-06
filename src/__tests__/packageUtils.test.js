@@ -332,11 +332,38 @@ describe('isPackageinstalled', () => {
     });
 
     describe('custom test function support', () => {
-        [true, false].forEach((condition) => {
-            it(`returns ${condition} when test fn returns ${condition}`, () => {
-                const pkg = new Package('tst-cmd', { testFn: () => condition });
-                expect(isPackageInstalled(pkg)).toBe(condition);
-            });
+        it(`returns true when test fn returns true`, () => {
+            const pkg = new Package('tst-cmd', { testFn: () => true });
+            const actual = isPackageInstalled(pkg);
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Using custom test to verify 'tst-cmd'...",
+                  ],
+                  Array [
+                    "Verification for'tst-cmd' passed",
+                  ],
+                ]
+            `);
+            expect(actual).toBe(true);
+        });
+
+        it(`returns false when test fn returns false`, () => {
+            const pkg = new Package('tst-cmd', { testFn: () => false });
+            const actual = isPackageInstalled(pkg);
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Using custom test to verify 'tst-cmd'...",
+                  ],
+                  Array [
+                    "Verification for 'tst-cmd' failed",
+                  ],
+                ]
+            `);
+            expect(actual).toBe(false);
         });
     });
 

@@ -145,15 +145,14 @@ const isPackageInstalled = (pkg) => {
 
     // If custom test function supplied, use it
     if (testFn) {
-        log.info(`Using custom test to verify '${pkg.name}' is installed...`);
+        log.info(`Using custom test to verify '${pkg.name}'...`);
 
         if (!testFn(pkg)) {
-            log.info(
-                `Custom test for '${pkg.name}' failed. Assuming not installed...`,
-            );
+            log.info(`Verification for '${pkg.name}' failed`);
             return false;
         }
-        log.info(`Custom test for '${pkg.name}' passed. Assuming installed...`);
+
+        log.info(`Verification for'${pkg.name}' passed`);
         return true;
     }
 
