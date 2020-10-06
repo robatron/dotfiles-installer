@@ -69,8 +69,10 @@ describe('installPackageViaGit', () => {
             });
 
             // Verify it throws when the repoUrl is missing
-            await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
-                /error cloning/gi,
+            await expect(
+                installPackageViaGit(tstPkg),
+            ).rejects.toThrowErrorMatchingInlineSnapshot(
+                `"Error cloning null for package 'tst-pkg': Error: String url is required."`,
             );
 
             // Verify it cleans up the created directories
@@ -88,9 +90,10 @@ describe('installPackageViaGit', () => {
 
             await installPackageViaGit(tstPkg);
 
-            expect(log.warn).toHaveBeenCalledWith(
-                expect.stringMatching(/directory exists/gi),
+            expect(log.warn.mock.calls[0][0]).toMatchInlineSnapshot(
+                `"'https://github.com/octocat/Hello-World.git' will not be cloned to '/home/robmc/code/akinizer/src/__tests__/__fixtures__/packageUtils.test.js/installPackageViaGit/existingCloneDir/opt/tst-pkg'. Directory exists."`,
             );
+
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
         });
 
@@ -102,8 +105,10 @@ describe('installPackageViaGit', () => {
                 gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
             });
 
-            await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
-                /Error installing package.*file exists/gi,
+            await expect(
+                installPackageViaGit(tstPkg),
+            ).rejects.toThrowErrorMatchingInlineSnapshot(
+                `"Error installing package 'tst-pkg' from 'https://github.com/octocat/Hello-World.git'. File exists: /home/robmc/code/akinizer/src/__tests__/__fixtures__/packageUtils.test.js/installPackageViaGit/cloneDirFileCollision/opt/tst-pkg"`,
             );
 
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
@@ -186,8 +191,8 @@ describe('installPackageViaGit', () => {
 
             await installPackageViaGit(tstPkg);
 
-            expect(log.warn).toBeCalledWith(
-                expect.stringMatching(/will not be symlinked/gi),
+            expect(log.warn.mock.calls[0][0]).toMatchInlineSnapshot(
+                `"'https://github.com/octocat/Hello-World.git' will not be cloned to '/home/robmc/code/akinizer/src/__tests__/__fixtures__/packageUtils.test.js/installPackageViaGit/fullyInstalled/opt/tst-pkg'. Directory exists."`,
             );
         });
 
@@ -296,7 +301,11 @@ describe('installPackage', () => {
 
             const pkg = new Package(tstPkgName);
 
-            expect(() => installPackage(pkg)).toThrowErrorMatchingSnapshot();
+            expect(() =>
+                installPackage(pkg),
+            ).toThrowErrorMatchingInlineSnapshot(
+                `"Cannot determine install command(s) for package 'tst-pkg'"`,
+            );
 
             expect(platform.isLinux).toBeCalledTimes(1);
             expect(platform.isMac).toBeCalledTimes(1);
@@ -308,21 +317,18 @@ describe('installPackage', () => {
             const pkg = new Package(tstPkgName, {
                 installCommands: ['cmd-a', 'cmd-b', 'cmd-c'],
             });
-            expect(() => installPackage(pkg)).toThrowErrorMatchingSnapshot();
+            expect(() =>
+                installPackage(pkg),
+            ).toThrowErrorMatchingInlineSnapshot(
+                `"Install command 'cmd-a' failed for package 'tst-pkg'. Full command set: [\\"cmd-a\\",\\"cmd-b\\",\\"cmd-c\\"]"`,
+            );
         });
     });
 });
 
 describe('isPackageinstalled', () => {
-    it('returns true if a command exists', () => {
-        // All systems should have the 'cd' command
-        const pkg = new Package('cd');
-        expect(isPackageInstalled(pkg)).toBe(true);
-    });
-
-    it('returns false if a command does not exists', () => {
-        const pkg = new Package('nänəɡˈzistənt');
-        expect(isPackageInstalled(pkg)).toBe(false);
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('custom test function support', () => {
@@ -392,7 +398,26 @@ describe('isPackageinstalled', () => {
         });
     });
 
-    describe('mac package support', () => {
+    describe('command existence', () => {
+        it('verifies a command is available when the package has custom `installCommands`', () => {
+            const pkg = new Package('cd', { installCommands: [] });
+            expect(isPackageInstalled(pkg)).toBe(true);
+        });
+
+        it('verifies a command is available when `verifyCommandExists` is explicitly set', () => {
+            const pkg = new Package('cd', { verifyCommandExists: true });
+            expect(isPackageInstalled(pkg)).toBe(true);
+        });
+
+        it('returns false if a command does not exists', () => {
+            const pkg = new Package('nänəɡˈzistənt', {
+                verifyCommandExists: true,
+            });
+            expect(isPackageInstalled(pkg)).toBe(false);
+        });
+    });
+
+    describe.skip('mac package support', () => {
         beforeEach(() => {
             jest.clearAllMocks();
         });
