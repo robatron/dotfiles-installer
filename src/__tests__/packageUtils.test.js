@@ -444,71 +444,92 @@ describe('isPackageinstalled', () => {
         });
     });
 
-    describe.skip('mac package support', () => {
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
-
-        it('queries `brew list` for the package, returns true if installed', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn(() => ({ code: 0 }));
-            const pkg = new Package('pkg');
-
-            const result = isPackageInstalled(pkg);
-
-            expect(result).toBe(true);
-            expect(shell.exec).toBeCalledTimes(1);
-            expect(shell.exec).toBeCalledWith(
-                `brew list --versions ${pkg.name}`,
-            );
-        });
-
-        it('queries `brew list --cask` for the package if isGUI is set, returns true if installed', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn(() => ({ code: 0 }));
-            const pkg = new Package('pkg', { isGUI: true });
-
-            const result = isPackageInstalled(pkg);
-
-            expect(result).toBe(true);
-            expect(shell.exec).toBeCalledTimes(1);
-            expect(shell.exec).toBeCalledWith(`brew list --cask ${pkg.name}`);
-        });
-
-        it('... and returns false if not installed', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn(() => ({ code: 1 }));
-            const pkg = new Package('pkg');
-
-            const result = isPackageInstalled(pkg);
-
-            expect(result).toBe(false);
-        });
-
-        it('does not query `brew list` for the package if not a mac', () => {
-            platform.isMac = jest.fn(() => false);
-            shell.exec = jest.fn();
-            const pkg = new Package('pkg');
-            isPackageInstalled(pkg);
-            expect(shell.exec).not.toBeCalled();
-        });
-
-        // TODO
-        it('skips this test if verifyPkgInstalled or installCommands are present', () => {
-            platform.isMac = jest.fn(() => true);
-            shell.exec = jest.fn();
-
-            const pkgVerifyCmdExists = new Package('pkg', {
-                verifyPkgInstalled: true,
+    describe('system package manager verification', () => {
+        describe('linux', () => {
+            beforeEach(() => {
+                platform.isLinux = jest.fn(() => true);
+                platform.isMac = jest.fn(() => false);
             });
-            isPackageInstalled(pkgVerifyCmdExists);
 
-            const pkgWithInstallCommands = new Package('pkg', {
-                installCommands: true,
+            it('queries `dpkg` for the package, returns true if installed', () => {
+                shell.exec = jest.fn(() => ({ code: 0 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "dpkg -s 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(true);
             });
-            isPackageInstalled(pkgWithInstallCommands);
 
-            expect(shell.exec).not.toBeCalled();
+            it('... and false if not installed', () => {
+                shell.exec = jest.fn(() => ({ code: 1 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "dpkg -s 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(false);
+            });
+        });
+
+        describe('mac', () => {
+            beforeEach(() => {
+                platform.isLinux = jest.fn(() => false);
+                platform.isMac = jest.fn(() => true);
+            });
+
+            it('queries `brew list` for the package, returns true if installed', () => {
+                shell.exec = jest.fn(() => ({ code: 0 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "brew list --versions 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(true);
+            });
+
+            it('queries `brew list --cask` for the package if isGUI is set, returns true if installed', () => {
+                shell.exec = jest.fn(() => ({ code: 0 }));
+                const pkg = new Package('pkg', { isGUI: true });
+
+                const result = isPackageInstalled(pkg);
+
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "brew list --cask 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(result).toBe(true);
+            });
+
+            it('... and returns false if not installed', () => {
+                shell.exec = jest.fn(() => ({ code: 1 }));
+                const pkg = new Package('pkg');
+
+                const result = isPackageInstalled(pkg);
+
+                expect(result).toBe(false);
+            });
         });
     });
 });
