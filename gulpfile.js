@@ -30,9 +30,9 @@ const verifyPrereqsPhase = definePhase(
     // List of packages to be verified
     ['curl', 'git', 'node', 'npm'].map((pkgName) =>
         p(pkgName, {
-            // This option verifies the package is installed as opposed to
-            // attempting to find the command
-            verifyPkgInstalled: true, // TODO
+            // This option verifies the command exists instead of verifying
+            // its package exists
+            verifyCommandExists: true,
         }),
     ),
 
@@ -40,6 +40,14 @@ const verifyPrereqsPhase = definePhase(
     // independent from each other
     { parallel: true },
 );
+
+// Make sure apt is updated
+// TODO: Update semantics: installCommands -> actionCommands, ACTIONS.INSTALL -> EXEC (?)
+const updateApt = definePhase('updateApt', ACTIONS.INSTALL, [
+    p('apt-update', {
+        installCommands: ['sudo apt update'],
+    }),
+]);
 
 const gshufPath = path.join(os.homedir(), 'bin', 'gshuf');
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
@@ -78,10 +86,6 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
     p('python3-distutils', {
         // Required for installing `pip`. Only needed on Linux
         skipAction: !isLinux(),
-        testFn: (pkg) =>
-            !exec(`dpkg -s '${pkg.name}'`, {
-                silent: true,
-            }).code,
     }),
     p('pip', {
         installCommands: [
@@ -91,8 +95,7 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
     }),
     p('pyenv', {
         installCommands: ['curl https://pyenv.run | bash'],
-        testFn: (pkg) =>
-            fileExists(path.join(process.env['HOME'], `.${pkg.name}`)),
+        testFn: (pkg) => fileExists(path.join(os.homedir(), `.${pkg.name}`)),
     }),
     p('envtpl', {
         // Required for `yadm`
@@ -174,10 +177,6 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
     isLinux() &&
         definePhase('linux', ACTIONS.RUN_PHASES, [
             definePhase('prereqs', ACTIONS.INSTALL, [
-                p('apt-update', {
-                    installCommands: ['sudo apt update'],
-                    // TODO: Do at very begining
-                }),
                 p('apt-transport-https'),
                 p('ca-certificates'),
                 p('gnupg-agent'),
@@ -265,6 +264,7 @@ const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
 createTaskTree(
     // Define the task tree root consisting of phases
     defineRoot([
+        updateApt,
         verifyPrereqsPhase,
         installUtilsPhase,
         installPythonPhase,

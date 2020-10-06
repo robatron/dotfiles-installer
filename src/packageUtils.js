@@ -140,7 +140,7 @@ const isPackageInstalled = (pkg) => {
         installCommands,
         isGUI,
         testFn,
-        verifyPkgInstalled,
+        verifyCommandExists,
     } = pkg.actionArgs;
 
     // If custom test function supplied, use it
@@ -188,20 +188,22 @@ const isPackageInstalled = (pkg) => {
         return false;
     }
 
-    // If the
-
-    // If we're on a mac, test if the package is installed w/ brew. `brew list`
-    // will return 0 (success) if the package is installed, and 1 (fail) if not.
-    // Skip this if there are installCommands, or verifyPkgInstalled is set.
-    if (!verifyPkgInstalled && platform.isMac() && !installCommands) {
-        if (isGUI) {
-            return !shell.exec(`brew list --cask ${pkg.name}`).code;
-        }
-        return !shell.exec(`brew list --versions ${pkg.name}`).code;
+    // If the package has custom install commands, or verifyCommandExists is
+    // explicitly set, verify the commang exists in the environment as oppose
+    // to verifying the package is installed via the system package manager.
+    if (installCommands || verifyCommandExists) {
+        return commandExistsSync(pkg.command);
     }
 
-    // Otherwise, just see if the command exists in the environment
-    return commandExistsSync(pkg.command);
+    // Otherwise, test if the package is installed via the system package manager.
+    if (platform.isLinux()) {
+        return !exec(`dpkg -s '${pkg.name}'`).code;
+    } else if (platform.isMac()) {
+        if (isGUI) {
+            return !shell.exec(`brew list --cask '${pkg.name}'`).code;
+        }
+        return !shell.exec(`brew list --versions '${pkg.name}'`).code;
+    }
 };
 
 module.exports = {

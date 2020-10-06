@@ -34,52 +34,9 @@ Once git is installed, just download, bootstrap, and run akinizer:
 
 ## Usage
 
-Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, and import akinizer. See the [./gulpfile.js](./gulpfile.js) for an example.
+Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, import akinizer, and define your configuration.
 
-System configuration is defined as phases organized in a task tree. Each phase has a list of packages and an action to apply to them. Actions support different arguments. Here's an example:
-
-```js
-const {
-    ACTIONS,
-    createTaskTree,
-    definePackage: p,
-    definePhase,
-    defineRoot,
-} = require('akinizer');
-
-// Define phases. In this phase, we're verifying packages are installed.
-const verifyPrereqsPhase = definePhase(
-    // Phase name. This can be run with `gulp verifyPrereqs`
-    'verifyPrereqs',
-
-    // For every package, apply the `VERIFY` action
-    ACTIONS.VERIFY,
-
-    // List of packages to be verified
-    ['curl', 'git', 'node', 'npm'].map((pkgName) =>
-        p(pkgName, {
-            // This option verifies the package is installed as opposed to
-            // attempting to find the command
-            verifyPkgInstalled: true, // TODO
-        }),
-    ),
-
-    // We can run the phase in parallel b/c package verifications are
-    // independent from each other
-    { parallel: true },
-);
-
-// Create the full gulp task tree from the phase and pakage definitions and
-// export them as gulp tasks
-createTaskTree(
-    // Define the task tree root consisting of phases
-    defineRoot([
-        verifyPrereqsPhase,
-        // ...
-    ]),
-    exports,
-);
-```
+System configuration is defined as phases organized in a task tree. Each phase has a list of packages and an action to apply to them. Actions support different arguments. See the [./gulpfile.js](./gulpfile.js) for an example.
 
 ## Actions
 
