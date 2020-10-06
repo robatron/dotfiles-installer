@@ -65,14 +65,14 @@ describe('installPackageViaGit', () => {
             const cloneDir = path.join(tempDir, 'opt', pkgName);
             const binDir = path.join(tempDir, 'bin');
             const tstPkg = new Package(pkgName, {
-                gitPackage: { binDir, cloneDir, repoUrl: null },
+                gitPackage: { binDir, cloneDir, repoUrl: 'repo-url' },
             });
 
             // Verify it throws when the repoUrl is missing
             await expect(
                 installPackageViaGit(tstPkg),
             ).rejects.toThrowErrorMatchingInlineSnapshot(
-                `"Error cloning null for package 'tst-pkg': Error: String url is required."`,
+                `"Error cloning repo-url for package 'tst-pkg': Error: unsupported URL protocol"`,
             );
 
             // Verify it cleans up the created directories
@@ -90,10 +90,9 @@ describe('installPackageViaGit', () => {
 
             await installPackageViaGit(tstPkg);
 
-            expect(log.warn.mock.calls[0][0]).toMatchInlineSnapshot(
-                `"'https://github.com/octocat/Hello-World.git' will not be cloned to '/home/robmc/code/akinizer/src/__tests__/__fixtures__/packageUtils.test.js/installPackageViaGit/existingCloneDir/opt/tst-pkg'. Directory exists."`,
+            expect(log.warn).toHaveBeenCalledWith(
+                expect.stringMatching(/directory exists/gi),
             );
-
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
         });
 
@@ -105,10 +104,8 @@ describe('installPackageViaGit', () => {
                 gitPackage: { binDir, binSymlink, cloneDir, repoUrl },
             });
 
-            await expect(
-                installPackageViaGit(tstPkg),
-            ).rejects.toThrowErrorMatchingInlineSnapshot(
-                `"Error installing package 'tst-pkg' from 'https://github.com/octocat/Hello-World.git'. File exists: /home/robmc/code/akinizer/src/__tests__/__fixtures__/packageUtils.test.js/installPackageViaGit/cloneDirFileCollision/opt/tst-pkg"`,
+            await expect(installPackageViaGit(tstPkg)).rejects.toThrowError(
+                /Error installing package.*file exists/gi,
             );
 
             expect(fs.existsSync(path.join(cloneDir, '.git'))).toBe(false);
@@ -191,8 +188,8 @@ describe('installPackageViaGit', () => {
 
             await installPackageViaGit(tstPkg);
 
-            expect(log.warn.mock.calls[0][0]).toMatchInlineSnapshot(
-                `"'https://github.com/octocat/Hello-World.git' will not be cloned to '/home/robmc/code/akinizer/src/__tests__/__fixtures__/packageUtils.test.js/installPackageViaGit/fullyInstalled/opt/tst-pkg'. Directory exists."`,
+            expect(log.warn).toBeCalledWith(
+                expect.stringMatching(/will not be symlinked/gi),
             );
         });
 
