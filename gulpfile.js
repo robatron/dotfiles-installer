@@ -31,7 +31,7 @@ const verifyPrereqsPhase = definePhase(
     ['curl', 'git', 'node', 'npm'].map((pkgName) =>
         p(pkgName, {
             // This option verifies the command exists instead of verifying
-            // its package exists
+            // its package exists with the system package manager
             verifyCommandExists: true,
         }),
     ),
@@ -41,8 +41,7 @@ const verifyPrereqsPhase = definePhase(
     { parallel: true },
 );
 
-// Make sure apt is updated
-// TODO: Update semantics: installCommands -> actionCommands, ACTIONS.INSTALL -> EXEC (?)
+// Make sure apt is up-to-date on Linux
 const updateApt = definePhase('updateApt', ACTIONS.INSTALL, [
     p('apt-update', {
         installCommands: ['sudo apt update'],
@@ -77,8 +76,8 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     isMac() &&
         definePhase('mac', ACTIONS.INSTALL, [
             // Favor GNU utilities over BSD's
-            p('coreutils'),
-            p('fortune'),
+            'coreutils',
+            'fortune',
         ]),
 ]);
 
@@ -107,7 +106,6 @@ const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
 const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
 const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
 const powerlineDir = path.join(gitCloneDir, 'powerline');
-
 const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
     p('zsh'),
     p('oh-my-zsh', {
@@ -241,7 +239,6 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
 
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
 const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
-
 const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
     p('yadm', {
         gitPackage: {
@@ -254,7 +251,7 @@ const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
             `${path.join(binInstallDir, 'yadm')} clone ${dotfilesRepoUrl}`,
         ],
         // This step requires user interaction (entering a password), so skip
-        // it if we're in a continuous- delivery environment (GitHub Actions)
+        // it if we're in a continuous-delivery environment (GitHub Actions)
         skipAction: process.env['CI'],
         testFn: (pkg) => fileExists(dotfilesRepoDir),
     }),
