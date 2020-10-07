@@ -171,7 +171,7 @@ const installMacGuiAppsPhase =
         ],
         {
             packageOpts: {
-                isGui: true,
+                isGUI: true,
             },
         },
     );
