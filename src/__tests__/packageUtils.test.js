@@ -451,7 +451,6 @@ describe('isPackageinstalled', () => {
             it('queries `dpkg` for the package, returns true if installed', () => {
                 shell.exec = jest.fn(() => ({ code: 0 }));
                 const pkg = new Package('pkg');
-
                 const result = isPackageInstalled(pkg);
 
                 expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
@@ -461,19 +460,32 @@ describe('isPackageinstalled', () => {
                       ],
                     ]
                 `);
+                expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Verifying package 'pkg' exists with \`dpkg -s 'pkg'\`...'",
+                      ],
+                    ]
+                `);
                 expect(result).toBe(true);
             });
 
             it('... and false if not installed', () => {
                 shell.exec = jest.fn(() => ({ code: 1 }));
                 const pkg = new Package('pkg');
-
                 const result = isPackageInstalled(pkg);
 
                 expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
                     Array [
                       Array [
                         "dpkg -s 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Verifying package 'pkg' exists with \`dpkg -s 'pkg'\`...'",
                       ],
                     ]
                 `);
@@ -490,7 +502,6 @@ describe('isPackageinstalled', () => {
             it('queries `brew list` for the package, returns true if installed', () => {
                 shell.exec = jest.fn(() => ({ code: 0 }));
                 const pkg = new Package('pkg');
-
                 const result = isPackageInstalled(pkg);
 
                 expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
@@ -500,13 +511,19 @@ describe('isPackageinstalled', () => {
                       ],
                     ]
                 `);
+                expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Verifying package 'pkg' exists with \`brew list --versions 'pkg'\`...'",
+                      ],
+                    ]
+                `);
                 expect(result).toBe(true);
             });
 
             it('queries `brew list --cask` for the package if isGUI is set, returns true if installed', () => {
                 shell.exec = jest.fn(() => ({ code: 0 }));
                 const pkg = new Package('pkg', { isGUI: true });
-
                 const result = isPackageInstalled(pkg);
 
                 expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
@@ -516,16 +533,51 @@ describe('isPackageinstalled', () => {
                       ],
                     ]
                 `);
+                expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Verifying package 'pkg' exists with \`brew list --cask 'pkg'\`...'",
+                      ],
+                    ]
+                `);
                 expect(result).toBe(true);
             });
 
             it('... and returns false if not installed', () => {
                 shell.exec = jest.fn(() => ({ code: 1 }));
                 const pkg = new Package('pkg');
-
                 const result = isPackageInstalled(pkg);
 
+                expect(shell.exec.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "brew list --versions 'pkg'",
+                      ],
+                    ]
+                `);
+                expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Verifying package 'pkg' exists with \`brew list --versions 'pkg'\`...'",
+                      ],
+                    ]
+                `);
                 expect(result).toBe(false);
+            });
+        });
+
+        describe('other', () => {
+            it('throws if the platform is not recognized', () => {
+                platform.isLinux = jest.fn(() => false);
+                platform.isMac = jest.fn(() => false);
+
+                const pkg = new Package('pkg');
+
+                expect(() => {
+                    isPackageInstalled(pkg);
+                }).toThrowErrorMatchingInlineSnapshot(
+                    `"Verification for 'pkg' failed: Unrecognized platform."`,
+                );
             });
         });
     });
