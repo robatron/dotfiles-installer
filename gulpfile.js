@@ -28,22 +28,26 @@ const verifyPrereqsPhase = definePhase(
     ACTIONS.VERIFY,
 
     // List of packages to be verified
-    ['curl', 'git', 'node', 'npm'].map((pkgName) =>
-        p(pkgName, {
+    ['curl', 'git', 'node', 'npm'],
+
+    {
+        // Apply these options to all of this phase's packages
+        packageOpts: {
             // This option verifies the command exists instead of verifying
             // its package exists with the system package manager
             verifyCommandExists: true,
-        }),
-    ),
+        },
 
-    // We can run the phase in parallel b/c package verifications are
-    // independent from each other
-    { parallel: true },
+        // We can run the phase in parallel b/c package verifications are
+        // independent from each other
+        parallel: true,
+    },
 );
 
 // Make sure apt is up-to-date on Linux
 const updateApt = definePhase('updateApt', ACTIONS.INSTALL, [
     p('apt-update', {
+        forceAction: true,
         installCommands: ['sudo apt update'],
         skipAction: !isLinux(),
     }),
@@ -164,11 +168,12 @@ const installMacGuiAppsPhase =
             'keepingyouawake',
             'spectacle',
             'visual-studio-code',
-        ].map((name) =>
-            p(name, {
+        ],
+        {
+            packageOpts: {
                 isGUI: true,
-            }),
-        ),
+            },
+        },
     );
 
 const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [

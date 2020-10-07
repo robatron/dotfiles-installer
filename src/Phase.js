@@ -7,6 +7,9 @@ const Phase = class {
         // Action to perform on each package
         this.action = phaseOpts.action;
 
+        // Options to apply to all targets
+        this.packageOpts = phaseOpts.packageOpts;
+
         // Run the packages in parallel? Default to series
         this.parallel = phaseOpts.parallel || false;
 
