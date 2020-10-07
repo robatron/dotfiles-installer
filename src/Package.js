@@ -1,5 +1,10 @@
 const Package = class {
     constructor(name, pkgOpts = {}) {
+        // Validate required params
+        if (!name) {
+            throw new Error('A package name is required');
+        }
+
         // Name of this package
         this.name = name;
 
@@ -13,11 +18,11 @@ const Package = class {
         // System command, defaulting to the package name
         this.command = pkgOpts.command || this.name;
 
-        // Skip the action
-        this.skipAction = pkgOpts.skipAction || false;
-
         // Force the action
         this.forceAction = pkgOpts.forceAction || false;
+
+        // Skip the action
+        this.skipAction = pkgOpts.skipAction || false;
     }
 };
 
