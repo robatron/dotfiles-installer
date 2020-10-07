@@ -103,6 +103,8 @@ const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     phaseTask.displayName = phase.name;
     exp && (exp[phase.name] = phaseTask);
 
+    log.info(`Phase '${phase.name}' created, tasks will run in ${asyncType}`);
+
     return phaseTask;
 };
 
