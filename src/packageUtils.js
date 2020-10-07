@@ -22,6 +22,10 @@ const installPackageViaGit = async (pkg) => {
         ? gitPackage.cloneDir
         : path.join(getConfig().gitCloneDir, pkg.name);
 
+    log.info(
+        `Installing package '${pkg.name}' via git from '${gitPackage.repoUrl}'...`,
+    );
+
     if (fs.existsSync(cloneDir)) {
         if (fs.lstatSync(cloneDir).isDirectory()) {
             log.warn(
@@ -86,6 +90,8 @@ const installPackageViaGit = async (pkg) => {
 const installPackage = (pkg) => {
     const { installCommands, isGUI, postInstall } = pkg.actionArgs;
     const cmds = [];
+
+    log.info(`Installing package '${pkg.name}'...`);
 
     // Use explicit install commands if specified
     if (installCommands) {

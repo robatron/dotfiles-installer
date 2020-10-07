@@ -47,6 +47,7 @@ const verifyPrereqsPhase = definePhase(
 // Make sure apt is up-to-date on Linux
 const updateApt = definePhase('updateApt', ACTIONS.INSTALL, [
     p('apt-update', {
+        forceAction: true,
         installCommands: ['sudo apt update'],
         skipAction: !isLinux(),
     }),

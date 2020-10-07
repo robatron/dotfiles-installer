@@ -99,10 +99,7 @@ describe('createPackageFromDefTask', () => {
                     "Verifying 'packageName'...",
                   ],
                   Array [
-                    "Verification for 'packageName' failed. Proceeding with action 'install'...",
-                  ],
-                  Array [
-                    "Installing package 'packageName'...",
+                    "Forcing action 'install' for 'packageName'...'",
                   ],
                 ]
             `);
@@ -128,9 +125,6 @@ describe('createPackageFromDefTask', () => {
                   ],
                   Array [
                     "Verification for 'packageName' failed. Proceeding with action 'install'...",
-                  ],
-                  Array [
-                    "Installing package 'packageName'...",
                   ],
                 ]
             `);

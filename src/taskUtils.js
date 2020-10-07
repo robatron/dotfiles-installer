@@ -33,16 +33,14 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
 
         if (forceAction || !isPackageInstalled(pkg)) {
             log.info(
-                `Verification for '${pkgName}' failed. Proceeding with action '${action}'...`,
+                forceAction
+                    ? `Forcing action '${action}' for '${pkgName}'...'`
+                    : `Verification for '${pkgName}' failed. Proceeding with action '${action}'...`,
             );
             if (action === ACTIONS.INSTALL) {
                 if (gitPackage) {
-                    log.info(
-                        `Installing package '${pkgName}' via git from '${gitPackage.repoUrl}'...`,
-                    );
                     installPackageViaGit(pkg);
                 } else {
-                    log.info(`Installing package '${pkgName}'...`);
                     installPackage(pkg);
                 }
             } else if (action === ACTIONS.VERIFY) {
