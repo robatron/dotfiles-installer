@@ -22,13 +22,17 @@ const Package = class {
 };
 
 // Create a new package object from a definition
-const createPackageFromDef = (pkgDef, action) => {
+const createPackageFromDef = (pkgDef, action, inheritedPkgOpts) => {
     if (typeof pkgDef === 'string') {
-        return new Package(pkgDef, { action });
+        return new Package(pkgDef, { ...inheritedPkgOpts, action });
     } else if (Array.isArray(pkgDef)) {
         const pkgName = pkgDef[0];
         const pkgOpts = pkgDef[1] || {};
-        return new Package(pkgName, { ...pkgOpts, action });
+        return new Package(pkgName, {
+            ...inheritedPkgOpts,
+            ...pkgOpts,
+            action,
+        });
     } else {
         throw new Error(
             `Malformed package definition: ${JSON.stringify(pkgDef)}`,

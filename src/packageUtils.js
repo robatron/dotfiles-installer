@@ -152,12 +152,13 @@ const isPackageInstalled = (pkg) => {
             return false;
         }
 
-        log.info(`Verification for'${pkg.name}' passed`);
+        log.info(`Verification for '${pkg.name}' passed`);
         return true;
     }
 
     // If this is a git package, check if its cloned, and its binaries exist
     if (gitPackage) {
+        log.info(`Verifying git package '${pkg.name}'...'`);
         const { binSymlink } = gitPackage;
 
         const binDir = gitPackage.binDir
@@ -191,18 +192,29 @@ const isPackageInstalled = (pkg) => {
     // explicitly set, verify the commang exists in the environment as oppose
     // to verifying the package is installed via the system package manager.
     if (installCommands || verifyCommandExists) {
+        log.info(`Verifying command '${pkg.name}' exists...'`);
         return commandExistsSync(pkg.command);
     }
 
     // Otherwise, test if the package is installed via the system package manager.
+    let cmd;
+
     if (platform.isLinux()) {
-        return !shell.exec(`dpkg -s '${pkg.name}'`).code;
+        cmd = `dpkg -s '${pkg.name}'`;
     } else if (platform.isMac()) {
         if (isGUI) {
-            return !shell.exec(`brew list --cask '${pkg.name}'`).code;
+            cmd = `brew list --cask '${pkg.name}'`;
+        } else {
+            cmd = `brew list --versions '${pkg.name}'`;
         }
-        return !shell.exec(`brew list --versions '${pkg.name}'`).code;
+    } else {
+        throw new Error(
+            `Verification for '${pkg.name}' failed: Unrecognized platform.`,
+        );
     }
+
+    log.info(`Verifying package '${pkg.name}' exists with \`${cmd}\`...'`);
+    return !shell.exec(cmd).code;
 };
 
 module.exports = {

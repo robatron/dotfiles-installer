@@ -29,10 +29,12 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
             return cb();
         }
 
-        log.info(`Verifying '${pkgName}' is installed...`);
+        log.info(`Verifying '${pkgName}'...`);
 
         if (forceAction || !isPackageInstalled(pkg)) {
-            log.info(`Package '${pkgName}' is not installed`);
+            log.info(
+                `Verification for '${pkgName}' failed. Proceeding with action '${action}'...`,
+            );
             if (action === ACTIONS.INSTALL) {
                 if (gitPackage) {
                     log.info(
@@ -87,7 +89,9 @@ const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     // Recursively build phase tasks. Base case: Targets are packages
     if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
         phaseTargetTasks = phase.targets
-            .map((pkgDef) => createPackageFromDef(pkgDef, phase.action))
+            .map((pkgDef) =>
+                createPackageFromDef(pkgDef, phase.action, phase.packageOpts),
+            )
             .map((pkg) => createPackageFromDefTask(pkg, exp, phase.name));
     } else if (phase.action === ACTIONS.RUN_PHASES) {
         phaseTargetTasks = createTaskTree(phase.targets, exp, phase.name);

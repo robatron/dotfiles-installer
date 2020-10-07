@@ -339,7 +339,7 @@ describe('isPackageinstalled', () => {
                     "Using custom test to verify 'tst-cmd'...",
                   ],
                   Array [
-                    "Verification for'tst-cmd' passed",
+                    "Verification for 'tst-cmd' passed",
                   ],
                 ]
             `);

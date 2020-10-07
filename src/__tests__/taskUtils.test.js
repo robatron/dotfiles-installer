@@ -45,11 +45,16 @@ describe('createPackageFromDefTask', () => {
 
             const taskResult = taskFn(mockCb);
 
-            expect(log.warn).toBeCalledWith(
-                expect.stringMatching(/skipping 'packageName'/gi),
-            );
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
+
+            expect(log.warn.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Skipping 'packageName'...",
+                  ],
+                ]
+            `);
         });
 
         it('verifies the package is installed and returns the callback', () => {
@@ -61,14 +66,19 @@ describe('createPackageFromDefTask', () => {
             );
             const taskResult = taskFn(mockCb);
 
-            expect(log.info).toBeCalledWith(
-                "Verifying 'packageName' is installed...",
-            );
             expect(packageUtils.isPackageInstalled).toBeCalledWith(
                 defaultTestPackage,
             );
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Verifying 'packageName'...",
+                  ],
+                ]
+            `);
         });
 
         it('forces the action if specified', () => {
@@ -79,15 +89,23 @@ describe('createPackageFromDefTask', () => {
             const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
             const taskResult = taskFn(mockCb);
 
-            expect(log.info).toBeCalledWith(
-                "Package 'packageName' is not installed",
-            );
-            expect(log.info).toBeCalledWith(
-                "Installing package 'packageName'...",
-            );
             expect(packageUtils.installPackage).toBeCalledWith(testPackage);
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Verifying 'packageName'...",
+                  ],
+                  Array [
+                    "Verification for 'packageName' failed. Proceeding with action 'install'...",
+                  ],
+                  Array [
+                    "Installing package 'packageName'...",
+                  ],
+                ]
+            `);
         });
 
         it('installs the package if install action specified', () => {
@@ -99,15 +117,23 @@ describe('createPackageFromDefTask', () => {
             const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
             const taskResult = taskFn(mockCb);
 
-            expect(log.info).toBeCalledWith(
-                "Package 'packageName' is not installed",
-            );
-            expect(log.info).toBeCalledWith(
-                "Installing package 'packageName'...",
-            );
             expect(packageUtils.installPackage).toBeCalledWith(testPackage);
             expect(mockCb).toBeCalledTimes(1);
             expect(taskResult).toEqual('cbReturn');
+
+            expect(log.info.mock.calls).toMatchInlineSnapshot(`
+                Array [
+                  Array [
+                    "Verifying 'packageName'...",
+                  ],
+                  Array [
+                    "Verification for 'packageName' failed. Proceeding with action 'install'...",
+                  ],
+                  Array [
+                    "Installing package 'packageName'...",
+                  ],
+                ]
+            `);
         });
 
         it('throws if the package is not installed and verify action specified', () => {

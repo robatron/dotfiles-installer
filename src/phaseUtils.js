@@ -4,10 +4,10 @@ const { ACTIONS, PHASE_NAME_DEFAULT } = require('./constants');
 const definePackage = (name, args = {}) => [name, args];
 
 // Helper function to create a phase definition
-const definePhase = (name, action, targets, opts = {}) => [
+const definePhase = (name, action, targets, phaseOpts = {}) => [
     name,
     {
-        ...opts,
+        ...phaseOpts,
         action,
         targets: targets.filter((target) => target),
     },
