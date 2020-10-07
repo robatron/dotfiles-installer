@@ -75,6 +75,9 @@ describe('createPackageFromDefTask', () => {
             expect(log.info.mock.calls).toMatchInlineSnapshot(`
                 Array [
                   Array [
+                    "Task ':packageName' created",
+                  ],
+                  Array [
                     "Verifying 'packageName'...",
                   ],
                 ]
@@ -95,6 +98,9 @@ describe('createPackageFromDefTask', () => {
 
             expect(log.info.mock.calls).toMatchInlineSnapshot(`
                 Array [
+                  Array [
+                    "Task ':packageName' created",
+                  ],
                   Array [
                     "Verifying 'packageName'...",
                   ],
@@ -120,6 +126,9 @@ describe('createPackageFromDefTask', () => {
 
             expect(log.info.mock.calls).toMatchInlineSnapshot(`
                 Array [
+                  Array [
+                    "Task ':packageName' created",
+                  ],
                   Array [
                     "Verifying 'packageName'...",
                   ],

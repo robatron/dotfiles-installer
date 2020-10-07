@@ -60,6 +60,8 @@ const createPackageFromDefTask = (pkg, exp, phaseName) => {
     task.displayName = [phaseName, pkgName].join(PHASE_NAME_DELIM);
     exp && (exp[task.displayName] = task);
 
+    log.info(`Task '${task.displayName}' created`);
+
     return task;
 };
 
