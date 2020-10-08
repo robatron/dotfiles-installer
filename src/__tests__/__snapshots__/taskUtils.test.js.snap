@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`createPhaseTask creates tasks for INSTALL action 1`] = `
+exports[`createPhaseTask creates tasks for INSTALL_PACKAGES action 1`] = `
 Object {
   "testPhaseName": Object {
     "asyncType": "series",
@@ -58,7 +58,7 @@ Object {
 }
 `;
 
-exports[`createPhaseTask creates tasks for VERIFY action 1`] = `
+exports[`createPhaseTask creates tasks for VERIFY_PACKAGES action 1`] = `
 Object {
   "testPhaseName": Object {
     "asyncType": "series",

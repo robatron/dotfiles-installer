@@ -7,7 +7,7 @@
         "build": "docker build --tag akinizer .",
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",
         "start": "docker run --volume $(pwd):/mnt/akinizer --interactive --tty akinizer /bin/bash",
-        "test": "jest --verbose",
+        "test": "jest --coverage --verbose",
         "watch": "jest --watch"
     },
     "author": "",

@@ -6,8 +6,8 @@ describe('Phase', () => {
             Phase {
               "action": undefined,
               "name": "namelessPhase",
-              "packageOpts": undefined,
               "parallel": false,
+              "targetOpts": undefined,
               "targets": undefined,
             }
         `);
@@ -17,7 +17,7 @@ describe('Phase', () => {
         expect(
             new Phase('phase', {
                 action: 'action',
-                packageOpts: 'pkg-opts',
+                targetOpts: 'target-opts',
                 parallel: 'parallel',
                 targets: 'targets',
             }),
@@ -25,8 +25,8 @@ describe('Phase', () => {
             Phase {
               "action": "action",
               "name": "phase",
-              "packageOpts": "pkg-opts",
               "parallel": "parallel",
+              "targetOpts": "target-opts",
               "targets": "targets",
             }
         `);

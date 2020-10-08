@@ -76,7 +76,7 @@ function install_program_via_git() {
 
 log "Bootstrapping..."
 
-log "Looking for system package managers..."
+log "Looking for system target managers..."
 if [ "$system_type" = "Darwin" ]; then
 
     log "Mac OS X detected. Looking for brew..."

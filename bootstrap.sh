@@ -40,7 +40,7 @@ function assure_installed_linux() {
 #                                Bootstrap system                              #
 # ---------------------------------------------------------------------------- #
 
-log "Looking for system package managers and base programs..."
+log "Looking for system target managers and base programs..."
 
 if [ "$PLATFORM" = "Darwin" ]; then
     log "Mac OS X detected. Looking for brew..."
