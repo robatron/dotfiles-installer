@@ -13,8 +13,8 @@ jest.mock('gulp');
  * thefollowing features:
  *
  * Phase actions:
- *  - INSTALL
- *  - VERIFY
+ *  - INSTALL_PACKAGES
+ *  - VERIFY_PACKAGES
  *  - RUN_PHASES
  *
  * Phase async:
@@ -22,26 +22,26 @@ jest.mock('gulp');
  *  - series (default)
  */
 const taskTreeRoot = defineRoot([
-    definePhase('installPhase', ACTIONS.INSTALL, ['alpha', 'bravo', 'charlie']),
+    definePhase('installPhase', ACTIONS.INSTALL_PACKAGES, ['alpha', 'bravo', 'charlie']),
     definePhase('runPhase', ACTIONS.RUN_PHASES, [
-        definePhase('subInstallPhase', ACTIONS.INSTALL, [
+        definePhase('subInstallPhase', ACTIONS.INSTALL_PACKAGES, [
             'delta',
             'echo',
             'foxtrot',
         ]),
         definePhase('subRunPhase', ACTIONS.RUN_PHASES, [
-            definePhase('subSubInstallPhase', ACTIONS.INSTALL, [
+            definePhase('subSubInstallPhase', ACTIONS.INSTALL_PACKAGES, [
                 'golf',
                 'hotel',
                 'india',
             ]),
-            definePhase('subSubVerifyPhase', ACTIONS.VERIFY, [
+            definePhase('subSubVerifyPhase', ACTIONS.VERIFY_PACKAGES, [
                 'juliett',
                 'kelo',
                 'lima',
             ]),
         ]),
-        definePhase('subVerifyPhase', ACTIONS.VERIFY, [
+        definePhase('subVerifyPhase', ACTIONS.VERIFY_PACKAGES, [
             'mike',
             'november',
             'oscar',
@@ -49,7 +49,7 @@ const taskTreeRoot = defineRoot([
     ]),
     definePhase(
         'verifyPhase',
-        ACTIONS.VERIFY,
+        ACTIONS.VERIFY_PACKAGES,
         ['papa', 'quebec', 'romeo', 'sierra'],
         {
             parallel: true,

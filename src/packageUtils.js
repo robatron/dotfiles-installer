@@ -3,16 +3,17 @@ const path = require('path');
 const rmrf = require('rimraf');
 const git = require('nodegit');
 const commandExistsSync = require('command-exists').sync;
-const shell = require('shelljs');
+const { exec } = require('shelljs');
 const { getConfig } = require('./config');
+const { execCommands } = require('./execUtils');
 const log = require('./log');
-const platform = require('./platformUtils');
+const { isLinux, isMac } = require('./platformUtils');
 
-// Install the specified package via git
-const installPackageViaGit = async (pkg) => {
+// Install the specified target via git
+const installPackageViaGit = async (target) => {
     const {
         actionArgs: { gitPackage, postInstall },
-    } = pkg;
+    } = target;
 
     const { binSymlink, repoUrl } = gitPackage;
     const binDir = gitPackage.binDir
@@ -20,10 +21,10 @@ const installPackageViaGit = async (pkg) => {
         : getConfig().binInstallDir;
     const cloneDir = gitPackage.cloneDir
         ? gitPackage.cloneDir
-        : path.join(getConfig().gitCloneDir, pkg.name);
+        : path.join(getConfig().gitCloneDir, target.name);
 
     log.info(
-        `Installing package '${pkg.name}' via git from '${gitPackage.repoUrl}'...`,
+        `Installing target '${target.name}' via git from '${gitPackage.repoUrl}'...`,
     );
 
     if (fs.existsSync(cloneDir)) {
@@ -33,7 +34,7 @@ const installPackageViaGit = async (pkg) => {
             );
         } else {
             throw new Error(
-                `Error installing package '${pkg.name}' from '${repoUrl}'. File exists: ${cloneDir}`,
+                `Error installing target '${target.name}' from '${repoUrl}'. File exists: ${cloneDir}`,
             );
         }
     } else {
@@ -45,7 +46,7 @@ const installPackageViaGit = async (pkg) => {
         } catch (err) {
             rmrf.sync(createdBaseDir);
             throw new Error(
-                `Error cloning ${repoUrl} for package '${pkg.name}': ${err}`,
+                `Error cloning ${repoUrl} for target '${target.name}': ${err}`,
             );
         }
     }
@@ -59,7 +60,7 @@ const installPackageViaGit = async (pkg) => {
 
         if (!fs.existsSync(binSymSrc)) {
             throw new Error(
-                `Error installing package '${pkg.name}'. Bin symlink does not exist in package: ${binSymSrc}`,
+                `Error installing target '${target.name}'. Bin symlink does not exist in target: ${binSymSrc}`,
             );
         }
 
@@ -70,7 +71,7 @@ const installPackageViaGit = async (pkg) => {
                 );
             } else {
                 throw new Error(
-                    `Error installing package '${pkg.name}'. File exists: ${binSymDest}`,
+                    `Error installing target '${target.name}'. File exists: ${binSymDest}`,
                 );
             }
         } else {
@@ -81,90 +82,65 @@ const installPackageViaGit = async (pkg) => {
 
     // Run any post install steps, pass along pertinant info
     if (postInstall) {
-        log.info(`Running post install steps for ${pkg.name}...`);
-        postInstall(pkg);
+        log.info(`Running post install steps for ${target.name}...`);
+        postInstall(target);
     }
 };
 
-// Install the specified package
-const installPackage = (pkg) => {
-    const { installCommands, isGUI, postInstall } = pkg.actionArgs;
+// Install the specified target
+const installPackage = (target) => {
+    const { actionCommands, isGUI, postInstall } = target.actionArgs;
     const cmds = [];
 
-    log.info(`Installing package '${pkg.name}'...`);
+    log.info(`Installing target '${target.name}'...`);
 
     // Use explicit install commands if specified
-    if (installCommands) {
-        installCommands.forEach((cmd) => cmds.push(cmd));
+    if (actionCommands) {
+        actionCommands.forEach((cmd) => cmds.push(cmd));
     }
 
-    // Install via the system package managers
-    else if (platform.isLinux()) {
-        cmds.push(`sudo apt install -y ${pkg.name}`);
-    } else if (platform.isMac()) {
+    // Install via the system target managers
+    else if (isLinux()) {
+        cmds.push(`sudo apt install -y ${target.name}`);
+    } else if (isMac()) {
         if (isGUI) {
             cmds.push(
-                `HOMEBREW_NO_AUTO_UPDATE=1 brew cask install ${pkg.name}`,
+                `HOMEBREW_NO_AUTO_UPDATE=1 brew cask install ${target.name}`,
             );
         } else {
-            cmds.push(`HOMEBREW_NO_AUTO_UPDATE=1 brew install ${pkg.name}`);
+            cmds.push(`HOMEBREW_NO_AUTO_UPDATE=1 brew install ${target.name}`);
         }
     }
 
-    // Error if we don't know how to install this package
+    // Error if we don't know how to install this target
     else {
         throw new Error(
-            `Cannot determine install command(s) for package '${pkg.name}'`,
+            `Cannot determine install command(s) for target '${target.name}'`,
         );
     }
 
     // Run install commands
-    cmds.forEach((cmd) => {
-        const returnCode = shell.exec(cmd).code;
-        if (returnCode !== 0) {
-            const fullCommandMessage =
-                cmds.length > 1
-                    ? ` Full command set: ${JSON.stringify(cmds)}`
-                    : '';
-            throw new Error(
-                `Install command '${cmd}' failed for package '${pkg.name}'.${fullCommandMessage}`,
-            );
-        }
-    });
+    execCommands(cmds);
 
     // Run any post install steps
     if (postInstall) {
-        log.info(`Running post-install scripts for ${pkg.name}...`);
-        postInstall(pkg);
+        log.info(`Running post-install scripts for ${target.name}...`);
+        postInstall(target);
     }
 };
 
-// Return if a package is installed or not
-const isPackageInstalled = (pkg) => {
+// Return if a target is installed or not
+const isPackageInstalled = (target) => {
     const {
         gitPackage,
-        installCommands,
+        actionCommands,
         isGUI,
-        testFn,
         verifyCommandExists,
-    } = pkg.actionArgs;
+    } = target.actionArgs;
 
-    // If custom test function supplied, use it
-    if (testFn) {
-        log.info(`Using custom test to verify '${pkg.name}'...`);
-
-        if (!testFn(pkg)) {
-            log.info(`Verification for '${pkg.name}' failed`);
-            return false;
-        }
-
-        log.info(`Verification for '${pkg.name}' passed`);
-        return true;
-    }
-
-    // If this is a git package, check if its cloned, and its binaries exist
+    // If this is a git target, check if its cloned, and its binaries exist
     if (gitPackage) {
-        log.info(`Verifying git package '${pkg.name}'...'`);
+        log.info(`Verifying git target '${target.name}'...'`);
         const { binSymlink } = gitPackage;
 
         const binDir = gitPackage.binDir
@@ -172,7 +148,7 @@ const isPackageInstalled = (pkg) => {
             : getConfig().binInstallDir;
         const cloneDir = gitPackage.cloneDir
             ? gitPackage.cloneDir
-            : path.join(getConfig().gitCloneDir, pkg.name);
+            : path.join(getConfig().gitCloneDir, target.name);
 
         const isCloneDirPresent =
             fs.existsSync(cloneDir) && fs.lstatSync(cloneDir).isDirectory();
@@ -194,33 +170,33 @@ const isPackageInstalled = (pkg) => {
         return false;
     }
 
-    // If the package has custom install commands, or verifyCommandExists is
+    // If the target has custom install commands, or verifyCommandExists is
     // explicitly set, verify the commang exists in the environment as oppose
-    // to verifying the package is installed via the system package manager.
-    if (installCommands || verifyCommandExists) {
-        log.info(`Verifying command '${pkg.name}' exists...'`);
-        return commandExistsSync(pkg.command);
+    // to verifying the target is installed via the system target manager.
+    if (actionCommands || verifyCommandExists) {
+        log.info(`Verifying command '${target.name}' exists...'`);
+        return commandExistsSync(target.command);
     }
 
-    // Otherwise, test if the package is installed via the system package manager.
+    // Otherwise, test if the target is installed via the system target manager.
     let cmd;
 
-    if (platform.isLinux()) {
-        cmd = `dpkg -s '${pkg.name}'`;
-    } else if (platform.isMac()) {
+    if (isLinux()) {
+        cmd = `dpkg -s '${target.name}'`;
+    } else if (isMac()) {
         if (isGUI) {
-            cmd = `brew list --cask '${pkg.name}'`;
+            cmd = `brew list --cask '${target.name}'`;
         } else {
-            cmd = `brew list --versions '${pkg.name}'`;
+            cmd = `brew list --versions '${target.name}'`;
         }
     } else {
         throw new Error(
-            `Verification for '${pkg.name}' failed: Unrecognized platform.`,
+            `Verification for '${target.name}' failed: Unrecognized platform.`,
         );
     }
 
-    log.info(`Verifying package '${pkg.name}' exists with \`${cmd}\`...'`);
-    return !shell.exec(cmd).code;
+    log.info(`Verifying target '${target.name}' exists with \`${cmd}\`...'`);
+    return !exec(cmd).code;
 };
 
 module.exports = {

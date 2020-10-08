@@ -1,23 +1,25 @@
 const gulp = require('gulp');
+const actionHandlers = require('../actionHandlers');
 const { ACTIONS } = require('../constants');
 const log = require('../log');
-const { Package } = require('../Package');
 const packageUtils = require('../packageUtils');
 const { definePhase } = require('../phaseUtils');
+const { Target } = require('../Target');
 const taskUtils = require('../taskUtils');
 
 jest.mock('gulp');
+jest.mock('../actionHandlers');
 jest.mock('../packageUtils');
 jest.mock('../log');
 
-const defaultTestPackage = new Package('packageName', {
+const defaultTestPackage = new Target('target-name', {
     action: 'action',
 });
 
 describe('createPackageFromDefTask', () => {
     it('returns and exports a task function, and sets the display name', () => {
         const testExports = {};
-        const expectedTaskName = 'phase:packageName';
+        const expectedTaskName = 'phase:target-name';
 
         const resultTask = taskUtils.createPackageFromDefTask(
             defaultTestPackage,
@@ -31,133 +33,78 @@ describe('createPackageFromDefTask', () => {
     });
 
     describe('the test task itself', () => {
-        const mockCb = jest.fn(() => 'cbReturn');
+        const mockCb = jest.fn(() => 'done');
 
         beforeEach(() => {
             jest.clearAllMocks();
         });
 
-        it('skips the action if specified', () => {
-            const testPackage = new Package('packageName', {
-                skipAction: true,
+        describe('action skipping', () => {
+            it('skips the action if specified', () => {
+                const testPackage = new Target('target-name', {
+                    action: 'test-action',
+                    skipAction: () => true,
+                });
+                const taskFn = taskUtils.createPackageFromDefTask(
+                    testPackage,
+                    {},
+                );
+
+                const taskResult = taskFn(mockCb);
+
+                expect(mockCb).toBeCalledTimes(1);
+                expect(taskResult).toEqual('done');
+
+                expect(log.warn.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Skipping action 'test-action' for target 'target-name'",
+                      ],
+                    ]
+                `);
             });
-            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
 
-            const taskResult = taskFn(mockCb);
+            it('adds an optional reason for skipping the action', () => {
+                const testPackage = new Target('target-name', {
+                    action: 'test-action',
+                    skipAction: () => true,
+                    skipActionMessage: () => 'For reasons',
+                });
+                const taskFn = taskUtils.createPackageFromDefTask(
+                    testPackage,
+                    {},
+                );
 
-            expect(mockCb).toBeCalledTimes(1);
-            expect(taskResult).toEqual('cbReturn');
-
-            expect(log.warn.mock.calls).toMatchInlineSnapshot(`
-                Array [
-                  Array [
-                    "Skipping 'packageName'...",
-                  ],
-                ]
-            `);
-        });
-
-        it('verifies the package is installed and returns the callback', () => {
-            packageUtils.isPackageInstalled.mockReturnValue(true);
-
-            const taskFn = taskUtils.createPackageFromDefTask(
-                defaultTestPackage,
-                {},
-            );
-            const taskResult = taskFn(mockCb);
-
-            expect(packageUtils.isPackageInstalled).toBeCalledWith(
-                defaultTestPackage,
-            );
-            expect(mockCb).toBeCalledTimes(1);
-            expect(taskResult).toEqual('cbReturn');
-
-            expect(log.info.mock.calls).toMatchInlineSnapshot(`
-                Array [
-                  Array [
-                    "Task ':packageName' created",
-                  ],
-                  Array [
-                    "Verifying 'packageName'...",
-                  ],
-                ]
-            `);
-        });
-
-        it('forces the action if specified', () => {
-            const testPackage = new Package('packageName', {
-                action: ACTIONS.INSTALL,
-                forceAction: true,
-            });
-            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
-            const taskResult = taskFn(mockCb);
-
-            expect(packageUtils.installPackage).toBeCalledWith(testPackage);
-            expect(mockCb).toBeCalledTimes(1);
-            expect(taskResult).toEqual('cbReturn');
-
-            expect(log.info.mock.calls).toMatchInlineSnapshot(`
-                Array [
-                  Array [
-                    "Task ':packageName' created",
-                  ],
-                  Array [
-                    "Verifying 'packageName'...",
-                  ],
-                  Array [
-                    "Forcing action 'install' for 'packageName'...'",
-                  ],
-                ]
-            `);
-        });
-
-        it('installs the package if install action specified', () => {
-            packageUtils.isPackageInstalled.mockReturnValue(false);
-
-            const testPackage = new Package('packageName', {
-                action: ACTIONS.INSTALL,
-            });
-            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
-            const taskResult = taskFn(mockCb);
-
-            expect(packageUtils.installPackage).toBeCalledWith(testPackage);
-            expect(mockCb).toBeCalledTimes(1);
-            expect(taskResult).toEqual('cbReturn');
-
-            expect(log.info.mock.calls).toMatchInlineSnapshot(`
-                Array [
-                  Array [
-                    "Task ':packageName' created",
-                  ],
-                  Array [
-                    "Verifying 'packageName'...",
-                  ],
-                  Array [
-                    "Verification for 'packageName' failed. Proceeding with action 'install'...",
-                  ],
-                ]
-            `);
-        });
-
-        it('throws if the package is not installed and verify action specified', () => {
-            packageUtils.isPackageInstalled.mockReturnValue(false);
-
-            const testPackage = new Package('packageName', {
-                action: ACTIONS.VERIFY,
-            });
-            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
-
-            expect(() => {
                 taskFn(mockCb);
-            }).toThrowErrorMatchingInlineSnapshot(
-                `"Package 'packageName' is not installed!"`,
-            );
+
+                expect(log.warn.mock.calls).toMatchInlineSnapshot(`
+                    Array [
+                      Array [
+                        "Skipping action 'test-action' for target 'target-name': For reasons",
+                      ],
+                    ]
+                `);
+            });
         });
 
-        it('throws if the package action is not supported', () => {
+        it('runs the action handler against the target', () => {
+            const testPackage = new Target('target-name', {
+                action: ACTIONS.EXECUTE_JOBS,
+            });
+            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
+            const taskResult = taskFn(mockCb);
+
+            expect(actionHandlers[testPackage.action]).toBeCalledWith(
+                testPackage,
+            );
+            expect(mockCb).toBeCalledTimes(1);
+            expect(taskResult).toEqual('done');
+        });
+
+        it('throws if the target action is not supported', () => {
             packageUtils.isPackageInstalled.mockReturnValue(false);
 
-            const testPackage = new Package('packageName', {
+            const testPackage = new Target('target-name', {
                 action: 'unsupportedAction',
             });
             const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
@@ -165,7 +112,7 @@ describe('createPackageFromDefTask', () => {
             expect(() => {
                 taskFn(mockCb);
             }).toThrowErrorMatchingInlineSnapshot(
-                `"Action 'unsupportedAction' for package 'packageName' is not supported."`,
+                `"Action 'unsupportedAction' for target 'target-name' is not supported: TypeError: actionHandlers[action] is not a function"`,
             );
         });
     });
@@ -173,7 +120,7 @@ describe('createPackageFromDefTask', () => {
 
 describe('createPhaseTask', () => {
     const defaultPhaseName = 'testPhaseName';
-    const defaultPkgs = ['target-a', 'target-b', 'target-c'];
+    const defaultTargets = ['target-a', 'target-b', 'target-c'];
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -191,12 +138,12 @@ describe('createPhaseTask', () => {
         });
     });
 
-    ['INSTALL', 'VERIFY'].forEach((action) => {
+    ['INSTALL_PACKAGES', 'VERIFY_PACKAGES'].forEach((action) => {
         it(`creates tasks for ${action} action`, () => {
             const phaseDef = definePhase(
                 defaultPhaseName,
                 ACTIONS[action],
-                defaultPkgs,
+                defaultTargets,
             );
 
             const testExports = {};
@@ -207,8 +154,16 @@ describe('createPhaseTask', () => {
 
     it(`creates tasks for RUN_PHASES action`, () => {
         const phaseDef = definePhase(defaultPhaseName, ACTIONS.RUN_PHASES, [
-            definePhase(defaultPhaseName, ACTIONS.INSTALL, defaultPkgs),
-            definePhase(defaultPhaseName, ACTIONS.VERIFY, defaultPkgs),
+            definePhase(
+                defaultPhaseName,
+                ACTIONS.INSTALL_PACKAGES,
+                defaultTargets,
+            ),
+            definePhase(
+                defaultPhaseName,
+                ACTIONS.VERIFY_PACKAGES,
+                defaultTargets,
+            ),
         ]);
 
         const testExports = {};

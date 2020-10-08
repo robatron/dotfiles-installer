@@ -1,66 +1,55 @@
 const gulp = require('gulp');
 const log = require('./log');
-const {
-    installPackageViaGit,
-    installPackage,
-    isPackageInstalled,
-} = require('./packageUtils');
+const actionHandlers = require('./actionHandlers');
 const {
     ACTIONS,
     PHASE_NAME_DEFAULT,
     PHASE_NAME_DELIM,
 } = require('./constants');
 const Phase = require('./Phase');
-const { createPackageFromDef } = require('./Package');
+const { createTargetFromDef } = require('./Target');
 
-// Create a single package task
-const createPackageFromDefTask = (pkg, exp, phaseName) => {
+// Create a single target task
+const createPackageFromDefTask = (target, exp, phaseName) => {
     const {
         action,
-        actionArgs: { gitPackage },
-        forceAction,
-        name: pkgName,
-        skipAction,
-    } = pkg;
+        actionArgs: { skipAction, skipActionMessage },
+        name,
+    } = target;
 
-    const task = (cb) => {
-        if (skipAction) {
-            log.warn(`Skipping '${pkgName}'...`);
-            return cb();
-        }
+    // Define the actual gulp task
+    const task = (done) => {
+        // Skip action and log the reason if specified
+        if (skipAction && skipAction(target)) {
+            let logMsg = `Skipping action '${action}' for target '${name}'`;
 
-        log.info(`Verifying '${pkgName}'...`);
-
-        if (forceAction || !isPackageInstalled(pkg)) {
-            log.info(
-                forceAction
-                    ? `Forcing action '${action}' for '${pkgName}'...'`
-                    : `Verification for '${pkgName}' failed. Proceeding with action '${action}'...`,
-            );
-            if (action === ACTIONS.INSTALL) {
-                if (gitPackage) {
-                    installPackageViaGit(pkg);
-                } else {
-                    installPackage(pkg);
-                }
-            } else if (action === ACTIONS.VERIFY) {
-                throw new Error(`Package '${pkgName}' is not installed!`);
-            } else {
-                throw new Error(
-                    `Action '${action}' for package '${pkgName}' is not supported.`,
-                );
+            if (skipActionMessage && skipActionMessage(target)) {
+                logMsg += `: ${skipActionMessage(target)}`;
             }
+
+            log.warn(logMsg);
+
+            return done();
         }
 
-        return cb();
+        // Run the action handler against the target, throw if it doesn't exist.
+        try {
+            actionHandlers[action](target);
+        } catch (e) {
+            throw new Error(
+                `Action '${action}' for target '${name}' is not supported: ${e}`,
+            );
+        }
+
+        return done();
     };
 
     // Create the actual gulp task and expose it globally so it can be run
     // individually
-    task.displayName = [phaseName, pkgName].join(PHASE_NAME_DELIM);
+    task.displayName = [phaseName, name].join(PHASE_NAME_DELIM);
     exp && (exp[task.displayName] = task);
 
-    log.info(`Task '${task.displayName}' created`);
+    log.debug(`Task '${task.displayName}' created`);
 
     return task;
 };
@@ -82,21 +71,19 @@ const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     // Don't allow phases without targets
     if (phase.targets.length < 1) {
         throw new Error(
-            `Missing targets for phase "${phaseNameFull}" with action "${phase.action}"`,
+            `Missing targets for phase '${phaseNameFull}' with action '${phase.action}'`,
         );
     }
 
-    // Recursively build phase tasks. Base case: Targets are packages
-    if ([ACTIONS.VERIFY, ACTIONS.INSTALL].includes(phase.action)) {
-        phaseTargetTasks = phase.targets
-            .map((pkgDef) =>
-                createPackageFromDef(pkgDef, phase.action, phase.packageOpts),
-            )
-            .map((pkg) => createPackageFromDefTask(pkg, exp, phase.name));
-    } else if (phase.action === ACTIONS.RUN_PHASES) {
+    // Recursively build phase tasks
+    if (phase.action === ACTIONS.RUN_PHASES) {
         phaseTargetTasks = createTaskTree(phase.targets, exp, phase.name);
     } else {
-        throw new Error(`Unsupported action: ${phase.action}`);
+        phaseTargetTasks = phase.targets
+            .map((targetDef) =>
+                createTargetFromDef(targetDef, phase.action, phase.targetOpts),
+            )
+            .map((target) => createPackageFromDefTask(target, exp, phase.name));
     }
 
     // Create the actual gulp combination task and expose it globally so it can
@@ -105,7 +92,7 @@ const createPhaseTask = (phaseDef, exp, phasePrefix = null) => {
     phaseTask.displayName = phase.name;
     exp && (exp[phase.name] = phaseTask);
 
-    log.info(`Phase '${phase.name}' created, tasks will run in ${asyncType}`);
+    log.debug(`Phase '${phase.name}' created, tasks will run in ${asyncType}`);
 
     return phaseTask;
 };

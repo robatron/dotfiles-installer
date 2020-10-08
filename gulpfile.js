@@ -24,38 +24,37 @@ const verifyPrereqsPhase = definePhase(
     // Phase name. This can be run with `gulp verifyPrereqs`
     'verifyPrereqs',
 
-    // For every package, apply the `VERIFY` action
-    ACTIONS.VERIFY,
+    // For every target, apply the `VERIFY_PACKAGES` action
+    ACTIONS.VERIFY_PACKAGES,
 
     // List of packages to be verified
     ['curl', 'git', 'node', 'npm'],
 
     {
         // Apply these options to all of this phase's packages
-        packageOpts: {
+        targetOpts: {
             // This option verifies the command exists instead of verifying
-            // its package exists with the system package manager
+            // its target exists with the system target manager
             verifyCommandExists: true,
         },
 
-        // We can run the phase in parallel b/c package verifications are
+        // We can run the phase in parallel b/c target verifications are
         // independent from each other
         parallel: true,
     },
 );
 
 // Make sure apt is up-to-date on Linux
-const updateApt = definePhase('updateApt', ACTIONS.INSTALL, [
+const updateApt = definePhase('updateApt', ACTIONS.EXECUTE_JOBS, [
     p('apt-update', {
-        forceAction: true,
-        installCommands: ['sudo apt update'],
-        skipAction: !isLinux(),
+        actionCommands: ['sudo apt update'],
+        skipAction: () => !isLinux(),
     }),
 ]);
 
 const gshufPath = path.join(os.homedir(), 'bin', 'gshuf');
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
-    definePhase('common', ACTIONS.INSTALL, [
+    definePhase('common', ACTIONS.INSTALL_PACKAGES, [
         'cowsay',
         'gpg',
         'htop',
@@ -63,61 +62,69 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
         'vim',
     ]),
     isLinux() &&
-        definePhase('linux', ACTIONS.INSTALL, [
+        definePhase('linux', ACTIONS.INSTALL_PACKAGES, [
             // Linux version of fortune
             p('fortune-mod'),
 
             // Symlink shuf to gshuf on Linux to normalize 'shuffle' command
             // between Linux and Mac
             p('gshuf', {
-                installCommands: [
+                actionCommands: [
                     `mkdir -p $HOME/bin/`,
                     `ln -sf \`which shuf\` ${gshufPath}`,
                 ],
-                testFn: (pkg) => fileExists(gshufPath),
+                skipAction: () => fileExists(gshufPath),
+                skipActionMessage: () => `File already exists: ${gshufPath}`,
             }),
         ]),
     isMac() &&
-        definePhase('mac', ACTIONS.INSTALL, [
+        definePhase('mac', ACTIONS.INSTALL_PACKAGES, [
             // Favor GNU utilities over BSD's
             'coreutils',
             'fortune',
         ]),
 ]);
 
-const installPythonPhase = definePhase('installPython', ACTIONS.INSTALL, [
-    p('python3'),
-    p('python3-distutils', {
-        // Required for installing `pip`. Only needed on Linux
-        skipAction: !isLinux(),
-    }),
-    p('pip', {
-        installCommands: [
-            'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
-            'sudo -H python3 /tmp/get-pip.py',
-        ],
-    }),
-    p('pyenv', {
-        installCommands: ['curl https://pyenv.run | bash'],
-        testFn: (pkg) => fileExists(path.join(os.homedir(), `.${pkg.name}`)),
-    }),
-    p('envtpl', {
-        // Required for `yadm`
-        installCommands: ['sudo -H pip install envtpl'],
-    }),
-]);
+const pyenvDir = path.join(os.homedir(), `.pyenv`);
+const installPythonPhase = definePhase(
+    'installPython',
+    ACTIONS.INSTALL_PACKAGES,
+    [
+        p('python3'),
+        p('python3-distutils', {
+            // Required for installing `pip`. Only needed on Linux
+            skipAction: () => !isLinux(),
+        }),
+        p('pip', {
+            actionCommands: [
+                'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
+                'sudo -H python3 /tmp/get-pip.py',
+            ],
+        }),
+        p('pyenv', {
+            actionCommands: ['curl https://pyenv.run | bash'],
+            skipAction: () => fileExists(pyenvDir),
+            skipActionMessage: () => `File exists: ${pyenvDir}`,
+        }),
+        p('envtpl', {
+            // Required for `yadm`
+            actionCommands: ['sudo -H pip install envtpl'],
+        }),
+    ],
+);
 
 const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
 const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
 const powerlineDir = path.join(gitCloneDir, 'powerline');
-const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
+const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL_PACKAGES, [
     p('zsh'),
     p('oh-my-zsh', {
-        installCommands: [
+        actionCommands: [
             `wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/omzshinstall.sh`,
             `RUNZSH=no sh /tmp/omzshinstall.sh`,
         ],
-        testFn: (pkg) => fileExists(OMZDir),
+        skipAction: () => fileExists(OMZDir),
+        skipActionMessage: () => `File exists: ${OMZDir}`,
     }),
     p('spaceship-prompt', {
         gitPackage: {
@@ -126,14 +133,15 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
             cloneDir: SpaceshipThemeDir,
             repoUrl: 'https://github.com/denysdovhan/spaceship-prompt.git',
         },
-        testFn: (pkg) => fileExists(SpaceshipThemeDir),
+        skipAction: () => fileExists(SpaceshipThemeDir),
+        skipActionMessage: () => `File exists: ${SpaceshipThemeDir}`,
     }),
     p('powerline', {
         gitPackage: {
             cloneDir: powerlineDir,
             repoUrl: 'https://github.com/powerline/fonts.git',
         },
-        postInstall: (pkg) => {
+        postInstall: () => {
             const cmds = [
                 `mkdir -p $HOME/.local`,
                 `sudo chown -R $USER: $HOME/.local`,
@@ -146,13 +154,14 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL, [
                 throw new Error(`Post-install commands failed: ${cmds}`);
             }
         },
-        testFn: (pkg) => fileExists(powerlineDir),
+        skipAction: () => fileExists(powerlineDir),
+        skipActionMessage: () => `File exists: ${powerlineDir}`,
     }),
 
     p('tmux'),
     p('reattach-to-user-namespace', {
         // Mac only. Required for tmux to interface w/ OS X clipboard, etc.
-        skipAction: !isMac(),
+        skipAction: () => !isMac(),
     }),
 ]);
 
@@ -160,7 +169,7 @@ const installMacGuiAppsPhase =
     isMac() &&
     definePhase(
         'installMacGuiApps',
-        ACTIONS.INSTALL,
+        ACTIONS.INSTALL_PACKAGES,
         [
             'deluge',
             'google-chrome',
@@ -170,7 +179,7 @@ const installMacGuiAppsPhase =
             'visual-studio-code',
         ],
         {
-            packageOpts: {
+            targetOpts: {
                 isGUI: true,
             },
         },
@@ -180,13 +189,13 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
     // Install Docker for Linux
     isLinux() &&
         definePhase('linux', ACTIONS.RUN_PHASES, [
-            definePhase('prereqs', ACTIONS.INSTALL, [
+            definePhase('prereqs', ACTIONS.INSTALL_PACKAGES, [
                 p('apt-transport-https'),
                 p('ca-certificates'),
                 p('gnupg-agent'),
                 p('software-properties-common'),
                 p('docker-apt-key', {
-                    installCommands: [
+                    actionCommands: [
                         `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`,
                         `sudo add-apt-repository \
                                 "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
@@ -194,12 +203,12 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                                 stable"`,
                         'sudo apt update',
                     ],
-                    forceAction: true,
+                    forceAction: () => true,
                 }),
             ]),
 
             // Install engine in separate phase b/c it's apt-based
-            definePhase('engine', ACTIONS.INSTALL, [
+            definePhase('engine', ACTIONS.INSTALL_PACKAGES, [
                 'docker-ce',
                 'docker-ce-cli',
                 'containerd.io',
@@ -207,31 +216,37 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
 
             // Allow docker to be managed without `sudo`. Only relevant for Linux. See
             // https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
-            definePhase('configureDockerRootlessMode', ACTIONS.INSTALL, [
+            definePhase('configureDockerRootlessMode', ACTIONS.EXECUTE_JOBS, [
                 p('add-docker-group', {
-                    installCommands: ['sudo groupadd docker'],
-                    testFn: (pkg) => {
-                        // Does the docker group exist on the system?
-                        const groups = exec('getent group')
+                    actionCommands: ['sudo groupadd docker'],
+                    skipAction: () => {
+                        const groups = exec('getent group', { silent: true })
                             .stdout.split('\n')
                             .map((group) => group.split(':')[0]);
                         return groups.includes('docker');
                     },
+                    skipActionMessage: (target) =>
+                        'Docker group already exists on system',
                 }),
-                p('add-user-to-docker-group', {
-                    installCommands: ['sudo usermod -aG docker $USER'],
-                    testFn: (pkg) => {
+                p('add-group-membership', {
+                    actionCommands: ['sudo usermod -aG docker $USER'],
+                    skipAction: () => {
                         // Does the user belong to the docker group?
-                        const groups = exec('groups').stdout.split(' ');
-                        return groups.includes('docker');
+                        const groups = exec('groups', { silent: true }).stdout;
+                        return /\bdocker\b/gi.test(groups);
                     },
+                    skipActionMessage: () =>
+                        `User '${
+                            os.userInfo().username
+                        }' already belongs to 'docker' group`,
                 }),
             ]),
 
             // Verify we can run Docker (and without `sudo`)
-            definePhase('verifyDocker', ACTIONS.VERIFY, [
+            definePhase('verifyDocker', ACTIONS.VERIFY_PACKAGES, [
                 p('rootless-docker', {
-                    testFn: (pkg) => !exec(`docker run hello-world`).code,
+                    skipAction: () => !exec(`docker run hello-world`).code,
+                    skipActionMessage: () => 'Docker runs without sudo',
                 }),
             ]),
         ]),
@@ -239,28 +254,42 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
     // Install Docker for Mac. We can't configure or verify it since its a
     // GUI app, so installation is much simpler than for Linux.
     isMac() &&
-        definePhase('mac', ACTIONS.INSTALL, [p('docker', { isGUI: true })]),
+        definePhase('mac', ACTIONS.INSTALL_PACKAGES, [
+            p('docker', { isGUI: true }),
+        ]),
 ]);
 
 const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
 const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
-const installDotfilesPhase = definePhase('installDotfiles', ACTIONS.INSTALL, [
-    p('yadm', {
-        gitPackage: {
-            binSymlink: 'yadm',
-            repoUrl: 'https://github.com/TheLocehiliosan/yadm.git',
-        },
-    }),
-    p('dotfiles', {
-        installCommands: [
-            `${path.join(binInstallDir, 'yadm')} clone ${dotfilesRepoUrl}`,
-        ],
-        // This step requires user interaction (entering a password), so skip
-        // it if we're in a continuous-delivery environment (GitHub Actions)
-        skipAction: process.env['CI'],
-        testFn: (pkg) => fileExists(dotfilesRepoDir),
-    }),
-]);
+const installDotfilesPhase = definePhase(
+    'installDotfiles',
+    ACTIONS.INSTALL_PACKAGES,
+    [
+        p('yadm', {
+            gitPackage: {
+                binSymlink: 'yadm',
+                repoUrl: 'https://github.com/TheLocehiliosan/yadm.git',
+            },
+        }),
+        p('dotfiles', {
+            actionCommands: [
+                `${path.join(binInstallDir, 'yadm')} clone ${dotfilesRepoUrl}`,
+            ],
+            skipAction: () =>
+                // This step requires user interaction (entering a password), so skip
+                // it if we're in a continuous-delivery environment (GitHub Actions)
+                process.env['CI'] || fileExists(dotfilesRepoDir),
+            skipActionMessage: () => {
+                if (process.env['CI']) {
+                    return 'In non-interactive environment';
+                } else if (fileExists) {
+                    return 'File exists: ' + dotfilesRepoDir;
+                }
+                return 'Unknown reason';
+            },
+        }),
+    ],
+);
 
 // Create the full gulp task tree from the phase and pakage definitions and
 // export them as gulp tasks

@@ -1,6 +1,6 @@
 const { ACTIONS, PHASE_NAME_DEFAULT } = require('./constants');
 
-// Helper function to create a package definition
+// Helper function to create a target definition
 const definePackage = (name, args = {}) => [name, args];
 
 // Helper function to create a phase definition
