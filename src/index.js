@@ -1,4 +1,4 @@
-const { getConfig, setConfig } = require('./config');
+const { getConfig } = require('./configUtils');
 const { ACTIONS } = require('./constants');
 const { fileExists } = require('./fileUtils');
 const { definePackage, definePhase, defineRoot } = require('./phaseUtils');
@@ -15,5 +15,4 @@ module.exports = {
     getConfig,
     isLinux,
     isMac,
-    setConfig,
 };

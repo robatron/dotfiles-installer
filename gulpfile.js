@@ -1,6 +1,6 @@
 /**
- * This file serves as an end-to-end test for akinizer, in addition to being my
- * personal akinizer configuration
+ * This file serves as an end-to-end test and a working example for akinizer,
+ * in addition to being my personal akinizer configuration ;-)
  */
 const os = require('os');
 const path = require('path');
@@ -8,15 +8,16 @@ const { exec } = require('shelljs');
 const {
     ACTIONS,
     createTaskTree,
-    definePackage: p,
+    definePackage: p, // TODO: definePackage -> defineTarget?
     definePhase,
     defineRoot,
-    fileExists,
     getConfig,
+    fileExists,
     isLinux,
     isMac,
 } = require('.');
 
+// Grab optional configuration from the `.akinizerrc.js` file
 const { binInstallDir, gitCloneDir } = getConfig();
 
 // Define phases. In this phase, we're verifying packages are installed.

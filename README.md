@@ -74,6 +74,7 @@ Skills and technologies learned / practiced while creating this project:
 
 -   GitHub Actions
 -   Jest `.toMatchInlineSnapshot`, `.toThrowErrorMatchingInlineSnapshot`
+-   [Declarative programming](https://en.wikipedia.org/wiki/Declarative_programming)
 
 # License
 
