@@ -15,7 +15,7 @@ module.exports = {
     clearMocks: true,
 
     // Indicates whether the coverage information should be collected while executing the test
-    // collectCoverage: false,
+    // collectCoverage: true,
 
     // An array of glob patterns indicating a set of files for which coverage information should be collected
     // collectCoverageFrom: undefined,
@@ -32,12 +32,7 @@ module.exports = {
     coverageProvider: 'v8',
 
     // A list of reporter names that Jest uses when writing coverage reports
-    // coverageReporters: [
-    //   "json",
-    //   "text",
-    //   "lcov",
-    //   "clover"
-    // ],
+    coverageReporters: ['clover', 'json', 'lcov', 'text', 'text-summary'],
 
     // An object that configures minimum threshold enforcement for coverage results
     // coverageThreshold: undefined,
@@ -180,10 +175,10 @@ module.exports = {
     // unmockedModulePathPatterns: undefined,
 
     // Indicates whether each individual test should be reported during the run
-    // verbose: undefined,
+    // verbose: false,
 
     // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
-    // watchPathIgnorePatterns: [],
+    watchPathIgnorePatterns: ['/__fixtures__/'],
 
     // Whether to use watchman for file crawling
     // watchman: true,

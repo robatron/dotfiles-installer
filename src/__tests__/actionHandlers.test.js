@@ -2,23 +2,19 @@ const actionHandlers = require('../actionHandlers');
 const { ACTIONS } = require('../constants');
 const { execJob } = require('../execUtils');
 const log = require('../log');
-const {
-    isPackageInstalled,
-    installPackageViaGit,
-    installPackage,
-} = require('../packageUtils');
 const { Target } = require('../Target');
+const installGitPackage = require('../packageUtils/installGitPackage');
+const installPackage = require('../packageUtils/installPackage');
+const isPackageInstalled = require('../packageUtils/isPackageInstalled');
 
 jest.mock('../execUtils');
 jest.mock('../log');
-jest.mock('../packageUtils');
+jest.mock('../packageUtils/installGitPackage');
+jest.mock('../packageUtils/installPackage');
+jest.mock('../packageUtils/isPackageInstalled');
 
 describe('actionHandlers', () => {
     const defaultTarget = new Target('target');
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
 
     describe('EXECUTE_JOBS', () => {
         it('executes the target job', () => {
@@ -63,7 +59,7 @@ describe('actionHandlers', () => {
 
             action(target);
 
-            expect(installPackageViaGit).toBeCalledWith(target);
+            expect(installGitPackage).toBeCalledWith(target);
         });
 
         it("skips target package installation if it's already installed", () => {
@@ -123,12 +119,12 @@ describe('actionHandlers', () => {
             `);
         });
 
-        it('throws if target package is not installed', () => {
+        it('throws if target package is not installed', async () => {
             isPackageInstalled.mockImplementationOnce(() => false);
 
-            expect(() => {
-                action(defaultTarget);
-            }).toThrowErrorMatchingInlineSnapshot(
+            await expect(
+                action(defaultTarget),
+            ).rejects.toThrowErrorMatchingInlineSnapshot(
                 `"Target package 'target' is not installed!"`,
             );
             expect(log.info.mock.calls).toMatchInlineSnapshot(`

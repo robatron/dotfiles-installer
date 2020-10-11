@@ -2,7 +2,7 @@
  * This file serves as an end-to-end test and a working example for akinizer,
  * in addition to being my personal akinizer configuration ;-)
  */
-const os = require('os');
+const { homedir, userInfo } = require('os');
 const path = require('path');
 const { exec } = require('shelljs');
 const {
@@ -53,7 +53,7 @@ const updateApt = definePhase('updateApt', ACTIONS.EXECUTE_JOBS, [
     }),
 ]);
 
-const gshufPath = path.join(os.homedir(), 'bin', 'gshuf');
+const gshufPath = path.join(homedir(), 'bin', 'gshuf');
 const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
     definePhase('common', ACTIONS.INSTALL_PACKAGES, [
         'cowsay',
@@ -86,7 +86,7 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
         ]),
 ]);
 
-const pyenvDir = path.join(os.homedir(), `.pyenv`);
+const pyenvDir = path.join(homedir(), `.pyenv`);
 const installPythonPhase = definePhase(
     'installPython',
     ACTIONS.INSTALL_PACKAGES,
@@ -114,14 +114,14 @@ const installPythonPhase = definePhase(
     ],
 );
 
-const OMZDir = path.join(os.homedir(), '.oh-my-zsh');
+const OMZDir = path.join(homedir(), '.oh-my-zsh');
 const SpaceshipThemeDir = path.join(OMZDir, 'themes', 'spaceship-prompt');
 const powerlineDir = path.join(gitCloneDir, 'powerline');
 const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL_PACKAGES, [
     t('zsh'),
     t('oh-my-zsh', {
         actionCommands: [
-            `wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O /tmp/omzshinstall.sh`,
+            `curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/omzshinstall.sh`,
             `RUNZSH=no sh /tmp/omzshinstall.sh`,
         ],
         skipAction: () => fileExists(OMZDir),
@@ -132,6 +132,7 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL_PACKAGES, [
             binDir: `${OMZDir}/themes/spaceship.zsh-theme`,
             binSymlink: 'spaceship.zsh-theme',
             cloneDir: SpaceshipThemeDir,
+            ref: 'c38183d654c978220ddf123c9bdb8e0d3ff7e455',
             repoUrl: 'https://github.com/denysdovhan/spaceship-prompt.git',
         },
         skipAction: () => fileExists(SpaceshipThemeDir),
@@ -140,6 +141,7 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL_PACKAGES, [
     t('powerline', {
         gitPackage: {
             cloneDir: powerlineDir,
+            ref: 'e80e3eba9091dac0655a0a77472e10f53e754bb0',
             repoUrl: 'https://github.com/powerline/fonts.git',
         },
         postInstall: () => {
@@ -230,7 +232,9 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                         'Docker group already exists on system',
                 }),
                 t('add-group-membership', {
-                    actionCommands: ['sudo usermod -aG docker $USER'],
+                    actionCommands: [
+                        `sudo usermod -aG docker ${userInfo().username}`,
+                    ],
                     skipAction: () => {
                         // Does the user belong to the docker group?
                         const groups = exec('groups', { silent: true }).stdout;
@@ -238,16 +242,16 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                     },
                     skipActionMessage: () =>
                         `User '${
-                            os.userInfo().username
+                            userInfo().username
                         }' already belongs to 'docker' group`,
                 }),
             ]),
 
-            // Verify we can run Docker (and without `sudo`)
-            definePhase('verifyDocker', ACTIONS.VERIFY_PACKAGES, [
+            // Verify we can run Docker without `sudo`, but move on if we can't
+            definePhase('verifyDocker', ACTIONS.EXECUTE_JOBS, [
                 t('rootless-docker', {
-                    skipAction: () => !exec(`docker run hello-world`).code,
-                    skipActionMessage: () => 'Docker runs without sudo',
+                    actionCommands: ['docker run hello-world'],
+                    dieOnFail: false,
                 }),
             ]),
         ]),
@@ -260,7 +264,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
         ]),
 ]);
 
-const dotfilesRepoDir = path.join(os.homedir(), '.yadm');
+const dotfilesRepoDir = path.join(homedir(), '.yadm');
 const dotfilesRepoUrl = 'https://robatron@bitbucket.org/robatron/dotfiles.git';
 const installDotfilesPhase = definePhase(
     'installDotfiles',
@@ -269,6 +273,7 @@ const installDotfilesPhase = definePhase(
         t('yadm', {
             gitPackage: {
                 binSymlink: 'yadm',
+                ref: '7628a1b61d8fc21c899c8f8f0fef8c95725598dd',
                 repoUrl: 'https://github.com/TheLocehiliosan/yadm.git',
             },
         }),

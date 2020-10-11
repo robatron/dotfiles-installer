@@ -2,27 +2,29 @@ const { exec } = require('shelljs');
 const log = require('./log');
 
 // Stupidly execute an array of shell commands
-const execCommands = (cmds) => {
+const execCommands = (cmds, dieOnFail = true) => {
     cmds.forEach((cmd) => {
         log.info(`Executing command: ${cmd}`);
 
         const returnCode = exec(cmd).code;
 
         if (returnCode !== 0) {
-            const fullCommandMessage =
+            const commandSetMsg =
                 cmds.length > 1
                     ? ` Full command set: ${JSON.stringify(cmds)}`
                     : '';
-            throw new Error(
-                `Install command '${cmd}' failed.${fullCommandMessage}`,
-            );
+            const fullMsg = `Command '${cmd}' failed.${commandSetMsg}`;
+            if (dieOnFail) {
+                throw new Error(fullMsg);
+            }
+            log.warn(fullMsg);
         }
     });
 };
 
 // Treat the target like a job and execute its commands
 const execJob = (target) => {
-    const { actionCommands } = target.actionArgs;
+    const { actionCommands, dieOnFail } = target.actionArgs;
 
     if (!actionCommands) {
         throw new Error(
@@ -34,7 +36,7 @@ const execJob = (target) => {
         );
     }
 
-    execCommands(actionCommands);
+    execCommands(actionCommands, dieOnFail);
 };
 
 module.exports = {

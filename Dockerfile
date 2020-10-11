@@ -1,10 +1,15 @@
 FROM ubuntu:20.04
 
-# Install base system
+# Configure and install base system
+ENV DEBIAN_FRONTEND="noninteractive"
 RUN \
     apt-get update && \
-    apt-get install -y && \
-    apt-get install git rsync sudo vim -y
+    apt-get upgrade -y && \
+    apt-get install -y git htop rsync sudo vim
+
+# Configure and install timezone
+ENV TZ="America/Los_Angeles"
+RUN apt-get -y install tzdata
 
 # Add 'robmc' user
 RUN \

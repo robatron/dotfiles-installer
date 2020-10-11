@@ -11,10 +11,6 @@ jest.mock('shelljs', () => ({
 jest.mock('../log');
 
 describe('execCommands', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
     it('executes an array of shell commands', () => {
         execCommands(['a', 'b', 'c']);
 
@@ -52,7 +48,7 @@ describe('execCommands', () => {
         expect(() => {
             execCommands(['a', 'b', 'c']);
         }).toThrowErrorMatchingInlineSnapshot(
-            `"Install command 'a' failed. Full command set: [\\"a\\",\\"b\\",\\"c\\"]"`,
+            `"Command 'a' failed. Full command set: [\\"a\\",\\"b\\",\\"c\\"]"`,
         );
 
         expect(log.info.mock.calls).toMatchInlineSnapshot(`
