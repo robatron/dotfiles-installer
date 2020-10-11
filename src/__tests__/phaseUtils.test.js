@@ -1,4 +1,4 @@
-const { definePhase, defineRoot } = require('../phaseUtils');
+const { definePhase, defineRoot, defineTarget } = require('../phaseUtils');
 const { ACTIONS } = require('../constants');
 
 const testTargets = ['target-a', 'target-b', 'target-c'];
@@ -65,5 +65,25 @@ describe('defineRoot', () => {
             }),
         ];
         expect(result).toEqual(expected);
+    });
+});
+
+describe('defineTarget', () => {
+    it('defines a target with only a name', () => {
+        expect(defineTarget('target')).toMatchInlineSnapshot(`
+            Array [
+              "target",
+              Object {},
+            ]
+        `);
+    });
+
+    it('supports optional target opts', () => {
+        expect(defineTarget('target', 'args')).toMatchInlineSnapshot(`
+            Array [
+              "target",
+              "args",
+            ]
+        `);
     });
 });
