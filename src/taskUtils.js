@@ -17,8 +17,15 @@ const createPackageFromDefTask = (target, exp, phaseName) => {
         name,
     } = target;
 
+    // Throw an error if no action handler available for action
+    if (!actionHandlers[action]) {
+        throw new Error(
+            `Action '${action}' for target '${name}' is not supported`,
+        );
+    }
+
     // Define the actual gulp task
-    const task = (done) => {
+    const task = async () => {
         // Skip action and log the reason if specified
         if (skipAction && skipAction(target)) {
             let logMsg = `Skipping action '${action}' for target '${name}'`;
@@ -28,20 +35,10 @@ const createPackageFromDefTask = (target, exp, phaseName) => {
             }
 
             log.warn(logMsg);
-
-            return done();
+        } else {
+            // Run the action handler against the target
+            await actionHandlers[action](target);
         }
-
-        // Run the action handler against the target, throw if it doesn't exist.
-        try {
-            actionHandlers[action](target);
-        } catch (e) {
-            throw new Error(
-                `Action '${action}' for target '${name}' is not supported: ${e}`,
-            );
-        }
-
-        return done();
     };
 
     // Create the actual gulp task and expose it globally so it can be run

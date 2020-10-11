@@ -2,18 +2,18 @@ const gulp = require('gulp');
 const actionHandlers = require('../actionHandlers');
 const { ACTIONS } = require('../constants');
 const log = require('../log');
-const packageUtils = require('../packageUtils');
 const { definePhase } = require('../phaseUtils');
 const { Target } = require('../Target');
 const taskUtils = require('../taskUtils');
+const isPackageInstalled = require('../packageUtils/isPackageInstalled');
 
 jest.mock('gulp');
 jest.mock('../actionHandlers');
-jest.mock('../packageUtils');
 jest.mock('../log');
+jest.mock('../packageUtils/isPackageInstalled');
 
 const defaultTestPackage = new Target('target-name', {
-    action: 'action',
+    action: ACTIONS.VERIFY_PACKAGES,
 });
 
 describe('createPackageFromDefTask', () => {
@@ -32,17 +32,25 @@ describe('createPackageFromDefTask', () => {
         expect(testExports[expectedTaskName]).toBe(resultTask);
     });
 
-    describe('the test task itself', () => {
-        const mockCb = jest.fn(() => 'done');
+    it('throws if there is no handler for the given action', async () => {
+        isPackageInstalled.mockReturnValue(false);
 
-        beforeEach(() => {
-            jest.clearAllMocks();
+        const testPackage = new Target('target-name', {
+            action: 'unsupportedAction',
         });
 
+        expect(() => {
+            taskUtils.createPackageFromDefTask(testPackage, {});
+        }).toThrowErrorMatchingInlineSnapshot(
+            `"Action 'unsupportedAction' for target 'target-name' is not supported"`,
+        );
+    });
+
+    describe('the test task itself', () => {
         describe('action skipping', () => {
-            it('skips the action if specified', () => {
+            it('skips the action if specified', async () => {
                 const testPackage = new Target('target-name', {
-                    action: 'test-action',
+                    action: defaultTestPackage.action,
                     skipAction: () => true,
                 });
                 const taskFn = taskUtils.createPackageFromDefTask(
@@ -50,23 +58,20 @@ describe('createPackageFromDefTask', () => {
                     {},
                 );
 
-                const taskResult = taskFn(mockCb);
-
-                expect(mockCb).toBeCalledTimes(1);
-                expect(taskResult).toEqual('done');
+                await taskFn();
 
                 expect(log.warn.mock.calls).toMatchInlineSnapshot(`
                     Array [
                       Array [
-                        "Skipping action 'test-action' for target 'target-name'",
+                        "Skipping action 'verify-packages' for target 'target-name'",
                       ],
                     ]
                 `);
             });
 
-            it('adds an optional reason for skipping the action', () => {
+            it('adds an optional reason for skipping the action', async () => {
                 const testPackage = new Target('target-name', {
-                    action: 'test-action',
+                    action: defaultTestPackage.action,
                     skipAction: () => true,
                     skipActionMessage: () => 'For reasons',
                 });
@@ -75,12 +80,12 @@ describe('createPackageFromDefTask', () => {
                     {},
                 );
 
-                taskFn(mockCb);
+                await taskFn();
 
                 expect(log.warn.mock.calls).toMatchInlineSnapshot(`
                     Array [
                       Array [
-                        "Skipping action 'test-action' for target 'target-name': For reasons",
+                        "Skipping action 'verify-packages' for target 'target-name': For reasons",
                       ],
                     ]
                 `);
@@ -92,27 +97,11 @@ describe('createPackageFromDefTask', () => {
                 action: ACTIONS.EXECUTE_JOBS,
             });
             const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
-            const taskResult = taskFn(mockCb);
+
+            taskFn();
 
             expect(actionHandlers[testPackage.action]).toBeCalledWith(
                 testPackage,
-            );
-            expect(mockCb).toBeCalledTimes(1);
-            expect(taskResult).toEqual('done');
-        });
-
-        it('throws if the target action is not supported', () => {
-            packageUtils.isPackageInstalled.mockReturnValue(false);
-
-            const testPackage = new Target('target-name', {
-                action: 'unsupportedAction',
-            });
-            const taskFn = taskUtils.createPackageFromDefTask(testPackage, {});
-
-            expect(() => {
-                taskFn(mockCb);
-            }).toThrowErrorMatchingInlineSnapshot(
-                `"Action 'unsupportedAction' for target 'target-name' is not supported: TypeError: actionHandlers[action] is not a function"`,
             );
         });
     });
