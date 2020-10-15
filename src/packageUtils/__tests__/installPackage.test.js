@@ -52,9 +52,7 @@ describe('installPackage', () => {
 
         expect(isLinux).toBeCalledTimes(1);
         expect(isMac).toBeCalledTimes(1);
-        expect(execCommands).toBeCalledWith([
-            `HOMEBREW_NO_AUTO_UPDATE=1 brew install ${target.name}`,
-        ]);
+        expect(execCommands).toBeCalledWith([`brew install ${target.name}`]);
     });
 
     it('installs with "brew cask" if on mac and isGUI is set', () => {
@@ -68,7 +66,7 @@ describe('installPackage', () => {
         expect(isLinux).toBeCalledTimes(1);
         expect(isMac).toBeCalledTimes(1);
         expect(execCommands).toBeCalledWith([
-            `HOMEBREW_NO_AUTO_UPDATE=1 brew cask install ${target.name}`,
+            `brew cask install ${target.name}`,
         ]);
     });
 
