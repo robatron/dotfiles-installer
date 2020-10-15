@@ -19,11 +19,9 @@ const installPackage = async (target) => {
         cmds.push(`sudo apt install -y ${target.name}`);
     } else if (isMac()) {
         if (isGUI) {
-            cmds.push(
-                `HOMEBREW_NO_AUTO_UPDATE=1 brew cask install ${target.name}`,
-            );
+            cmds.push(`brew cask install ${target.name}`);
         } else {
-            cmds.push(`HOMEBREW_NO_AUTO_UPDATE=1 brew install ${target.name}`);
+            cmds.push(`brew install ${target.name}`);
         }
     }
 
