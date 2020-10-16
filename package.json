@@ -11,7 +11,7 @@
         "test": "jest --coverage --verbose",
         "watch": "jest --watch"
     },
-    "author": "",
+    "author": "Rob McGuire <robert.mcgui@gmail.com>",
     "license": "ISC",
     "devDependencies": {
         "eslint": "^7.11.0",
