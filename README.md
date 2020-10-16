@@ -1,36 +1,33 @@
-# akinizer
+# Akinizer
 
-Akinizer is a [configuration management](https://en.wikipedia.org/wiki/Configuration_management) utility I use to install my preferred programs and personal dotfiles on a new system, a la [chef](https://www.chef.io/), [puppet](https://puppet.com/), [salt](https://www.saltstack.com/), etc. I created it as a programming exercise for fun, learning, and practice.
+Akinizer is a [configuration management](https://en.wikipedia.org/wiki/Configuration_management) tool I created to install my preferred programs and personal configs on a new system.
+
+## Why not use [chef](https://www.chef.io/), [puppet](https://puppet.com/), [salt](https://www.saltstack.com/), etc.?
+
+Why use robust, high-quality, battle-tested software when I could write my own janky version in JavaScript? 😉 But seriously, I created this project for the fun and challenge.
 
 ## Supported systems
 
--   Mac OS X
--   Ubuntu
+Akinizer currently supports the following operating systems. (But it would probably work on other versions of macOS and Debian-based Linux distros.)
+
+-   macOS 10.15, 11.0
+-   Ubuntu 18.04, 20.04
+
+End-to-end tests are run on the OSs defined in the [strategy.matrix.os](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) list in the [.github/workflows/test-bootstrap-apply-master.yml](.github/workflows/test-bootstrap-apply-master.yml) file.
 
 ## Quickstart
 
-Git is required to install, bootstrap, and run akinizer. On Ubuntu, you can install it via `apt`:
+To install Akinizer, run the following command:
 
-    sudo apt update && sudo apt install git -y
+    curl -o- https://raw.githubusercontent.com/robatron/akinizer/master/bootstrap.sh | bash
 
-On Mac OS X, you can install it via [Homebrew](https://brew.sh/):
+This runs a bootstrapping script which prepares the system for Akinizer by:
 
-    brew install git
+1. Installing required system programs, e.g., `git`, `node`, `nvm`, and `gulp`
+2. Downloads Akinizer itself
+3. Installs Akinizer's dependencies
 
-Once git is installed, just download, bootstrap, and run akinizer:
-
-    # 1. Download akinizer to ~/opt
-    mkdir -p ~/opt && \
-    git clone \
-        git@github.com:robatron/akinizer.git \
-        ~/opt/akinizer && \
-
-    # 2. Bootstrap required system dependencies
-    cd ~/opt/akinizer && \
-    . ~/bootstrap.sh && \
-
-    # 3. Start the installer
-    gulp
+See the [bootstrap.sh](bootstrap.sh) script for more details.
 
 ## Usage
 
@@ -72,8 +69,8 @@ Verifies packages are installed. There are no additional supported arguments.
 
 Skills and technologies learned / practiced while creating this project:
 
--   GitHub Actions
--   Jest `.toMatchInlineSnapshot`, `.toThrowErrorMatchingInlineSnapshot`
+-   [GitHub Actions](https://docs.github.com/en/free-pro-team@latest/actions)
+-   [Jest](https://jestjs.io/)'s `.toMatchInlineSnapshot`, `.toThrowErrorMatchingInlineSnapshot`
 -   [Declarative programming](https://en.wikipedia.org/wiki/Declarative_programming)
 
 # License
