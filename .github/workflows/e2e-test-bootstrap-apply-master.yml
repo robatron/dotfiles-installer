@@ -1,4 +1,4 @@
-name: "Bootstrap / apply e2e tests (master, defaults)"
+name: "E2E tests: Bootstrap / apply (master)"
 
 on:
   push:

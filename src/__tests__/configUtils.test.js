@@ -32,7 +32,7 @@ describe('configUtils', () => {
         expect(actual).toStrictEqual(expected);
     });
 
-    it('merges new config items with default config', () => {
+    it('merges updated config items with default config', () => {
         const configFilePath = path.join(baseFixtureDir, 'updated-configs.js');
         const expected = require(configFilePath);
         const actual = configUtils.getConfig({
