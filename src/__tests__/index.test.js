@@ -22,7 +22,11 @@ jest.mock('gulp');
  *  - series (default)
  */
 const taskTreeRoot = defineRoot([
-    definePhase('installPhase', ACTIONS.INSTALL_PACKAGES, ['alpha', 'bravo', 'charlie']),
+    definePhase('installPhase', ACTIONS.INSTALL_PACKAGES, [
+        'alpha',
+        'bravo',
+        'charlie',
+    ]),
     definePhase('runPhase', ACTIONS.RUN_PHASES, [
         definePhase('subInstallPhase', ACTIONS.INSTALL_PACKAGES, [
             'delta',
