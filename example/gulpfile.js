@@ -1,6 +1,6 @@
 /**
- * This file serves as an end-to-end test and a working example for akinizer,
- * in addition to being my personal akinizer configuration ;-)
+ * This is a working example of an Akinizer configuration. It also serves as an
+ * end-to-end test, in addition to being my personal Akinizer config ;-)
  */
 const { homedir, userInfo } = require('os');
 const path = require('path');
@@ -15,7 +15,7 @@ const {
     fileExists,
     isLinux,
     isMac,
-} = require('.');
+} = require('..');
 
 // Grab optional configuration from the `.akinizerrc.js` file
 const { binInstallDir, gitCloneDir } = getConfig();

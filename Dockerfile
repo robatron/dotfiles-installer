@@ -1,5 +1,7 @@
 FROM ubuntu:20.04
 
+ARG AK_ROOT=/home/robmc/opt/akinizer
+
 # Configure and install base system
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV TZ="America/Los_Angeles"
@@ -15,16 +17,18 @@ RUN \
     echo "abc123\nabc123" | passwd robmc && \
     echo "Set disable_coredump false" >> /etc/sudo.conf
 
-# Bootstrap system, compile node_modules for Linux
-COPY --chown=robmc:robmc . /tmp/ak/
+# Bootstrap system, compile node_modules for Linux. (Note: ./node_modules/ is
+# excluded by way of the .dockerignore file)
 USER robmc
-WORKDIR /tmp/ak/
+RUN mkdir -p ${AK_ROOT}
+COPY --chown=robmc:robmc . ${AK_ROOT}
+WORKDIR ${AK_ROOT}
 RUN ls -lah
-RUN AK_INSTALL_ROOT=/tmp/ak/ AK_SKIP_CLONE=yes bash bootstrap.sh
+RUN AK_INSTALL_ROOT=${AK_ROOT} AK_SKIP_CLONE=yes bash bootstrap.sh
 
 # Set interactive entrypoint conditions
 USER robmc
 WORKDIR /home/robmc/
 COPY --chown=robmc:robmc ./deploy .
-RUN ln -sf /tmp/ak ./ak
+RUN echo "${AK_ROOT}" > .akroot
 ENTRYPOINT /bin/bash

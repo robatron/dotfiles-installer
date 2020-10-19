@@ -1,7 +1,7 @@
 const os = require('os');
 const path = require('path');
 
-// Default configuration
+// Example Akinizer configuration (with default values)
 module.exports = {
     // Directory in which to install user-space binaries
     binInstallDir: path.join(os.homedir(), 'bin'),
