@@ -22,7 +22,6 @@ AK_SKIP_CLONE=${AK_SKIP_CLONE:-no}
 # Constants, helper functions
 # ------------------------------------------------------------------------------
 
-ORIG_CWD="$(pwd)"
 PLATFORM=$(uname -s)
 AK_REPO_URL="https://github.com/robatron/akinizer.git"
 
@@ -59,7 +58,6 @@ log "    AK_GIT_REF:      $AK_GIT_REF"
 log "    AK_INSTALL_ROOT: $AK_INSTALL_ROOT"
 log "    AK_REPO_URL:     $AK_REPO_URL"
 log "    AK_SKIP_CLONE:   $AK_SKIP_CLONE"
-log "    ORIG_CWD:        $ORIG_CWD"
 log "    PLATFORM:        $PLATFORM"
 
 log "Looking for system target managers and base programs..."

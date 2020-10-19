@@ -21,7 +21,7 @@ jobs:
 
       - name: Apply Akinizer configs
         run: |
-          cd $HOME/opt/akinizer
+          cd $HOME/opt/akinizer/example
           gulp
 
   cur-commit-alt-install-dir:
@@ -38,5 +38,5 @@ jobs:
 
       - name: Apply Akinizer configs
         run: |
-          cd $HOME/custom/install/dir
+          cd $HOME/custom/install/dir/example
           gulp

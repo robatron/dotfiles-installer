@@ -31,7 +31,7 @@ See the [bootstrap.sh](bootstrap.sh) script for more details.
 
 ## Usage
 
-Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, import akinizer, and define your configuration. **See [./gulpfile.js](./gulpfile.js) for a working example.**
+Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, import akinizer, and define your configuration. **See [example/gulpfile.js](example/gulpfile.js) for an annotated working example.**
 
 System configuration is defined as _phases_ organized in a _task tree_. Each phase has a list of targets and an _action_ to apply to them. Actions support different arguments, listed below.
 
