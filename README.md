@@ -1,10 +1,10 @@
 # Akinizer
 
-Akinizer is a [configuration management](https://en.wikipedia.org/wiki/Configuration_management) tool I created to install my preferred programs and personal configs on a new system.
+Akinizer is an [OS config management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management) tool for installing programs and configs, regardless of operating system.
 
-## Why not use [chef](https://www.chef.io/), [puppet](https://puppet.com/), [salt](https://www.saltstack.com/), etc.?
+## Why not use [Puppet](https://puppet.com/), [Chef](https://www.chef.io/), [Ansible](https://www.ansible.com/), [SaltStack](https://www.saltstack.com/), etc.?
 
-Why use robust, high-quality, battle-tested software when I could write my own janky version in JavaScript? 😉 But seriously, I created this project for the fun and challenge.
+I created Akinizer for fun, practice, and to learn about [operating system configuration management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management). Why use robust, high-quality, battle-tested software when I could write my own janky version in JavaScript? 😉
 
 ## Supported systems
 
@@ -13,7 +13,7 @@ Akinizer currently supports the following operating systems. (But it would proba
 -   macOS 10.15, 11.0
 -   Ubuntu 18.04, 20.04
 
-End-to-end tests are run on the OSs defined in the [strategy.matrix.os](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) list in the [.github/workflows/test-bootstrap-apply-master.yml](.github/workflows/test-bootstrap-apply-master.yml) file.
+End-to-end tests are run against these systems which are defined in the [strategy.matrix.os](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) list in [.github/workflows/test-bootstrap-apply-master.yml](.github/workflows/test-bootstrap-apply-master.yml).
 
 ## Quickstart
 
@@ -31,9 +31,35 @@ See the [bootstrap.sh](bootstrap.sh) script for more details.
 
 ## Usage
 
-Akinizer uses [gulp](https://gulpjs.com/) to define, manage, and run tasks. To define your own system configuration, create a gulpfile, import akinizer, and define your configuration. **See [example/gulpfile.js](example/gulpfile.js) for an annotated working example.**
+Akinizer's system configuration is declared as a tree of **phases**, each of which contains a list of **targets** and an **action** to apply to them. Akinizer converts this phase tree into a hierarchy of runnable [gulp](https://gulpjs.com/) tasks. Here's a simple example. (For a full example, see "Working example" below.)
 
-System configuration is defined as _phases_ organized in a _task tree_. Each phase has a list of targets and an _action_ to apply to them. Actions support different arguments, listed below.
+```js
+const {
+    ACTIONS,
+    createTaskTree,
+    definePhase,
+    defineRoot,
+} = require('akinizer');
+
+// Create task tree from phase and package definitions and export them as
+// runnable gulp tasks
+createTaskTree(
+    defineRoot([
+        definePhase('installUtilsPhase', ACTIONS.INSTALL_PACKAGES, [
+            'cowsay',
+            'gpg',
+            'htop',
+            'jq',
+            'vim',
+        ]),
+    ]),
+    exports,
+);
+```
+
+### Working example
+
+For a full, working, annotated example, see [./example/gulpfile.js]().
 
 ## Actions
 
@@ -67,11 +93,23 @@ Verifies packages are installed. There are no additional supported arguments.
 
 # Learnings
 
-Skills and technologies learned / practiced while creating this project:
+Here are a few noteable technologies and concepts I learned, and/or practiced to create this project.
 
--   [GitHub Actions](https://docs.github.com/en/free-pro-team@latest/actions)
--   [Jest](https://jestjs.io/)'s `.toMatchInlineSnapshot`, `.toThrowErrorMatchingInlineSnapshot`
--   [Declarative programming](https://en.wikipedia.org/wiki/Declarative_programming)
+-   [GitHub Actions](https://github.com/features/actions) is used as the CI/CD pipeline technology to run end-to-end and unit tests against a matrix of operating systems and scenarios.
+    -   It supports Ubuntu and macOS, Akinizer's target operating systems
+    -   It's free within [generous limits](https://docs.github.com/en/free-pro-team@latest/actions/reference/usage-limits-billing-and-administration#usage-limits)!
+    -   See the `*.yml` files in [.github/workflows/]()
+-   [Docker](https://www.docker.com/) is used as a local development sandbox, ideal for testing configuration management stuff!
+    -   See [Dockerfile]() for details
+-   [Jest snapshot testing](https://jestjs.io/docs/en/snapshot-testing) is used to quickly test complex task trees and other objects outside of a [React](https://reactjs.org/)/UI testing context.
+    -   [Inline snapshots](https://jestjs.io/docs/en/snapshot-testing#inline-snapshots) are used to test smaller objects alongside `expect` statements
+    -   [`.toThrowErrorMatchingInlineSnapshots`](https://jestjs.io/docs/en/expect#tothrowerrormatchinginlinesnapshotinlinesnapshot) is used to easily test error messages
+-   Semi-[declarative programming](https://en.wikipedia.org/wiki/Declarative_programming) pattern is used to define task and phase trees.
+    -   See [example/gulpfile.js]() for an example.
+-   The [simple-git](https://github.com/steveukx/git-js#readme) library is used for interacting with git repos
+    -   The [nodegit](https://www.nodegit.org/) library is powerful, but turned out to be too low-level and complex for this project
+-   [Node-config](https://github.com/lorenwest/node-config) is used to enable Akinizer configuration via config files. See [example/.akinizerrc.js]() for an example.
+-   The [Connonical way](https://prettier.io/docs/en/integrating-with-linters.html) to combine [Prettier](https://prettier.io/) and [Eslint](https://eslint.org/) is used to enable seamless linting and formatting
 
 # License
 
