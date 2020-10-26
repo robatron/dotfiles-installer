@@ -3,10 +3,10 @@ const {
     createTaskTree,
     definePhase,
     defineRoot,
-} = require('akinizer');
+} = require('../../src');
 
-// Create task tree from phase and package definitions and export them as
-// runnable gulp tasks
+// Create the phase tree and export a hierarchy of runnable gulp tasks, one for
+// each package and phase.
 createTaskTree(
     defineRoot([
         definePhase('installUtilsPhase', ACTIONS.INSTALL_PACKAGES, [

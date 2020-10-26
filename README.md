@@ -31,9 +31,14 @@ See the [bootstrap.sh](bootstrap.sh) script for more details.
 
 ## Usage
 
-Akinizer's system configuration is declared as a tree of **phases**, each of which contains a list of **targets** and an **action** to apply to them. Akinizer converts this phase tree into a hierarchy of runnable [gulp](https://gulpjs.com/) tasks. Here's a simple example. (For a full example, see "Working example" below.)
+**See [examples/gulpfile.js]() for a full, annotated, working example.**
+
+Akinizer's system configuration is declared as a tree of **phases**, each of which contains a list of **targets** and an **action** to apply to them. Akinizer converts this phase tree into a hierarchy of runnable [gulp](https://gulpjs.com/) tasks.
+
+Here's a simple example that assures a list of utilities are installed on the system:
 
 ```js
+// examples/simple/gulpfile.js
 const {
     ACTIONS,
     createTaskTree,
@@ -41,8 +46,8 @@ const {
     defineRoot,
 } = require('akinizer');
 
-// Create task tree from phase and package definitions and export them as
-// runnable gulp tasks
+// Create the phase tree and export a hierarchy of runnable gulp tasks, one for
+// each package and phase.
 createTaskTree(
     defineRoot([
         definePhase('installUtilsPhase', ACTIONS.INSTALL_PACKAGES, [
@@ -57,9 +62,74 @@ createTaskTree(
 );
 ```
 
-### Working example
+Run `gulp` to run the default task which refers to the root phase:
 
-For a full, working, annotated example, see [./example/gulpfile.js]().
+```log
+[I] ➜ gulp
+
+[15:20:41] Using gulpfile ~/code/akinizer/examples/simple/gulpfile.js
+[15:20:41] Starting 'default'...
+
+[15:20:41] Starting 'installUtilsPhase:cowsay'...
+info: Checking if target package 'cowsay' is installed...
+info: Verifying target 'cowsay' exists with `brew list --versions 'cowsay'`...'
+cowsay 3.04
+info: Target package 'cowsay' is already installed. Moving on...
+[15:20:44] Finished 'installUtilsPhase:cowsay' after 2.83 s
+
+...
+
+[15:20:46] Starting 'installUtilsPhase:vim'...
+info: Checking if target package 'vim' is installed...
+info: Verifying target 'vim' exists with `brew list --versions 'vim'`...'
+vim 8.2.1500
+info: Target package 'vim' is already installed. Moving on...
+[15:20:47] Finished 'installUtilsPhase:vim' after 753 ms
+
+[15:20:47] Finished 'default' after 5.85 s
+```
+
+You can also run each phase and task individually:
+
+```log
+[I] ➜ gulp installUtilsPhase:vim
+
+[15:26:56] Using gulpfile ~/code/akinizer/examples/simple/gulpfile.js
+[15:26:56] Starting 'installUtilsPhase:vim'...
+info: Checking if target package 'vim' is installed...
+info: Verifying target 'vim' exists with `brew list --versions 'vim'`...'
+vim 8.2.1500
+info: Target package 'vim' is already installed. Moving on...
+[15:26:57] Finished 'installUtilsPhase:vim' after 835 ms
+```
+
+You can list all available tasks with `gulp --tasks`:
+
+```log
+[I] ➜ gulp --tasks
+
+[15:27:34] Tasks for ~/code/akinizer/examples/simple/gulpfile.js
+[15:27:34] ├── installUtilsPhase:cowsay
+[15:27:34] ├── installUtilsPhase:gpg
+[15:27:34] ├── installUtilsPhase:htop
+[15:27:34] ├── installUtilsPhase:jq
+[15:27:34] ├── installUtilsPhase:vim
+[15:27:34] ├─┬ installUtilsPhase
+[15:27:34] │ └─┬ <series>
+[15:27:34] │   ├── installUtilsPhase:cowsay
+[15:27:34] │   ├── installUtilsPhase:gpg
+[15:27:34] │   ├── installUtilsPhase:htop
+[15:27:34] │   ├── installUtilsPhase:jq
+[15:27:34] │   └── installUtilsPhase:vim
+[15:27:34] └─┬ default
+[15:27:34]   └─┬ <series>
+[15:27:34]     └─┬ <series>
+[15:27:34]       ├── installUtilsPhase:cowsay
+[15:27:34]       ├── installUtilsPhase:gpg
+[15:27:34]       ├── installUtilsPhase:htop
+[15:27:34]       ├── installUtilsPhase:jq
+[15:27:34]       └── installUtilsPhase:vim
+```
 
 ## Actions
 
@@ -105,10 +175,10 @@ Here are a few noteable technologies and concepts I learned, and/or practiced to
     -   [Inline snapshots](https://jestjs.io/docs/en/snapshot-testing#inline-snapshots) are used to test smaller objects alongside `expect` statements
     -   [`.toThrowErrorMatchingInlineSnapshots`](https://jestjs.io/docs/en/expect#tothrowerrormatchinginlinesnapshotinlinesnapshot) is used to easily test error messages
 -   Semi-[declarative programming](https://en.wikipedia.org/wiki/Declarative_programming) pattern is used to define task and phase trees.
-    -   See [example/gulpfile.js]() for an example.
+    -   See [examples/gulpfile.js]() for an example.
 -   The [simple-git](https://github.com/steveukx/git-js#readme) library is used for interacting with git repos
     -   The [nodegit](https://www.nodegit.org/) library is powerful, but turned out to be too low-level and complex for this project
--   [Node-config](https://github.com/lorenwest/node-config) is used to enable Akinizer configuration via config files. See [example/.akinizerrc.js]() for an example.
+-   [Node-config](https://github.com/lorenwest/node-config) is used to enable Akinizer configuration via config files. See [examples/.akinizerrc.js]() for an example.
 -   The [Connonical way](https://prettier.io/docs/en/integrating-with-linters.html) to combine [Prettier](https://prettier.io/) and [Eslint](https://eslint.org/) is used to enable seamless linting and formatting
 
 # License
