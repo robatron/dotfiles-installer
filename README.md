@@ -29,6 +29,7 @@
     -   [`VERIFY_PACKAGES`](#verify_packages)
 -   [Development](#development)
     -   [Testing](#testing)
+    -   [Docker development sandbox](#docker-development-sandbox)
     -   [CI/CD](#cicd)
 -   [Learnings](#learnings)
 -   [License](#license)
@@ -37,7 +38,7 @@
 
 ## About
 
-Akinizer is an [configuration management](https://en.wikipedia.org/wiki/Configuration_management) tool I wrote for managing my preferred programs and configs on different physical and virtual systems.
+Akinizer is an [configuration management](https://en.wikipedia.org/wiki/Configuration_management) tool I wrote for managing my preferred programs and configs across different operating systems and machines.
 
 ### Why not use [Puppet](https://puppet.com/), [Chef](https://www.chef.io/), [Ansible](https://www.ansible.com/), [SaltStack](https://www.saltstack.com/), etc.?
 
@@ -451,7 +452,37 @@ definePhase(
 
 ## Development
 
+Here are some notes about how to develop Akinizer.
+
 ### Testing
+
+Akinizer was mostly developed against unit tests, which are run with [jest](https://jestjs.io/). To run the full suite of tests:
+
+```sh
+npm test
+```
+
+Or run the tests and watch for changes:
+
+```sh
+npm run watch
+```
+
+### Docker development sandbox
+
+Sometimes it's necessary to run the entire system end-to-end. To protect your machine from inadvertent system-wide changes during e2e development, Akinizer provides a Docker container to create and run a repeatable, isolated development sandbox. To use it, first build the image from the [./Dockerfile](./Dockerfile):
+
+```sh
+npm run build
+```
+
+Then run it:
+
+```sh
+npm start
+```
+
+The repo will me mounted inside of the container. Play around as much as you want. All changes will be reverted when the container is restarted.
 
 ### CI/CD
 
