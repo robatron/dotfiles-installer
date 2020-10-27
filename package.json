@@ -16,6 +16,7 @@
     "author": "Rob McGuire <robert.mcgui@gmail.com>",
     "license": "ISC",
     "devDependencies": {
+        "doctoc": "^1.4.0",
         "eslint": "^7.11.0",
         "eslint-config-prettier": "^6.13.0",
         "eslint-plugin-jest": "^24.1.0",

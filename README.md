@@ -1,19 +1,24 @@
 # Akinizer
 
-Akinizer is an [OS config management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management) tool for installing programs and configs, regardless of operating system.
+Akinizer is an [OS config management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management) tool for managing installed programs and configs on different operating systems.
 
 ## Why not use [Puppet](https://puppet.com/), [Chef](https://www.chef.io/), [Ansible](https://www.ansible.com/), [SaltStack](https://www.saltstack.com/), etc.?
 
-I created Akinizer for fun, practice, and to learn about [operating system configuration management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management). Why use robust, high-quality, battle-tested software when I could write my own janky version in JavaScript? 😉
+I created Akinizer for fun, practice, and to learn more about [operating system configuration management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management). Why use high-quality robust software when I could write my own janky tool in JavaScript? 😉
 
-## Supported systems
+## Supported operating systems
 
-Akinizer currently supports the following operating systems. (But it would probably work on other versions of macOS and Debian-based Linux distros.)
+Akinizer supports the following operating systems (but it would probably work on other versions of macOS and Debian-based Linux distros). OS support is verified via e2e tests. (See "CI/CD" section below.)
 
--   macOS 10.15, 11.0
--   Ubuntu 18.04, 20.04
+-   **Linux** - Ubuntu 18.04, 20.04
+-   **Mac** - macOS 10.15, 11.0
 
-End-to-end tests are run against these systems which are defined in the [strategy.matrix.os](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) list in [.github/workflows/test-bootstrap-apply-master.yml](.github/workflows/test-bootstrap-apply-master.yml).
+By default, Akinizer uses the following package management tools to verify and install programs:
+
+-   [apt](<https://en.wikipedia.org/wiki/APT_(software)>) and [dpkg](https://en.wikipedia.org/wiki/Dpkg) on Linux
+-   [Homebrew](<https://en.wikipedia.org/wiki/Homebrew_(package_manager)>) and [Cask](https://github.com/Homebrew/homebrew-cask) on Mac
+
+Apt and dpkg must be pre-installed on the Linux system, but Homebrew and Cask can be installed via `bootstrap.sh`. (See "Installing Akinizer" below.)
 
 ## Installing Akinizer
 
@@ -356,6 +361,14 @@ definePhase(
     },
 );
 ```
+
+## Development
+
+### Testing
+
+### CI/CD
+
+End-to-end and unit tests are run automatically via [GitHub Actions](https://github.com/features/actions) when updates are pushed to the repo. These tests are configured in the `.github/workflows/*.yml` files.
 
 # Learnings
 
