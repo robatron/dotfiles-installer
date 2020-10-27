@@ -1,12 +1,46 @@
 # Akinizer
 
-Akinizer is an [OS config management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management) tool for managing installed programs and configs on different operating systems.
+> A simple configuration management tool written in JavaScript for fun and practice
 
-## Why not use [Puppet](https://puppet.com/), [Chef](https://www.chef.io/), [Ansible](https://www.ansible.com/), [SaltStack](https://www.saltstack.com/), etc.?
+## Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+-   [About](#about)
+    -   [Why not use Puppet, Chef, Ansible, SaltStack, etc.?](#why-not-use-puppet-chef-ansible-saltstack-etc)
+    -   [Supported operating systems](#supported-operating-systems)
+-   [Installing Akinizer](#installing-akinizer)
+    -   [Script options](#script-options)
+-   [Using Akinizer](#using-akinizer)
+-   [API](#api)
+    -   [`createTaskTree(rootPhase, exp)`](#createtasktreerootphase-exp)
+    -   [`defineRoot(phases)`](#definerootphases)
+    -   [`defineTarget(name, actionArgs)`](#definetargetname-actionargs)
+    -   [`definePhase(name, action, targets, phaseOpts)`](#definephasename-action-targets-phaseopts)
+-   [Phase actions](#phase-actions)
+    -   [`<All actions>`](#all-actions)
+    -   [`EXECUTE_JOBS`](#execute_jobs)
+    -   [`INSTALL_PACKAGES`](#install_packages)
+    -   [`RUN_PHASES`](#run_phases)
+    -   [`VERIFY_PACKAGES`](#verify_packages)
+-   [Development](#development)
+    -   [Testing](#testing)
+    -   [CI/CD](#cicd)
+-   [Learnings](#learnings)
+-   [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## About
+
+Akinizer is an [configuration management](https://en.wikipedia.org/wiki/Configuration_management) tool I wrote for managing my preferred programs and configs on different physical and virtual systems.
+
+### Why not use [Puppet](https://puppet.com/), [Chef](https://www.chef.io/), [Ansible](https://www.ansible.com/), [SaltStack](https://www.saltstack.com/), etc.?
 
 I created Akinizer for fun, practice, and to learn more about [operating system configuration management](https://en.wikipedia.org/wiki/Configuration_management#Operating_System_configuration_management). Why use high-quality robust software when I could write my own janky tool in JavaScript? 😉
 
-## Supported operating systems
+### Supported operating systems
 
 Akinizer supports the following operating systems (but it would probably work on other versions of macOS and Debian-based Linux distros). OS support is verified via e2e tests. (See "CI/CD" section below.)
 
