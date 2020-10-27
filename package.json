@@ -11,7 +11,7 @@
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",
         "start": "docker run --volume $(pwd):/mnt/akinizer --interactive --tty akinizer /bin/bash",
         "test": "jest --coverage --verbose",
-        "toc": "doctoc",
+        "toc": "doctoc README.md",
         "watch": "jest --watch"
     },
     "author": "Rob McGuire <robert.mcgui@gmail.com>",

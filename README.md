@@ -10,14 +10,17 @@
 -   [About](#about)
     -   [Why not use Puppet, Chef, Ansible, SaltStack, etc.?](#why-not-use-puppet-chef-ansible-saltstack-etc)
     -   [Supported operating systems](#supported-operating-systems)
+    -   [Quick example](#quick-example)
 -   [Installing Akinizer](#installing-akinizer)
     -   [Script options](#script-options)
+    -   [Package managers](#package-managers)
 -   [Using Akinizer](#using-akinizer)
+    -   [Examples](#examples)
 -   [API](#api)
     -   [`createTaskTree(rootPhase, exp)`](#createtasktreerootphase-exp)
+    -   [`definePhase(name, action, targets, phaseOpts)`](#definephasename-action-targets-phaseopts)
     -   [`defineRoot(phases)`](#definerootphases)
     -   [`defineTarget(name, actionArgs)`](#definetargetname-actionargs)
-    -   [`definePhase(name, action, targets, phaseOpts)`](#definephasename-action-targets-phaseopts)
 -   [Phase actions](#phase-actions)
     -   [`<All actions>`](#all-actions)
     -   [`EXECUTE_JOBS`](#execute_jobs)
@@ -42,17 +45,54 @@ I created Akinizer for fun, practice, and to learn more about [operating system 
 
 ### Supported operating systems
 
-Akinizer supports the following operating systems (but it would probably work on other versions of macOS and Debian-based Linux distros). OS support is verified via e2e tests. (See "CI/CD" section below.)
+Akinizer supports the following operating systems (but it would probably work on other versions of macOS and Debian-based Linux distros):
 
 -   **Linux** - Ubuntu 18.04, 20.04
 -   **Mac** - macOS 10.15, 11.0
 
-By default, Akinizer uses the following package management tools to verify and install programs:
+OS support is verified via e2e tests. See the [CI/CD](#cicd) section for details.
 
--   [apt](<https://en.wikipedia.org/wiki/APT_(software)>) and [dpkg](https://en.wikipedia.org/wiki/Dpkg) on Linux
--   [Homebrew](<https://en.wikipedia.org/wiki/Homebrew_(package_manager)>) and [Cask](https://github.com/Homebrew/homebrew-cask) on Mac
+### Quick example
 
-Apt and dpkg must be pre-installed on the Linux system, but Homebrew and Cask can be installed via `bootstrap.sh`. (See "Installing Akinizer" below.)
+Here's a simple example of what an Akinizer config looks like. See [Using Akinizer](#using-akinizer) for more details.
+
+```js
+const {
+    ACTIONS,
+    createTaskTree,
+    definePhase,
+    defineRoot,
+} = require('akinizer');
+
+createTaskTree(
+    defineRoot([
+        // Make sure `cowsay`, `htop`, and `vim` are installed
+        definePhase('installUtils', ACTIONS.INSTALL_PACKAGES, [
+            'cowsay',
+            'htop',
+            'vim',
+        ]),
+    ]),
+    exports,
+);
+```
+
+Here's a sample output for when it's applied:
+
+```log
+[15:20:41] Starting 'default'...
+
+[15:20:41] Starting 'installUtilsPhase:cowsay'...
+info: Checking if target package 'cowsay' is installed...
+info: Verifying target 'cowsay' exists with `brew list --versions 'cowsay'`...'
+cowsay 3.04
+info: Target package 'cowsay' is already installed. Moving on...
+[15:20:44] Finished 'installUtilsPhase:cowsay' after 2.83 s
+
+...
+
+[15:20:47] Finished 'default' after 5.85 s
+```
 
 ## Installing Akinizer
 
@@ -80,11 +120,24 @@ For example, the following would change the Akinizer installation directory to `
 curl -o- https://raw.githubusercontent.com/robatron/akinizer/master/bootstrap.sh | AK_INSTALL_ROOT=/opt bash
 ```
 
+### Package managers
+
+By default, Akinizer uses the following package management tools to verify and install programs:
+
+-   [apt](<https://en.wikipedia.org/wiki/APT_(software)>) and [dpkg](https://en.wikipedia.org/wiki/Dpkg) on Linux
+-   [Homebrew](<https://en.wikipedia.org/wiki/Homebrew_(package_manager)>) and [Cask](https://github.com/Homebrew/homebrew-cask) on Mac
+
+Apt and dpkg must be pre-installed on the Linux system, but Homebrew and Cask can be installed via the bootstrap script on Mac.
+
 ## Using Akinizer
 
 Akinizer's system configuration is declared as a tree of **phases**, each of which contains a list of **targets** and an **action** to apply to them. Akinizer converts the phase tree into a hierarchy of runnable [gulp](https://gulpjs.com/) tasks.
 
-The following is a simple example that assures a list of utilities are installed on the system. (**For a full annotated working example, see [examples/gulpfile.js](./examples/gulpfile.js).**)
+### Examples
+
+**ℹ️ For a full annotated working example, see [examples/gulpfile.js](./examples/gulpfile.js)**
+
+The following is a simple example that assures a list of utilities are installed on the system.
 
 ```js
 // ./examples/simple/gulpfile.js
@@ -202,50 +255,6 @@ createTaskTree(
 );
 ```
 
-### `defineRoot(phases)`
-
-Defines the root phase. It takes only one argument, a list of `phases` defined by `definePhase()`.
-
-Example:
-
-```js
-defineRoot([
-    definePhase('phase1' /* ... */),
-    definePhase('phase2' /* ... */),
-    // ... more phases ...
-]);
-```
-
-### `defineTarget(name, actionArgs)`
-
-Define a target and its action arguments. See "Phase actions" section below for details about how actions work.
-
--   **`name`** - Name or identifier of target, depending on its phase's _action_
--   **`actionArgs`** - Arguments for this target's phase's _action_
-
-Examples:
-
-```js
-defineTarget('python3');
-
-defineTarget('python3-distutils', {
-    skipAction: () => !isLinux(),
-});
-
-defineTarget('pip', {
-    actionCommands: [
-        'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
-        'sudo -H python3 /tmp/get-pip.py',
-    ],
-});
-
-defineTarget('pyenv', {
-    actionCommands: ['curl https://pyenv.run | bash'],
-    skipAction: () => fileExists(pyenvDir),
-    skipActionMessage: () => `File exists: ${pyenvDir}`,
-});
-```
-
 ### `definePhase(name, action, targets, phaseOpts)`
 
 Define a phase in which targets have an action applied to them, e.g., to assure a set of packages are installed.
@@ -289,6 +298,50 @@ definePhase(
         parallel: true,
     },
 );
+```
+
+### `defineRoot(phases)`
+
+Defines the root phase. It takes only one argument, a list of `phases` defined by `definePhase()`.
+
+Example:
+
+```js
+defineRoot([
+    definePhase('phase1' /* ... */),
+    definePhase('phase2' /* ... */),
+    // ... more phases ...
+]);
+```
+
+### `defineTarget(name, actionArgs)`
+
+Define a target and its action arguments. See "Phase actions" section below for details about how actions work.
+
+-   **`name`** - Name or identifier of target, depending on its phase's _action_
+-   **`actionArgs`** - Arguments for this target's phase's _action_
+
+Examples:
+
+```js
+defineTarget('python3');
+
+defineTarget('python3-distutils', {
+    skipAction: () => !isLinux(),
+});
+
+defineTarget('pip', {
+    actionCommands: [
+        'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
+        'sudo -H python3 /tmp/get-pip.py',
+    ],
+});
+
+defineTarget('pyenv', {
+    actionCommands: ['curl https://pyenv.run | bash'],
+    skipAction: () => fileExists(pyenvDir),
+    skipActionMessage: () => `File exists: ${pyenvDir}`,
+});
 ```
 
 ## Phase actions
