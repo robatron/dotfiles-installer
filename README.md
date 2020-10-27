@@ -131,9 +131,31 @@ You can list all available tasks with `gulp --tasks`:
 [15:27:34]       └── installUtilsPhase:vim
 ```
 
-## Actions
+## API
 
-Supported actions are listed below. All actions support the following arguments:
+### `definePhase(name, action, targets, phaseOpts)`
+
+Define a phase in which targets have an action applied to them, e.g., to assure a set of packages are installed:
+
+```js
+definePhase('installUtilsPhase', ACTIONS.INSTALL_PACKAGES, [
+    'cowsay',
+    'gpg',
+    'htop',
+    'jq',
+    'vim',
+]);
+```
+
+#### `name: string`
+
+Name of the phase.
+
+#### `targets: string[]`
+
+#### `action: string`
+
+Action to apply to the targets. Supported actions are listed below. All actions support the following arguments:
 
 -   **`forceAction: (undefined | function(target: Target): string)`** - (Optional) If this function is provided, always run the action if this evaluates to `true`. The `Target` will be injected
 -   **`skipAction: (undefined | function(target: Target): string)`** - (Optional) If this function is provided, always skip the action if this evaluates to `true`. The `Target` will be injected
