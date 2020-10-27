@@ -48,7 +48,7 @@ const isPackageInstalled = (target) => {
     }
 
     // If the target has custom install commands, or verifyCommandExists is
-    // explicitly set, verify the commang exists in the environment as oppose
+    // explicitly set, verify the command exists in the environment as oppose
     // to verifying the target is installed via the system target manager.
     if (actionCommands || verifyCommandExists) {
         log.info(`Verifying command '${target.name}' exists...'`);

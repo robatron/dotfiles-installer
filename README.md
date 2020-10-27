@@ -15,30 +15,40 @@ Akinizer currently supports the following operating systems. (But it would proba
 
 End-to-end tests are run against these systems which are defined in the [strategy.matrix.os](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix) list in [.github/workflows/test-bootstrap-apply-master.yml](.github/workflows/test-bootstrap-apply-master.yml).
 
-## Quickstart
+## Installing Akinizer
 
-To install Akinizer, run the following command:
+To install or update Akinizer, you should run the [bootstrap.sh script](./bootstrap.sh) which assures required programs are installed (e.g., `git`, `node.js`), downloads or updates Akinizer, and installs its dependencies. Review the script, then either download and run the script manually, or use the following cURL or Wget commands:
 
-    curl -o- https://raw.githubusercontent.com/robatron/akinizer/master/bootstrap.sh | bash
+```sh
+curl -o- https://raw.githubusercontent.com/robatron/akinizer/master/bootstrap.sh | bash
+```
 
-This runs a bootstrapping script which prepares the system for Akinizer by:
+```sh
+wget -qO- https://raw.githubusercontent.com/robatron/akinizer/master/bootstrap.sh | bash
+```
 
-1. Installing required system programs, e.g., `git`, `node`, `nvm`, and `gulp`
-2. Downloads Akinizer itself
-3. Installs Akinizer's dependencies
+### Script options
 
-See the [bootstrap.sh](bootstrap.sh) script for more details.
+The bootstrap script's behavior can be modified with the following environment variables:
 
-## Usage
+-   `AK_GIT_REF` - The Akinizer repo ref to checkout (default: `master`)
+-   `AK_INSTALL_ROOT` - Where to clone the Akinizer repo to (default: `$HOME/opt/akinizer`)
+-   `AK_SKIP_CLONE` - Skip the Akinizer clone step (default: `no`)
 
-**See [examples/gulpfile.js]() for a full, annotated, working example.**
+For example, the following would change the Akinizer installation directory to `/opt` with the `AK_INSTALL_ROOT` option:
 
-Akinizer's system configuration is declared as a tree of **phases**, each of which contains a list of **targets** and an **action** to apply to them. Akinizer converts this phase tree into a hierarchy of runnable [gulp](https://gulpjs.com/) tasks.
+```sh
+curl -o- https://raw.githubusercontent.com/robatron/akinizer/master/bootstrap.sh | AK_INSTALL_ROOT=/opt bash
+```
 
-Here's a simple example that assures a list of utilities are installed on the system:
+## Using Akinizer
+
+Akinizer's system configuration is declared as a tree of **phases**, each of which contains a list of **targets** and an **action** to apply to them. Akinizer converts the phase tree into a hierarchy of runnable [gulp](https://gulpjs.com/) tasks.
+
+The following is a simple example that assures a list of utilities are installed on the system. (**For a full annotated working example, see [examples/gulpfile.js](./examples/gulpfile.js).**)
 
 ```js
-// examples/simple/gulpfile.js
+// ./examples/simple/gulpfile.js
 const {
     ACTIONS,
     createTaskTree,
@@ -62,7 +72,7 @@ createTaskTree(
 );
 ```
 
-Run `gulp` to run the default task which refers to the root phase:
+Run `gulp` to execute the default task which refers to Akinizer's root phase:
 
 ```log
 [I] ➜ gulp
@@ -133,55 +143,219 @@ You can list all available tasks with `gulp --tasks`:
 
 ## API
 
-### `definePhase(name, action, targets, phaseOpts)`
+### `createTaskTree(rootPhase, exp)`
 
-Define a phase in which targets have an action applied to them, e.g., to assure a set of packages are installed:
+Top-level function to create the entire phase task tree. This should be the final function call of your `gulpfile.js` file.
+
+Parameters:
+
+-   **`rootPhase`** - The output of `defineRoot()`, the root of the phase tree
+-   **`exp`** - The module's `exports` object, onto which the gulp tasks are attached so they can be runnable
+
+Example:
 
 ```js
-definePhase('installUtilsPhase', ACTIONS.INSTALL_PACKAGES, [
-    'cowsay',
-    'gpg',
-    'htop',
-    'jq',
-    'vim',
+createTaskTree(
+    defineRoot([
+        /* ... phases ... */
+    ]),
+    exports,
+);
+```
+
+### `defineRoot(phases)`
+
+Defines the root phase. It takes only one argument, a list of `phases` defined by `definePhase()`.
+
+Example:
+
+```js
+defineRoot([
+    definePhase('phase1' /* ... */),
+    definePhase('phase2' /* ... */),
+    // ... more phases ...
 ]);
 ```
 
-#### `name: string`
+### `defineTarget(name, actionArgs)`
 
-Name of the phase.
+Define a target and its action arguments. See "Phase actions" section below for details about how actions work.
 
-#### `targets: string[]`
+-   **`name`** - Name or identifier of target, depending on its phase's _action_
+-   **`actionArgs`** - Arguments for this target's phase's _action_
 
-#### `action: string`
+Examples:
 
-Action to apply to the targets. Supported actions are listed below. All actions support the following arguments:
+```js
+defineTarget('python3');
 
--   **`forceAction: (undefined | function(target: Target): string)`** - (Optional) If this function is provided, always run the action if this evaluates to `true`. The `Target` will be injected
--   **`skipAction: (undefined | function(target: Target): string)`** - (Optional) If this function is provided, always skip the action if this evaluates to `true`. The `Target` will be injected
--   **`skipActionMessage: function(target: Target): string`** - (Optional) A function that return a message to explain why the action was skipped. The `Target` will be injected
+defineTarget('python3-distutils', {
+    skipAction: () => !isLinux(),
+});
 
-### Execute
+defineTarget('pip', {
+    actionCommands: [
+        'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
+        'sudo -H python3 /tmp/get-pip.py',
+    ],
+});
 
-Executes arbitrary shell code. Additional supported arguments:
+defineTarget('pyenv', {
+    actionCommands: ['curl https://pyenv.run | bash'],
+    skipAction: () => fileExists(pyenvDir),
+    skipActionMessage: () => `File exists: ${pyenvDir}`,
+});
+```
 
--   **`actionCommands: string[]`** - Shell commands to execute.
+### `definePhase(name, action, targets, phaseOpts)`
 
-### Install
+Define a phase in which targets have an action applied to them, e.g., to assure a set of packages are installed.
 
-Installs a target package. Additional supported arguments:
+-   **`name`** - Name of the phase
+-   **`action`** - Action to apply to the list of targets (see "Phase actions" section below for details)
+-   **`targets`** - A list of targets which can be strings or the outputs of `defineTarget()`
+-   **`phaseOpts`** - Options to apply to every target
+    -   **`phaseOpts.parallel`** - Process targets in parallel
+    -   **`phaseOpts.targetOpts`** - Options to apply to all targets
+
+Example:
+
+```js
+definePhase(
+    'installUtilsPhase',
+    ACTIONS.INSTALL_PACKAGES,
+    [
+        // Simple targets without arguments
+        'cowsay',
+        'gpg',
+        'htop',
+
+        // Targets defined with `defineTarget()`
+        defineTarget('python3-distutils', {
+            skipAction: () => !isLinux(),
+        }),
+        defineTarget('pip', {
+            actionCommands: [
+                'sudo curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py',
+                'sudo -H python3 /tmp/get-pip.py',
+            ],
+        }),
+    ],
+
+    // phaseOpts
+    {
+        targetOpts: {
+            forceAction: true,
+        },
+        parallel: true,
+    },
+);
+```
+
+## Phase actions
+
+_Actions_ are verbs that will be applied to all targets of the phase. Actions treat _targets_ differently, e.g. as _jobs_, _packages_, or _phases_, and take arguments defined in `defineTarget()` or `phaseOpts`. Supported actions and their arguments are listed below.
+
+### `<All actions>`
+
+All actions support the following function arguments, all of which will be provided with the `target` when they're evaluated.
+
+-   **`forceAction: function(target: Target): string`** - (Optional) If this function is provided, always run the action if this evaluates to `true`
+-   **`skipAction: function(target: Target): string`** - (Optional) If this function is provided, always skip the action if this evaluates to `true`
+-   **`skipActionMessage: function(target: Target): string`** - (Optional) A function that return a message to explain why the action was skipped
+
+### `EXECUTE_JOBS`
+
+Executes arbitrary shell code. Required arguments:
+
+-   **`actionCommands: string[]`** - Shell commands to execute
+
+### `INSTALL_PACKAGES`
+
+Installs a target package using the system package manager by default. Supported arguments:
 
 -   **`actionCommands: string[]`** - Shell commands to execute
 -   **`gitPackage: object`** - Marks this target as a "git package"
-    -   **`gitPackage.repoUrl: string`** - URL (HTTP) to the git repo of the target package
-    -   **`gitPackage.symlink: string`** - (Optional) File to symlink from the repo after its cloned
-    -   **`gitPackage.binDir: string`** - (Optional) Symlink target directory
-    -   **`gitPackage.cloneDir: string`** - (Optional) Clone target directory
--   **`postInstall: function(target: Target): void`** - (Optional) Function that's called with the `target` after installation is complete
+    -   **`gitPackage.repoUrl: string`** - URL (HTTPS) to the git repo of the target package
+    -   **`gitPackage.symlink: string`** - (Optional) File to symlink from the repo after its cloned. Default: target name
+    -   **`gitPackage.binDir: string`** - (Optional) Symlink target directory. Default: `$HOME/bin`
+    -   **`gitPackage.cloneDir: string`** - (Optional) Clone target directory. Default: `$HOME/opt`
+-   **`postInstall: function(target: Target): void`** - (Optional) Function that's called with the `target` after installation is complete.
+-   **`verifyCommandExists`** - Verify the target name exists as a command as oppose to verifying the target is installed via the system target manager
 
-### Verify
+Example:
 
-Verifies packages are installed. There are no additional supported arguments.
+```js
+definePhase('installTerm', ACTIONS.INSTALL_PACKAGES, [
+    defineTarget('zsh'),
+    defineTarget('oh-my-zsh', {
+        actionCommands: [
+            `curl https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/omzshinstall.sh`,
+            `RUNZSH=no sh /tmp/omzshinstall.sh`,
+        ],
+        skipAction: () => fileExists(OMZDir),
+        skipActionMessage: () => `File exists: ${OMZDir}`,
+    }),
+    defineTarget('spaceship-prompt', {
+        gitPackage: {
+            binDir: `${OMZDir}/themes/spaceship.zsh-theme`,
+            binSymlink: 'spaceship.zsh-theme',
+            cloneDir: SpaceshipThemeDir,
+            ref: 'c38183d654c978220ddf123c9bdb8e0d3ff7e455',
+            repoUrl: 'https://github.com/denysdovhan/spaceship-prompt.git',
+        },
+        skipAction: () => fileExists(SpaceshipThemeDir),
+        skipActionMessage: () => `File exists: ${SpaceshipThemeDir}`,
+    }),
+]);
+```
+
+### `RUN_PHASES`
+
+Runs nested phases. Example:
+
+```js
+// Targets are other phases
+definePhase('installUtils', ACTIONS.RUN_PHASES, [
+    // Common phase (install on all systems)
+    definePhase('common', ACTIONS.INSTALL_PACKAGES, ['cowsay', 'gpg', 'htop']),
+
+    // Linux phase (install only on Linux)
+    isLinux() &&
+        definePhase('linux', ACTIONS.INSTALL_PACKAGES, ['fortune-mod']),
+
+    // Mac phase (install only on Mac)
+    isMac() && definePhase('mac', ACTIONS.INSTALL_PACKAGES, ['fortune']),
+]);
+```
+
+### `VERIFY_PACKAGES`
+
+Verifies packages are installed. Supported arguments:
+
+-   **`verifyCommandExists`** - Verify the target name exists as a command as oppose to verifying the target is installed via the system target manager
+
+Example:
+
+```js
+definePhase(
+    'verifyPrereqs',
+    ACTIONS.VERIFY_PACKAGES,
+    ['curl', 'git', 'node', 'npm'],
+    {
+        // Apply these options to all of this phase's packages
+        targetOpts: {
+            // This option verifies the command exists instead of verifying
+            // its target exists with the system target manager
+            verifyCommandExists: true,
+        },
+
+        // We can run the phase in parallel b/c target verifications are
+        // independent from each other
+        parallel: true,
+    },
+);
+```
 
 # Learnings
 

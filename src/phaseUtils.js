@@ -11,7 +11,7 @@ const definePhase = (name, action, targets, phaseOpts = {}) => [
 ];
 
 // Helper function to create the root phase definition with required parameters
-// and structure. Inject `verifyPrereqsPhase` as the first phase on the root.
+// and structure.
 const defineRoot = (targets, parallel = false) => [
     definePhase(PHASE_NAME_DEFAULT, ACTIONS.RUN_PHASES, targets, {
         parallel,
@@ -19,7 +19,7 @@ const defineRoot = (targets, parallel = false) => [
 ];
 
 // Helper function to create a target definition
-const defineTarget = (name, args = {}) => [name, args];
+const defineTarget = (name, actionArgs = {}) => [name, actionArgs];
 
 module.exports = {
     definePhase,
