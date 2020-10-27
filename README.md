@@ -261,7 +261,7 @@ createTaskTree(
 Define a phase in which targets have an action applied to them, e.g., to assure a set of packages are installed.
 
 -   **`name`** - Name of the phase
--   **`action`** - Action to apply to the list of targets (see "Phase actions" section below for details)
+-   **`action`** - Action to apply to the list of targets. See [Phase actions](#phase-actions) for details.
 -   **`targets`** - A list of targets which can be strings or the outputs of `defineTarget()`
 -   **`phaseOpts`** - Phase options
     -   **`phaseOpts.parallel`** - Process targets in parallel
@@ -347,7 +347,7 @@ defineTarget('pyenv', {
 
 ## Phase actions
 
-_Actions_ are verbs that will be applied to all targets of the phase. Actions treat _targets_ differently, e.g. as _jobs_, _packages_, or _phases_, and take arguments defined in `defineTarget()` or `phaseOpts`. Supported actions and their arguments are listed below.
+_Actions_, defined in [`definePhase()`](#definephasename-action-targets-phaseopts), are verbs that will be applied to all targets of a phase. Actions treat _targets_ differently, e.g. as _jobs_, _packages_, or _phases_, and take arguments defined in `defineTarget()` or `phaseOpts`. Supported actions and their arguments are listed below.
 
 ### `<All actions>`
 
