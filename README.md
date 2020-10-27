@@ -507,6 +507,7 @@ Here are a few noteable technologies and concepts I learned, and/or practiced to
     -   The [nodegit](https://www.nodegit.org/) library is powerful, but turned out to be too low-level and complex for this project
 -   [Node-config](https://github.com/lorenwest/node-config) is used to enable Akinizer configuration via config files. See [examples/.akinizerrc.js]() for an example.
 -   The [Connonical way](https://prettier.io/docs/en/integrating-with-linters.html) to combine [Prettier](https://prettier.io/) and [Eslint](https://eslint.org/) is used to enable seamless linting and formatting
+-   [DocToc](https://github.com/thlorenz/doctoc) is used to maintain the README table of contents.
 
 # License
 
