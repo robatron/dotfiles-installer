@@ -51,7 +51,7 @@ Akinizer supports the following operating systems (but it would probably work on
 -   **Linux** - Ubuntu 18.04, 20.04
 -   **Mac** - macOS 10.15, 11.0
 
-OS support is verified via e2e tests. See the [CI/CD](#cicd) section for details.
+OS support is verified via end-to-end tests. See the [CI/CD](#cicd) section for details.
 
 ### Quick example
 
@@ -68,7 +68,7 @@ const {
 createTaskTree(
     defineRoot([
         // Make sure `cowsay`, `htop`, and `vim` are installed
-        definePhase('installUtils', ACTIONS.INSTALL_PACKAGES, [
+        definePhase('installUtilsPhase', ACTIONS.INSTALL_PACKAGES, [
             'cowsay',
             'htop',
             'vim',
@@ -263,7 +263,7 @@ Define a phase in which targets have an action applied to them, e.g., to assure 
 -   **`name`** - Name of the phase
 -   **`action`** - Action to apply to the list of targets (see "Phase actions" section below for details)
 -   **`targets`** - A list of targets which can be strings or the outputs of `defineTarget()`
--   **`phaseOpts`** - Options to apply to every target
+-   **`phaseOpts`** - Phase options
     -   **`phaseOpts.parallel`** - Process targets in parallel
     -   **`phaseOpts.targetOpts`** - Options to apply to all targets
 
