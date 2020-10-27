@@ -11,11 +11,13 @@
         "start:base": "docker run -it ubuntu:20.04 /bin/bash",
         "start": "docker run --volume $(pwd):/mnt/akinizer --interactive --tty akinizer /bin/bash",
         "test": "jest --coverage --verbose",
+        "toc": "doctoc README.md",
         "watch": "jest --watch"
     },
     "author": "Rob McGuire <robert.mcgui@gmail.com>",
     "license": "ISC",
     "devDependencies": {
+        "doctoc": "^1.4.0",
         "eslint": "^7.11.0",
         "eslint-config-prettier": "^6.13.0",
         "eslint-plugin-jest": "^24.1.0",

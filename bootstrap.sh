@@ -116,24 +116,27 @@ if ! [ -x "$(command -v gulp)" ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# Install Akinizer itself
+# Install / update Akinizer itself
 # ------------------------------------------------------------------------------
 
 # TODO: Publish and install via NPM
 
 if ! [ $AK_SKIP_CLONE = yes ]; then
-    log "Cloning Akinizer..."
+    log "Downloading Akinizer..."
 
     mkdir -p $(dirname $AK_INSTALL_ROOT)
     cd $(dirname $AK_INSTALL_ROOT)
 
     if ! [ -d $(basename $AK_INSTALL_ROOT) ]; then
+        log "Akinizer not found at $AK_INSTALL_ROOT. Cloning Akinizer at $AK_GIT_REF..."
         git clone $AK_REPO_URL $AK_INSTALL_ROOT
-        cd $AK_INSTALL_ROOT
-        git checkout $AK_GIT_REF
     else
-        log "Akinizer was NOT installed b/c the target directory exists: $AK_INSTALL_ROOT"
+        log "Akinizer directory exists at $AK_INSTALL_ROOT. Updating repo to $AK_GIT_REF..."
     fi
+
+    cd $AK_INSTALL_ROOT
+    git fetch
+    git checkout $AK_GIT_REF
 else
     log "Akinizer clone skipped: AK_SKIP_CLONE == yes"
 fi
