@@ -24,7 +24,7 @@ jobs:
 
       - name: Apply Akinizer configs
         run: |
-          cd $HOME/opt/akinizer/example
+          cd $HOME/opt/akinizer/examples
           gulp
 
       - name: Re-bootstrap non-destructively
@@ -32,5 +32,5 @@ jobs:
 
       - name: Re-apply non-destructively
         run: |
-          cd $HOME/opt/akinizer/example
+          cd $HOME/opt/akinizer/examples
           gulp
