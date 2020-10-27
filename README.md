@@ -1,5 +1,8 @@
 # Akinizer
 
+![e2e workflow](https://github.com/robatron/akinizer/workflows/E2E%20tests%3A%20Bootstrap%20%2F%20apply/badge.svg)
+![unit workflow](https://github.com/robatron/akinizer/workflows/Lint%20%2F%20unit%20test/badge.svg)
+
 > A simple configuration management tool written in JavaScript for fun and practice
 
 ## Contents
