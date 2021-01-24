@@ -129,7 +129,7 @@ const installTermPhase = definePhase('installTerm', ACTIONS.INSTALL_PACKAGES, [
     }),
     t('spaceship-prompt', {
         gitPackage: {
-            binDir: `${OMZDir}/themes/spaceship.zsh-theme`,
+            binDir: `${OMZDir}/themes/`,
             binSymlink: 'spaceship.zsh-theme',
             cloneDir: SpaceshipThemeDir,
             ref: 'c38183d654c978220ddf123c9bdb8e0d3ff7e455',
