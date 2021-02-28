@@ -485,7 +485,7 @@ Then run it:
 npm start
 ```
 
-The repo will me mounted inside of the container. Play around as much as you want. All changes will be reverted when the container is restarted.
+The repo will be mounted inside of the container. Play around as much as you want. All changes will be reverted when the container is restarted.
 
 ### CI/CD
 

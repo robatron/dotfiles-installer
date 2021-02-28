@@ -61,6 +61,11 @@ const installUtilsPhase = definePhase('installUtils', ACTIONS.RUN_PHASES, [
         'htop',
         'jq',
         'vim',
+
+        // Getting nvm to work in all contexts (e.g., in the vscode debugger or
+        // within vscode extensions) is a giant pain, so let's install node.js
+        // at the system level as a fallback.
+        'nodejs',
     ]),
     isLinux() &&
         definePhase('linux', ACTIONS.INSTALL_PACKAGES, [
@@ -228,7 +233,7 @@ const installDockerPhase = definePhase('installDocker', ACTIONS.RUN_PHASES, [
                             .map((group) => group.split(':')[0]);
                         return groups.includes('docker');
                     },
-                    skipActionMessage: (target) =>
+                    skipActionMessage: () =>
                         'Docker group already exists on system',
                 }),
                 t('add-group-membership', {
