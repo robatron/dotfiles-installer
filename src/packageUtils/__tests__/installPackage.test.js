@@ -66,7 +66,7 @@ describe('installPackage', () => {
         expect(isLinux).toBeCalledTimes(1);
         expect(isMac).toBeCalledTimes(1);
         expect(execCommands).toBeCalledWith([
-            `brew cask install ${target.name}`,
+            `brew install --cask ${target.name}`,
         ]);
     });
 

@@ -19,7 +19,7 @@ const installPackage = async (target) => {
         cmds.push(`sudo apt install -y ${target.name}`);
     } else if (isMac()) {
         if (isGUI) {
-            cmds.push(`brew cask install ${target.name}`);
+            cmds.push(`brew install --cask ${target.name}`);
         } else {
             cmds.push(`brew install ${target.name}`);
         }
